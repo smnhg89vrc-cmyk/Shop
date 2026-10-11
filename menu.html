@@ -1,88 +1,319 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
+<!doctype html>
+<html lang="zh-Hant-TW">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#d60000">
-<title>鹽酥雞點餐計算機</title>
+<title>台灣第一家鹽酥雞｜自己點自己算</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@900&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f5f5f5;--card:#fff;--text:#222;--muted:#777;--red:#d60000;--line:#e3e3e3;--btn:#eee;}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#161616;--card:#262626;--text:#f1f1f1;--muted:#aaa;--line:#3a3a3a;--btn:#383838;}}
-:root[data-theme="dark"]{--bg:#161616;--card:#262626;--text:#f1f1f1;--muted:#aaa;--line:#3a3a3a;--btn:#383838;}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{margin:0;}
-body{font-family:-apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;background:var(--bg);color:var(--text);
- padding-top:env(safe-area-inset-top,0px);padding-bottom:calc(120px + env(safe-area-inset-bottom,0px));touch-action:manipulation;}
-header{background:var(--red);color:#fff;text-align:center;padding:12px;font-size:22px;font-weight:bold;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;}
-.hint{text-align:center;color:var(--muted);font-size:15px;padding:8px 10px 0;}
-.products{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px;}
-.product{position:relative;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:10px 4px;font-size:19px;font-weight:bold;min-height:84px;line-height:1.4;}
-.product:active{background:var(--btn);}
-.product small{display:block;color:var(--red);font-size:17px;}
-.badge{position:absolute;top:-6px;right:-6px;min-width:26px;height:26px;border-radius:13px;background:var(--red);color:#fff;font-size:15px;line-height:26px;padding:0 6px;display:none;}
-.cart{background:var(--card);margin:0 10px 10px;border-radius:12px;padding:10px 12px;}
-.cart h2{margin:0 0 4px;font-size:18px;color:var(--muted);}
-.empty{color:var(--muted);padding:8px 0;}
-.cart-item{display:flex;justify-content:space-between;align-items:center;margin:6px 0;font-size:19px;gap:8px;}
-.sub{color:var(--muted);font-size:15px;}
-.ops{display:flex;gap:6px;flex-shrink:0;}
-.qty-btn{font-size:22px;width:44px;height:44px;border:none;border-radius:10px;background:var(--btn);color:var(--text);}
-.bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));z-index:10;display:flex;align-items:center;gap:10px;}
-.total{flex:1;font-size:30px;font-weight:bold;color:var(--red);text-align:center;}
-.clear{font-size:20px;font-weight:bold;border:none;border-radius:10px;background:var(--btn);color:var(--text);padding:14px 18px;}
-.note{text-align:center;color:var(--muted);font-size:13px;padding:0 10px 10px;}
+:root{
+  --hero:#B3241A;
+  --bg:#FFFBF2; --card:#FFFFFF; --ink:#211A16; --muted:#6B5E55; --line:#E8DDCB;
+  --accent:#B3241A; --btn:#B3241A; --tint:rgba(244,178,35,.20);
+  --gold:#F4B223; --bar-ink:#211A16;
+  --ok:#14532D; --over:#8E1A12;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#17120F; --card:#231C18; --ink:#FBF1E0; --muted:#BDAE9E; --line:#3A2F28;
+    --accent:#FF8F78; --btn:#D9352A; --tint:rgba(244,178,35,.16);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17120F; --card:#231C18; --ink:#FBF1E0; --muted:#BDAE9E; --line:#3A2F28;
+  --accent:#FF8F78; --btn:#D9352A; --tint:rgba(244,178,35,.16);
+}
+*,*::before,*::after{box-sizing:inherit}
+html{background:var(--hero);scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  font-size:17px;line-height:1.5;padding-bottom:190px;
+}
+.wrap{max-width:520px;margin:0 auto;padding:0 16px}
+.serif{font-family:"Noto Serif TC","Songti TC","PMingLiU",serif;font-weight:900}
+
+/* hero */
+.hero{background:var(--hero);color:#fff;padding:30px 0 44px}
+.hero h1{margin:0;font-size:38px;line-height:1.15;letter-spacing:.03em}
+.stamp{
+  display:inline-block;margin-top:12px;padding:4px 16px 5px;
+  background:var(--gold);color:#211A16;font-size:24px;letter-spacing:.12em;
+  border-radius:4px;transform:rotate(-2deg);
+}
+.lead{margin:16px 0 0;font-size:17px;max-width:22em}
+
+/* budget card */
+.budget{
+  margin:-26px 0 8px;background:var(--card);border:1px solid var(--line);
+  border-radius:14px;padding:16px;
+}
+.budget label{display:block;font-weight:700;margin-bottom:8px}
+.field{display:flex;align-items:center;gap:8px}
+.field span{font-weight:700;color:var(--muted)}
+.field input{
+  flex:1;min-width:0;height:52px;font:inherit;font-size:22px;font-weight:700;
+  padding:0 14px;border:2px solid var(--line);border-radius:10px;
+  background:var(--bg);color:var(--ink);
+}
+.field input:focus-visible{outline:3px solid var(--gold);outline-offset:1px;border-color:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chip{
+  min-height:44px;padding:0 16px;font:inherit;font-weight:700;cursor:pointer;
+  background:transparent;color:var(--ink);border:2px solid var(--line);border-radius:999px;
+}
+.chip:hover{border-color:var(--accent)}
+.chip:focus-visible,.step button:focus-visible,.bar button:focus-visible,.bar .btn:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+
+/* menu */
+h2{margin:28px 0 4px;font-size:23px;letter-spacing:.04em;padding-bottom:6px;border-bottom:3px double var(--line)}
+.row{
+  display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;
+  padding:10px 8px;border-bottom:1px solid var(--line);border-radius:8px;
+}
+.row.on{background:var(--tint)}
+.name{font-size:18px;font-weight:700}
+.price{font-size:15px;color:var(--muted)}
+.step{display:flex;align-items:center;gap:6px}
+.step button{
+  width:44px;height:44px;border-radius:50%;font:inherit;font-size:26px;line-height:1;font-weight:700;
+  cursor:pointer;display:grid;place-items:center;padding:0;
+}
+.step .minus{background:transparent;color:var(--accent);border:2px solid var(--accent)}
+.step .plus{background:var(--btn);color:#fff;border:2px solid var(--btn)}
+.step button:disabled{opacity:.3;cursor:default}
+.qty{min-width:30px;text-align:center;font-size:21px;font-weight:700;font-variant-numeric:tabular-nums}
+
+/* summary */
+.summary{margin-top:32px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.summary h2{margin-top:0}
+.summary ul{list-style:none;margin:0;padding:0}
+.summary li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px dashed var(--line)}
+.summary li.sum{font-weight:700;font-size:19px;border-bottom:0}
+.empty{color:var(--muted);margin:8px 0 0}
+.note{margin:20px 0 0;font-size:14px;color:var(--muted)}
+
+/* bottom bar */
+.bar{
+  position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--gold);color:var(--bar-ink);
+  padding:12px 0 calc(12px + env(safe-area-inset-bottom,0px));
+  box-shadow:0 -3px 0 rgba(33,26,22,.18);
+}
+.bar-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.bar .lbl{font-size:14px;font-weight:700;display:block;line-height:1.2}
+.bar #total{font-size:30px;line-height:1.1;display:block}
+.bar-btns{display:flex;gap:8px}
+.bar button,.bar .btn{
+  min-height:44px;padding:0 16px;font:inherit;font-weight:700;border-radius:10px;cursor:pointer;
+  display:inline-flex;align-items:center;text-decoration:none;
+}
+.bar button{background:transparent;color:var(--bar-ink);border:2px solid var(--bar-ink)}
+.bar .btn{background:var(--bar-ink);color:var(--gold);border:2px solid var(--bar-ink)}
+.track{height:8px;border-radius:99px;background:rgba(33,26,22,.2);margin:10px 0 6px;overflow:hidden}
+.track i{display:block;height:100%;width:0;background:var(--bar-ink);border-radius:99px}
+.track.over i{background:var(--over)}
+@media (prefers-reduced-motion:no-preference){.track i{transition:width .2s ease}}
+#status{margin:0;font-size:16px;font-weight:700}
+#status.ok{color:var(--ok)}
+#status.over{color:var(--over)}
 </style>
 </head>
 <body>
-<header>🍗 鹽酥雞點餐計算機</header>
-<div class="hint">點品項加入，算算看要多少錢（價格以現場為準）</div>
-<div class="products" id="products"></div>
-<div class="cart"><h2>我的餐點</h2><div id="cart"></div></div>
-<div class="note">此頁僅供試算，不會送出訂單，請到櫃檯點餐結帳</div>
-<div class="bar"><div class="total" id="total">總計：0 元</div><button class="clear" onclick="clearCart()">清空</button></div>
+
+<header class="hero">
+  <div class="wrap">
+    <h1 class="serif">台灣第一家鹽酥雞</h1>
+    <div class="stamp serif">30年老店</div>
+    <p class="lead">自己點，自己算。選好份數，馬上知道這一餐要花多少。</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="budget" aria-label="預算">
+    <label for="budget">今天預算多少？</label>
+    <div class="field">
+      <span>NT$</span>
+      <input id="budget" type="number" inputmode="numeric" min="0" max="99999" placeholder="例如 300">
+    </div>
+    <div class="chips" id="chips">
+      <button class="chip" type="button" data-v="100">100</button>
+      <button class="chip" type="button" data-v="200">200</button>
+      <button class="chip" type="button" data-v="300">300</button>
+      <button class="chip" type="button" data-v="500">500</button>
+    </div>
+  </section>
+
+  <div id="menu"></div>
+
+  <section class="summary" id="summary" aria-label="點餐明細">
+    <h2 class="serif">點餐明細</h2>
+    <div id="lines"></div>
+    <p class="note">點餐時把這個畫面給老闆看就可以。實際價格與供應品項以現場為準。</p>
+  </section>
+</main>
+
+<div class="bar">
+  <div class="wrap">
+    <div class="bar-top">
+      <div><span class="lbl">目前合計</span><strong id="total" class="serif">NT$ 0</strong></div>
+      <div class="bar-btns">
+        <button type="button" id="clear">清除</button>
+        <a class="btn" href="#summary">看明細</a>
+      </div>
+    </div>
+    <div class="track" id="track" aria-hidden="true"><i id="fill"></i></div>
+    <p id="status" aria-live="polite"></p>
+  </div>
+</div>
+
 <script>
-const products=[
-{name:"鹽酥雞",price:60},{name:"魷魚",price:60},{name:"地瓜條",price:40},
-{name:"雞皮",price:40},{name:"四季豆",price:40},{name:"玉米",price:45},
-{name:"雞屁股",price:30},{name:"雞心",price:30},{name:"雞胗",price:30},
-{name:"花枝丸",price:30},{name:"甜不辣",price:25},{name:"豬血糕",price:20},
-{name:"豆乾",price:20},{name:"芋頭籤",price:20},{name:"芋頭巧",price:20},
-{name:"百葉豆腐",price:20},{name:"魚板",price:20},{name:"豆包",price:20},
-{name:"雞脖子",price:20}
+/* 品項與價格（單位：份） */
+var MENU = [
+  { group: "雞肉類", items: [
+    { id: "i1", name: "鹽酥雞", price: 60, unit: "份" },
+    { id: "i2", name: "雞皮", price: 40, unit: "份" },
+    { id: "i3", name: "雞屁股", price: 30, unit: "份" },
+    { id: "i4", name: "雞心", price: 30, unit: "份" },
+    { id: "i5", name: "雞胗", price: 30, unit: "份" },
+    { id: "i6", name: "雞脖子", price: 20, unit: "份" }
+  ]},
+  { group: "海鮮與加工品", items: [
+    { id: "i7", name: "魷魚", price: 60, unit: "份" },
+    { id: "i8", name: "花枝丸", price: 30, unit: "份" },
+    { id: "i9", name: "甜不辣", price: 25, unit: "份" },
+    { id: "i10", name: "魚板", price: 20, unit: "份" },
+    { id: "i11", name: "豬血糕", price: 20, unit: "份" }
+  ]},
+  { group: "蔬菜與豆製品", items: [
+    { id: "i12", name: "地瓜條", price: 40, unit: "份" },
+    { id: "i13", name: "四季豆", price: 40, unit: "份" },
+    { id: "i14", name: "玉米", price: 45, unit: "份" },
+    { id: "i15", name: "芋頭籤", price: 20, unit: "份" },
+    { id: "i16", name: "芋頭巧", price: 20, unit: "份" },
+    { id: "i17", name: "豆乾", price: 20, unit: "份" },
+    { id: "i18", name: "百葉豆腐", price: 20, unit: "份" },
+    { id: "i19", name: "豆包", price: 20, unit: "份" }
+  ]}
 ];
-let cart={};
-const badges={};
-const pd=document.getElementById("products");
-products.forEach(p=>{
-  const b=document.createElement("button");
-  b.className="product";
-  b.innerHTML=`${p.name}<small>$${p.price}</small><span class="badge"></span>`;
-  b.onclick=()=>{cart[p.name]=(cart[p.name]||0)+1;render();};
-  badges[p.name]=b.querySelector(".badge");
-  pd.appendChild(b);
-});
-function render(){
-  const box=document.getElementById("cart");
-  box.innerHTML="";
-  let total=0;
-  const names=Object.keys(cart);
-  if(!names.length)box.innerHTML='<div class="empty">還沒有選品項</div>';
-  names.forEach(n=>{
-    const p=products.find(x=>x.name===n);
-    const q=cart[n];total+=p.price*q;
-    const row=document.createElement("div");
-    row.className="cart-item";
-    row.innerHTML=`<span>${n} x ${q}<div class="sub">$${p.price*q}</div></span><div class="ops"><button class="qty-btn">-</button><button class="qty-btn">+</button></div>`;
-    const bt=row.querySelectorAll("button");
-    bt[0].onclick=()=>{cart[n]--;if(cart[n]<=0)delete cart[n];render();};
-    bt[1].onclick=()=>{cart[n]++;render();};
-    box.appendChild(row);
-  });
-  products.forEach(p=>{const e=badges[p.name];const q=cart[p.name]||0;e.style.display=q?"block":"none";e.textContent=q;});
-  document.getElementById("total").textContent="總計："+total+" 元";
+var MAX_QTY = 20;
+var qty = {};
+var budget = 0;
+var ALL = [];
+MENU.forEach(function (g) { g.items.forEach(function (i) { ALL.push(i); }); });
+
+function money(n) { return "NT$ " + n.toLocaleString("zh-TW"); }
+function total() {
+  return ALL.reduce(function (s, i) { return s + (qty[i.id] || 0) * i.price; }, 0);
 }
-function clearCart(){cart={};render();}
-render();
+
+/* build menu once */
+(function build() {
+  var html = "";
+  MENU.forEach(function (g) {
+    html += '<h2 class="serif">' + g.group + "</h2>";
+    g.items.forEach(function (i) {
+      html +=
+        '<div class="row" id="row-' + i.id + '">' +
+          "<div><div class=\"name\">" + i.name + "</div>" +
+          '<div class="price">' + money(i.price) + "／" + i.unit + "</div></div>" +
+          '<div class="step">' +
+            '<button type="button" class="minus" data-id="' + i.id + '" data-d="-1" aria-label="減少一' + i.unit + i.name + '">−</button>' +
+            '<span class="qty" id="qty-' + i.id + '" aria-live="polite">0</span>' +
+            '<button type="button" class="plus" data-id="' + i.id + '" data-d="1" aria-label="增加一' + i.unit + i.name + '">+</button>' +
+          "</div>" +
+        "</div>";
+    });
+  });
+  document.getElementById("menu").innerHTML = html;
+})();
+
+function update() {
+  var t = total();
+  ALL.forEach(function (i) {
+    var q = qty[i.id] || 0;
+    document.getElementById("qty-" + i.id).textContent = q;
+    var row = document.getElementById("row-" + i.id);
+    row.classList.toggle("on", q > 0);
+    row.querySelector(".minus").disabled = q === 0;
+    row.querySelector(".plus").disabled = q >= MAX_QTY;
+  });
+
+  document.getElementById("total").textContent = money(t);
+
+  var status = document.getElementById("status");
+  var track = document.getElementById("track");
+  var fill = document.getElementById("fill");
+  if (!budget) {
+    status.textContent = "輸入上方預算，就會顯示還能點多少";
+    status.className = "";
+    track.classList.remove("over");
+    fill.style.width = "0%";
+  } else if (t <= budget) {
+    status.textContent = "預算還剩 " + money(budget - t);
+    status.className = "ok";
+    track.classList.remove("over");
+    fill.style.width = Math.min(t / budget, 1) * 100 + "%";
+  } else {
+    status.textContent = "超出預算 " + money(t - budget);
+    status.className = "over";
+    track.classList.add("over");
+    fill.style.width = "100%";
+  }
+
+  var lines = "";
+  var any = false;
+  ALL.forEach(function (i) {
+    var q = qty[i.id] || 0;
+    if (q > 0) {
+      any = true;
+      lines += "<li><span>" + i.name + " × " + q + "</span><span>" + money(q * i.price) + "</span></li>";
+    }
+  });
+  var box = document.getElementById("lines");
+  if (!any) {
+    box.innerHTML = '<p class="empty">還沒點任何東西。按品項右邊的 + 開始。</p>';
+  } else {
+    lines += '<li class="sum"><span>合計</span><span>' + money(t) + "</span></li>";
+    if (budget) {
+      lines += "<li><span>" + (t <= budget ? "預算還剩" : "超出預算") + "</span><span>" + money(Math.abs(budget - t)) + "</span></li>";
+    }
+    box.innerHTML = "<ul>" + lines + "</ul>";
+  }
+}
+
+document.getElementById("menu").addEventListener("click", function (e) {
+  var b = e.target.closest("button[data-id]");
+  if (!b) return;
+  var id = b.getAttribute("data-id");
+  var d = parseInt(b.getAttribute("data-d"), 10);
+  qty[id] = Math.max(0, Math.min(MAX_QTY, (qty[id] || 0) + d));
+  update();
+});
+
+var input = document.getElementById("budget");
+input.addEventListener("input", function () {
+  var v = parseInt(input.value, 10);
+  budget = isNaN(v) || v < 0 ? 0 : Math.min(v, 99999);
+  update();
+});
+document.getElementById("chips").addEventListener("click", function (e) {
+  var c = e.target.closest("button[data-v]");
+  if (!c) return;
+  budget = parseInt(c.getAttribute("data-v"), 10);
+  input.value = budget;
+  update();
+});
+document.getElementById("clear").addEventListener("click", function () {
+  qty = {};
+  update();
+});
+
+update();
 </script>
 </body>
 </html>
