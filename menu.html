@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>台灣第一家鹽酥雞｜自己點自己算</title>
+<title>台灣第一家鹽酥雞｜餐點計算機・自己點自己算</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@900&display=swap" rel="stylesheet">
@@ -33,7 +33,7 @@ html{background:var(--hero);scroll-padding-top:env(safe-area-inset-top,0px);scro
 body{
   margin:0;background:var(--bg);color:var(--ink);
   font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
-  font-size:17px;line-height:1.5;padding-bottom:190px;
+  font-size:17px;line-height:1.5;padding-bottom:240px;
 }
 .wrap{max-width:520px;margin:0 auto;padding:0 16px}
 .serif{font-family:"Noto Serif TC","Songti TC","PMingLiU",serif;font-weight:900}
@@ -41,6 +41,7 @@ body{
 /* hero */
 .hero{background:var(--hero);color:#fff;padding:30px 0 44px}
 .hero h1{margin:0;font-size:38px;line-height:1.15;letter-spacing:.03em}
+.calc-name{margin-top:14px;font-size:30px;line-height:1.2;letter-spacing:.2em}
 .stamp{
   display:inline-block;margin-top:12px;padding:4px 16px 5px;
   background:var(--gold);color:#211A16;font-size:24px;letter-spacing:.12em;
@@ -98,6 +99,22 @@ h2{margin:28px 0 4px;font-size:23px;letter-spacing:.04em;padding-bottom:6px;bord
 .empty{color:var(--muted);margin:8px 0 0}
 .note{margin:20px 0 0;font-size:14px;color:var(--muted)}
 
+/* cheer + suggestions */
+.cheer{font-size:15px;font-weight:700;line-height:1.35;margin:0 0 8px;min-height:20px}
+.sugg-title{margin:16px 0 8px;font-weight:700}
+.sugg{display:flex;flex-wrap:wrap;gap:8px}
+.sugg button{min-height:44px;padding:0 14px;font:inherit;font-weight:700;cursor:pointer;background:var(--tint);color:var(--ink);border:2px solid var(--gold);border-radius:999px}
+.sugg button:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+
+/* celebration */
+#fx{position:fixed;inset:0;width:100%;height:100%;z-index:20;pointer-events:none;display:none}
+#pop{position:fixed;left:50%;top:32%;z-index:21;transform:translate(-50%,-50%) scale(.8);
+  background:var(--gold);color:#211A16;font-size:28px;font-weight:900;line-height:1.3;text-align:center;width:max-content;max-width:86vw;
+  padding:14px 24px;border-radius:16px;box-shadow:0 6px 24px rgba(0,0,0,.3);
+  opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
+#pop small{display:block;margin-top:4px;font-size:18px;font-weight:700}
+#pop.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+
 /* bottom bar */
 .bar{
   position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--gold);color:var(--bar-ink);
@@ -125,10 +142,14 @@ h2{margin:28px 0 4px;font-size:23px;letter-spacing:.04em;padding-bottom:6px;bord
 </head>
 <body>
 
+<canvas id="fx" aria-hidden="true"></canvas>
+<div id="pop" role="status" aria-live="polite"></div>
+
 <header class="hero">
   <div class="wrap">
     <h1 class="serif">台灣第一家鹽酥雞</h1>
     <div class="stamp serif">30年老店</div>
+    <div class="calc-name serif">餐點計算機</div>
     <p class="lead">自己點，自己算。選好份數，馬上知道這一餐要花多少。</p>
   </div>
 </header>
@@ -153,12 +174,14 @@ h2{margin:28px 0 4px;font-size:23px;letter-spacing:.04em;padding-bottom:6px;bord
   <section class="summary" id="summary" aria-label="點餐明細">
     <h2 class="serif">點餐明細</h2>
     <div id="lines"></div>
+    <div id="suggest"></div>
     <p class="note">點餐時把這個畫面給老闆看就可以。實際價格與供應品項以現場為準。</p>
   </section>
 </main>
 
 <div class="bar">
   <div class="wrap">
+    <p class="cheer" id="cheer" aria-live="polite"></p>
     <div class="bar-top">
       <div><span class="lbl">目前合計</span><strong id="total" class="serif">NT$ 0</strong></div>
       <div class="bar-btns">
@@ -232,8 +255,147 @@ function total() {
   document.getElementById("menu").innerHTML = html;
 })();
 
+var TIERS = [
+  { min: 1,   name: "小點心",       emoji: "🍢" },
+  { min: 100, name: "滿足一餐",     emoji: "😋" },
+  { min: 200, name: "豐盛大餐",     emoji: "🔥" },
+  { min: 300, name: "朋友聚會級",   emoji: "🎉" },
+  { min: 400, name: "超級大餐",     emoji: "🍗" },
+  { min: 500, name: "全家歡聚級",   emoji: "🏆" },
+  { min: 600, name: "鹽酥雞之王",   emoji: "👑" },
+  { min: 700, name: "傳說級大胃王", emoji: "🚀" }
+];
+function count() {
+  return ALL.reduce(function (s, i) { return s + (qty[i.id] || 0); }, 0);
+}
+function suggestions(t) {
+  var limit = budget ? budget - t : 40;
+  return ALL.filter(function (i) {
+    return (qty[i.id] || 0) === 0 && i.price <= limit;
+  }).sort(function (a, b) { return b.price - a.price; }).slice(0, 3);
+}
+function renderExtras(t) {
+  var n = count();
+  var cheer = document.getElementById("cheer");
+  var sug = document.getElementById("suggest");
+  var over = budget && t > budget;
+  var picks = n > 0 && !over ? suggestions(t) : [];
+
+  var msg;
+  if (n === 0) {
+    msg = "🍗 歡迎光臨！從最愛的開始點吧";
+  } else if (over) {
+    msg = "💬 超出預算一點點，減一份也很剛好";
+  } else {
+    var ti = 0;
+    TIERS.forEach(function (x, k) { if (t >= x.min) ti = k; });
+    var cur = TIERS[ti], next = TIERS[ti + 1];
+    msg = cur.emoji + " 已點 " + n + " 份・" + cur.name + "！";
+    if (budget && picks.length) {
+      msg += "還有 " + money(budget - t) + "，加一份「" + picks[0].name + "」剛剛好";
+    } else if (budget) {
+      msg += t === budget ? "剛好用完預算，完美 🎯" : "預算快用完了，剛剛好 👍";
+    } else if (next) {
+      msg += "再 " + money(next.min - t) + " 升級「" + next.name + "」";
+    } else {
+      msg += "太豪邁了，今天吃得超滿足 😄";
+    }
+  }
+  cheer.textContent = msg;
+
+  if (picks.length) {
+    var h = '<p class="sugg-title">💡 想再多吃一點？點一下就加一份</p><div class="sugg">';
+    picks.forEach(function (i) {
+      h += '<button type="button" data-add="' + i.id + '">+ ' + i.name + " " + money(i.price) + "</button>";
+    });
+    sug.innerHTML = h + "</div>";
+  } else {
+    sug.innerHTML = "";
+  }
+}
+
+/* 里程碑：金額 → 標題與激勵文字（想改文字或金額，改這裡） */
+var MILESTONES = [
+  { at: 200, title: "🔥 破 200 了！", text: "點得很有誠意，今天吃得開心！" },
+  { at: 300, title: "🎉 破 300 了！", text: "朋友聚會的規模，太豪邁啦！" },
+  { at: 400, title: "🍗 破 400 了！", text: "這桌太強了，老闆都想給你拍手！" },
+  { at: 500, title: "🏆 破 500 了！", text: "全家歡聚級！今天就是要大吃特吃！" },
+  { at: 600, title: "👑 破 600 了！", text: "鹽酥雞之王就是你！" },
+  { at: 700, title: "🚀 破 700 了！", text: "傳說級大胃王，載入鹽酥雞史冊！" }
+];
+var prevT = 0;
+var fxRun = 0;
+var popTimer = null;
+
+function showPop(m) {
+  var pop = document.getElementById("pop");
+  pop.innerHTML = m.title + "<small>" + m.text + "</small>";
+  pop.classList.add("show");
+  clearTimeout(popTimer);
+  popTimer = setTimeout(function () { pop.classList.remove("show"); }, 3400);
+}
+
+function celebrate(idx) {
+  var m = MILESTONES[idx];
+  showPop(m);
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  var c = document.getElementById("fx");
+  var ctx = c.getContext("2d");
+  if (!ctx) return;
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  var W = window.innerWidth, H = window.innerHeight;
+  c.width = W * dpr; c.height = H * dpr;
+  c.style.display = "block";
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  var colors = ["#F4B223", "#FF5A3C", "#FFFFFF", "#FFD76A", "#FF8F78", "#7DE0A1"];
+  var total = 5 + idx * 2;          /* 越高的里程，煙火越多 */
+  var per = 48 + idx * 6;
+  var parts = [], bursts = 0, start = null;
+  var id = ++fxRun;
+
+  function burst() {
+    var x = W * (0.12 + Math.random() * 0.76);
+    var y = H * (0.10 + Math.random() * 0.45);
+    var col = colors[Math.floor(Math.random() * colors.length)];
+    for (var k = 0; k < per; k++) {
+      var a = Math.PI * 2 * k / per, sp = 2 + Math.random() * 3.8;
+      parts.push({ x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, col: col });
+    }
+  }
+  function frame(ts) {
+    if (id !== fxRun) return;
+    if (start === null) start = ts;
+    var el = ts - start;
+    if (bursts < total && el > bursts * 300) { burst(); bursts++; }
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.fillStyle = "rgba(0,0,0,0.22)";
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalCompositeOperation = "source-over";
+    parts = parts.filter(function (p) { return p.life > 0; });
+    parts.forEach(function (p) {
+      p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.vx *= 0.985; p.life -= 0.014;
+      ctx.globalAlpha = Math.max(p.life, 0);
+      ctx.fillStyle = p.col;
+      ctx.beginPath(); ctx.arc(p.x, p.y, 2.4, 0, Math.PI * 2); ctx.fill();
+    });
+    if ((bursts < total || parts.length) && el < 9000) {
+      requestAnimationFrame(frame);
+    } else {
+      ctx.clearRect(0, 0, W, H);
+      c.style.display = "none";
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
 function update() {
   var t = total();
+  renderExtras(t);
+  var hit = -1;
+  MILESTONES.forEach(function (m, k) { if (prevT < m.at && t >= m.at) hit = k; });
+  if (hit >= 0) celebrate(hit);
+  prevT = t;
   ALL.forEach(function (i) {
     var q = qty[i.id] || 0;
     document.getElementById("qty-" + i.id).textContent = q;
@@ -292,6 +454,14 @@ document.getElementById("menu").addEventListener("click", function (e) {
   var id = b.getAttribute("data-id");
   var d = parseInt(b.getAttribute("data-d"), 10);
   qty[id] = Math.max(0, Math.min(MAX_QTY, (qty[id] || 0) + d));
+  update();
+});
+
+document.getElementById("suggest").addEventListener("click", function (e) {
+  var b = e.target.closest("button[data-add]");
+  if (!b) return;
+  var id = b.getAttribute("data-add");
+  qty[id] = Math.min(MAX_QTY, (qty[id] || 0) + 1);
   update();
 });
 
