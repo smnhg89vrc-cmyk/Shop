@@ -1,0 +1,690 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>台灣第一家鹽酥雞｜餐點計算機・自己點自己算</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --hero:#B3241A;
+  --bg:#FFFBF2; --card:#FFFFFF; --ink:#211A16; --muted:#6B5E55; --line:#E8DDCB;
+  --accent:#B3241A; --btn:#B3241A; --tint:rgba(244,178,35,.20);
+  --gold:#F4B223; --bar-ink:#211A16;
+  --ok:#14532D; --over:#8E1A12;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#17120F; --card:#231C18; --ink:#FBF1E0; --muted:#BDAE9E; --line:#3A2F28;
+    --accent:#FF8F78; --btn:#D9352A; --tint:rgba(244,178,35,.16);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17120F; --card:#231C18; --ink:#FBF1E0; --muted:#BDAE9E; --line:#3A2F28;
+  --accent:#FF8F78; --btn:#D9352A; --tint:rgba(244,178,35,.16);
+}
+*,*::before,*::after{box-sizing:inherit}
+html{background:var(--hero);scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  font-size:17px;line-height:1.5;padding-bottom:240px;
+}
+.wrap{max-width:520px;margin:0 auto;padding:0 16px}
+.serif{font-family:"Noto Serif TC","Songti TC","PMingLiU",serif;font-weight:900}
+
+/* hero */
+.hero{background:var(--hero);color:#fff;padding:30px 0 44px}
+.hero h1{margin:0;font-size:38px;line-height:1.15;letter-spacing:.03em}
+.calc-name{margin-top:14px;font-size:30px;line-height:1.2;letter-spacing:.2em}
+.stamp{
+  display:inline-block;margin-top:12px;padding:4px 16px 5px;
+  background:var(--gold);color:#211A16;font-size:24px;letter-spacing:.12em;
+  border-radius:4px;transform:rotate(-2deg);
+}
+.lead{margin:16px 0 0;font-size:17px;max-width:22em}
+
+/* budget card */
+.budget{
+  margin:-26px 0 8px;background:var(--card);border:1px solid var(--line);
+  border-radius:14px;padding:16px;
+}
+.budget label{display:block;font-weight:700;margin-bottom:8px}
+.field{display:flex;align-items:center;gap:8px}
+.field span{font-weight:700;color:var(--muted)}
+.field input{
+  flex:1;min-width:0;height:52px;font:inherit;font-size:22px;font-weight:700;
+  padding:0 14px;border:2px solid var(--line);border-radius:10px;
+  background:var(--bg);color:var(--ink);
+}
+.field input:focus-visible{outline:3px solid var(--gold);outline-offset:1px;border-color:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chip{
+  min-height:44px;padding:0 16px;font:inherit;font-weight:700;cursor:pointer;
+  background:transparent;color:var(--ink);border:2px solid var(--line);border-radius:999px;
+}
+.chip:hover{border-color:var(--accent)}
+.chip:focus-visible,.step button:focus-visible,.bar button:focus-visible,.bar .btn:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+
+/* menu */
+h2{margin:28px 0 4px;font-size:23px;letter-spacing:.04em;padding-bottom:6px;border-bottom:3px double var(--line)}
+.row{
+  display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;
+  padding:10px 8px;border-bottom:1px solid var(--line);border-radius:8px;
+}
+.row.on{background:var(--tint)}
+.name{font-size:18px;font-weight:700}
+.price{font-size:15px;color:var(--muted)}
+.step{display:flex;align-items:center;gap:6px}
+.step button{
+  width:44px;height:44px;border-radius:50%;font:inherit;font-size:26px;line-height:1;font-weight:700;
+  cursor:pointer;display:grid;place-items:center;padding:0;
+}
+.step .minus{background:transparent;color:var(--accent);border:2px solid var(--accent)}
+.step .plus{background:var(--btn);color:#fff;border:2px solid var(--btn)}
+.step button:disabled{opacity:.3;cursor:default}
+.qty{min-width:30px;text-align:center;font-size:21px;font-weight:700;font-variant-numeric:tabular-nums}
+
+/* summary */
+.summary{margin-top:32px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.summary h2{margin-top:0}
+.summary ul{list-style:none;margin:0;padding:0}
+.summary li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px dashed var(--line)}
+.summary li.sum{font-weight:700;font-size:19px;border-bottom:0}
+.empty{color:var(--muted);margin:8px 0 0}
+.note{margin:20px 0 0;font-size:14px;color:var(--muted)}
+
+/* cheer + suggestions */
+.cheer{font-size:15px;font-weight:700;line-height:1.35;margin:0 0 8px;min-height:20px}
+.sugg-title{margin:16px 0 8px;font-weight:700}
+.sugg{display:flex;flex-wrap:wrap;gap:8px}
+.sugg button{min-height:44px;padding:0 14px;font:inherit;font-weight:700;cursor:pointer;background:var(--tint);color:var(--ink);border:2px solid var(--gold);border-radius:999px}
+.sugg button:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+
+/* celebration */
+#fx{position:fixed;inset:0;width:100%;height:100%;z-index:20;pointer-events:none;display:none}
+#pop{position:fixed;left:50%;top:32%;z-index:21;transform:translate(-50%,-50%) scale(.8);
+  background:var(--gold);color:#211A16;font-size:28px;font-weight:900;line-height:1.3;text-align:center;width:max-content;max-width:86vw;
+  padding:14px 24px;border-radius:16px;box-shadow:0 6px 24px rgba(0,0,0,.3);
+  opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
+#pop small{display:block;margin-top:4px;font-size:18px;font-weight:700}
+#pop.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+
+/* order ticket */
+.finish-big{display:block;width:100%;min-height:52px;margin-top:16px;font:inherit;font-size:20px;font-weight:900;cursor:pointer;
+  background:var(--btn);color:#fff;border:0;border-radius:12px}
+.finish-big:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.order{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.6);display:none;justify-content:center;overflow-y:auto;
+  padding:max(16px,env(safe-area-inset-top,0px)) 16px max(16px,env(safe-area-inset-bottom,0px))}
+.order.open{display:flex}
+.ticket{background:var(--card);color:var(--ink);width:100%;max-width:420px;margin:auto 0;border-radius:16px;padding:20px;
+  border:3px dashed var(--line)}
+.ticket h2{margin:0;text-align:center;font-size:22px;color:var(--accent)}
+.ticket .sub{text-align:center;color:var(--muted);font-size:15px;margin:2px 0 0}
+.ticket .num-lbl{text-align:center;margin:14px 0 0;font-weight:700}
+.ticket .num{text-align:center;font-size:72px;line-height:1.05;color:var(--accent);margin:0;letter-spacing:.04em}
+.ticket .meta{text-align:center;color:var(--muted);font-size:15px;margin:4px 0 14px}
+.ticket ul{list-style:none;margin:0;padding:10px 0;border-top:2px solid var(--line);border-bottom:2px solid var(--line)}
+.ticket li{display:flex;justify-content:space-between;gap:12px;padding:6px 0;font-size:19px}
+.ticket .grand{display:flex;justify-content:space-between;align-items:baseline;margin-top:12px;font-size:20px;font-weight:900}
+.ticket .grand strong{font-size:32px;color:var(--accent)}
+.ticket .how{margin:14px 0 0;padding:12px;background:var(--tint);border-radius:12px;font-weight:700;text-align:center}
+.ticket .fine{margin:10px 0 0;color:var(--muted);font-size:13px;text-align:center}
+.ticket .acts{display:grid;gap:10px;margin-top:16px}
+.ticket .acts button{min-height:50px;font:inherit;font-size:18px;font-weight:900;cursor:pointer;border-radius:12px}
+.ticket #orderBack{background:var(--btn);color:#fff;border:0}
+.ticket #orderNew{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.ticket .acts button:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+
+/* send-to-shop form */
+.send{margin-top:14px;padding:14px;border:2px solid var(--line);border-radius:12px}
+.send .send-h{margin:0 0 8px;font-weight:900}
+.send label{display:block;margin:8px 0 2px;font-size:15px;font-weight:700}
+.send input{display:block;width:100%;min-height:46px;padding:8px 10px;font:inherit;font-size:16px;color:var(--ink);
+  background:var(--bg);border:2px solid var(--line);border-radius:10px}
+.send input:focus-visible{outline:3px solid var(--ink);outline-offset:1px}
+.send .send-note{margin:8px 0 0;color:var(--muted);font-size:13px}
+.send #sendBtn{display:block;width:100%;min-height:52px;margin-top:12px;font:inherit;font-size:19px;font-weight:900;cursor:pointer;
+  background:var(--gold);color:var(--bar-ink);border:2px solid var(--bar-ink);border-radius:12px}
+.send #sendBtn:disabled{opacity:.55;cursor:default}
+.send #sendBtn:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.send .send-msg{margin:10px 0 0;font-weight:700;text-align:center;min-height:1.4em}
+.send .send-msg.ok{color:var(--ok)}
+.send .send-msg.err{color:var(--over)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .send .send-msg.ok{color:#7DE0A1}:root:not([data-theme="light"]) .send .send-msg.err{color:#FF8F78}}
+
+/* bottom bar */
+.bar{
+  position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--gold);color:var(--bar-ink);
+  padding:12px 0 calc(12px + env(safe-area-inset-bottom,0px));
+  box-shadow:0 -3px 0 rgba(33,26,22,.18);
+}
+.bar-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.bar .lbl{font-size:14px;font-weight:700;display:block;line-height:1.2}
+.bar #total{font-size:30px;line-height:1.1;display:block}
+.bar-btns{display:flex;gap:8px}
+.bar button,.bar .btn{
+  min-height:44px;padding:0 16px;font:inherit;font-weight:700;border-radius:10px;cursor:pointer;
+  display:inline-flex;align-items:center;text-decoration:none;
+}
+.bar button{background:transparent;color:var(--bar-ink);border:2px solid var(--bar-ink)}
+.bar .btn{background:var(--bar-ink);color:var(--gold);border:2px solid var(--bar-ink)}
+.track{height:8px;border-radius:99px;background:rgba(33,26,22,.2);margin:10px 0 6px;overflow:hidden}
+.track i{display:block;height:100%;width:0;background:var(--bar-ink);border-radius:99px}
+.track.over i{background:var(--over)}
+@media (prefers-reduced-motion:no-preference){.track i{transition:width .2s ease}}
+#status{margin:0;font-size:16px;font-weight:700}
+#status.ok{color:var(--ok)}
+#status.over{color:var(--over)}
+</style>
+</head>
+<body>
+
+<canvas id="fx" aria-hidden="true"></canvas>
+<div id="pop" role="status" aria-live="polite"></div>
+
+<div class="order" id="order" role="dialog" aria-modal="true" aria-labelledby="orderTitle">
+  <div class="ticket">
+    <h2 class="serif" id="orderTitle">台灣第一家鹽酥雞 點餐單</h2>
+    <p class="sub" id="orderTime"></p>
+    <p class="num-lbl">我的號碼</p>
+    <p class="num serif" id="orderNum">A00</p>
+    <p class="meta" id="orderCount"></p>
+    <ul id="orderLines"></ul>
+    <div class="grand"><span>總計</span><strong class="serif" id="orderTotal">NT$ 0</strong></div>
+    <div class="send" id="sendBox">
+      <p class="send-h">📲 不在店裡？先把訂單傳給店家</p>
+      <label for="custName">稱呼（必填）</label>
+      <input id="custName" type="text" maxlength="20" autocomplete="off" placeholder="例如：王小姐">
+      <label for="custTime">預計取餐時間（必填）</label>
+      <input id="custTime" type="time">
+      <label for="custNote">備註（選填）</label>
+      <input id="custNote" type="text" maxlength="80" autocomplete="off" placeholder="例如：不要辣、辣度小辣">
+      <p class="send-note">請不要填電話或住址。只會傳送你填的稱呼、時間、備註和訂單內容。</p>
+      <button type="button" id="sendBtn">送出訂單給店家</button>
+      <p class="send-msg" id="sendMsg" role="status" aria-live="polite"></p>
+    </div>
+    <p class="how" id="orderHow">請把這個畫面拿給店員看，並在櫃檯付款取餐</p>
+    <p class="fine">沒有按「送出訂單給店家」的話，這張單只存在你的手機，店家不會收到。若號碼重複，請以時間和內容為準。</p>
+    <div class="acts">
+      <button type="button" id="orderBack">返回修改</button>
+      <button type="button" id="orderNew">完成，開始新的一單</button>
+    </div>
+  </div>
+</div>
+
+<header class="hero">
+  <div class="wrap">
+    <h1 class="serif">台灣第一家鹽酥雞</h1>
+    <div class="stamp serif">30年老店</div>
+    <div class="calc-name serif">餐點計算機</div>
+    <p class="lead">自己點，自己算。選好份數，馬上知道這一餐要花多少。</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="budget" aria-label="預算">
+    <label for="budget">今天預算多少？</label>
+    <div class="field">
+      <span>NT$</span>
+      <input id="budget" type="number" inputmode="numeric" min="0" max="99999" placeholder="例如 300">
+    </div>
+    <div class="chips" id="chips">
+      <button class="chip" type="button" data-v="100">100</button>
+      <button class="chip" type="button" data-v="200">200</button>
+      <button class="chip" type="button" data-v="300">300</button>
+      <button class="chip" type="button" data-v="500">500</button>
+    </div>
+  </section>
+
+  <div id="menu"></div>
+
+  <section class="summary" id="summary" aria-label="點餐明細">
+    <h2 class="serif">點餐明細</h2>
+    <div id="lines"></div>
+    <div id="suggest"></div>
+    <button type="button" class="finish-big" id="finish2">完成點餐，產生點餐單</button>
+    <p class="note">點餐時把這個畫面給老闆看就可以。實際價格與供應品項以現場為準。</p>
+  </section>
+</main>
+
+<div class="bar">
+  <div class="wrap">
+    <p class="cheer" id="cheer" aria-live="polite"></p>
+    <div class="bar-top">
+      <div><span class="lbl">目前合計</span><strong id="total" class="serif">NT$ 0</strong></div>
+      <div class="bar-btns">
+        <button type="button" id="clear">清除</button>
+        <button type="button" class="btn" id="finish">完成點餐</button>
+      </div>
+    </div>
+    <div class="track" id="track" aria-hidden="true"><i id="fill"></i></div>
+    <p id="status" aria-live="polite"></p>
+  </div>
+</div>
+
+<script>
+/* 品項與價格（單位：份） */
+var MENU = [
+  { group: "雞肉類", items: [
+    { id: "i1", name: "鹽酥雞", price: 60, unit: "份" },
+    { id: "i2", name: "雞皮", price: 40, unit: "份" },
+    { id: "i3", name: "雞屁股", price: 30, unit: "份" },
+    { id: "i4", name: "雞心", price: 30, unit: "份" },
+    { id: "i5", name: "雞胗", price: 30, unit: "份" },
+    { id: "i6", name: "雞脖子", price: 20, unit: "份" }
+  ]},
+  { group: "海鮮與加工品", items: [
+    { id: "i7", name: "魷魚", price: 60, unit: "份" },
+    { id: "i8", name: "花枝丸", price: 30, unit: "份" },
+    { id: "i9", name: "甜不辣", price: 25, unit: "份" },
+    { id: "i10", name: "豬血糕", price: 20, unit: "份" },
+    { id: "i11", name: "芋頭籤", price: 20, unit: "份" },
+    { id: "i12", name: "芋頭巧", price: 20, unit: "份" },
+    { id: "i13", name: "魚板", price: 20, unit: "份" }
+  ]},
+  { group: "蔬菜與豆製品", items: [
+    { id: "i14", name: "地瓜條", price: 40, unit: "份" },
+    { id: "i15", name: "四季豆", price: 40, unit: "份" },
+    { id: "i16", name: "玉米", price: 45, unit: "份" },
+    { id: "i17", name: "豆乾", price: 20, unit: "份" },
+    { id: "i18", name: "百葉豆腐", price: 20, unit: "份" },
+    { id: "i19", name: "豆包", price: 20, unit: "份" }
+  ]}
+];
+var MAX_QTY = 20;
+/* 線上送單：訂單會推播到店家手機的 ntfy App。topic 相當於密碼，被亂用時請換一個新的 */
+var ORDER_TOPIC = "salt-chicken-jn7ovfnl4u4als62";
+var ORDER_SERVER = "https://ntfy.sh/";
+var qty = {};
+var budget = 0;
+var ALL = [];
+MENU.forEach(function (g) { g.items.forEach(function (i) { ALL.push(i); }); });
+
+function money(n) { return "NT$ " + n.toLocaleString("zh-TW"); }
+function total() {
+  return ALL.reduce(function (s, i) { return s + (qty[i.id] || 0) * i.price; }, 0);
+}
+
+/* build menu once */
+(function build() {
+  var html = "";
+  MENU.forEach(function (g) {
+    html += '<h2 class="serif">' + g.group + "</h2>";
+    g.items.forEach(function (i) {
+      html +=
+        '<div class="row" id="row-' + i.id + '">' +
+          "<div><div class=\"name\">" + i.name + "</div>" +
+          '<div class="price">' + money(i.price) + "／" + i.unit + "</div></div>" +
+          '<div class="step">' +
+            '<button type="button" class="minus" data-id="' + i.id + '" data-d="-1" aria-label="減少一' + i.unit + i.name + '">−</button>' +
+            '<span class="qty" id="qty-' + i.id + '" aria-live="polite">0</span>' +
+            '<button type="button" class="plus" data-id="' + i.id + '" data-d="1" aria-label="增加一' + i.unit + i.name + '">+</button>' +
+          "</div>" +
+        "</div>";
+    });
+  });
+  document.getElementById("menu").innerHTML = html;
+})();
+
+var TIERS = [
+  { min: 1,   name: "小點心",       emoji: "🍢" },
+  { min: 100, name: "滿足一餐",     emoji: "😋" },
+  { min: 200, name: "豐盛大餐",     emoji: "🔥" },
+  { min: 300, name: "朋友聚會級",   emoji: "🎉" },
+  { min: 400, name: "超級大餐",     emoji: "🍗" },
+  { min: 500, name: "全家歡聚級",   emoji: "🏆" },
+  { min: 600, name: "鹽酥雞之王",   emoji: "👑" },
+  { min: 700, name: "傳說級大胃王", emoji: "🚀" }
+];
+function count() {
+  return ALL.reduce(function (s, i) { return s + (qty[i.id] || 0); }, 0);
+}
+function suggestions(t) {
+  var limit = budget ? budget - t : 40;
+  return ALL.filter(function (i) {
+    return (qty[i.id] || 0) === 0 && i.price <= limit;
+  }).sort(function (a, b) { return b.price - a.price; }).slice(0, 3);
+}
+function renderExtras(t) {
+  var n = count();
+  var cheer = document.getElementById("cheer");
+  var sug = document.getElementById("suggest");
+  var over = budget && t > budget;
+  var picks = n > 0 && !over ? suggestions(t) : [];
+
+  var msg;
+  if (n === 0) {
+    msg = "🍗 歡迎光臨！從最愛的開始點吧";
+  } else if (over) {
+    msg = "💬 超出預算一點點，減一份也很剛好";
+  } else {
+    var ti = 0;
+    TIERS.forEach(function (x, k) { if (t >= x.min) ti = k; });
+    var cur = TIERS[ti], next = TIERS[ti + 1];
+    msg = cur.emoji + " 已點 " + n + " 份・" + cur.name + "！";
+    if (budget && picks.length) {
+      msg += "還有 " + money(budget - t) + "，加一份「" + picks[0].name + "」剛剛好";
+    } else if (budget) {
+      msg += t === budget ? "剛好用完預算，完美 🎯" : "預算快用完了，剛剛好 👍";
+    } else if (next) {
+      msg += "再 " + money(next.min - t) + " 升級「" + next.name + "」";
+    } else {
+      msg += "太豪邁了，今天吃得超滿足 😄";
+    }
+  }
+  cheer.textContent = msg;
+
+  if (picks.length) {
+    var h = '<p class="sugg-title">💡 想再多吃一點？點一下就加一份</p><div class="sugg">';
+    picks.forEach(function (i) {
+      h += '<button type="button" data-add="' + i.id + '">+ ' + i.name + " " + money(i.price) + "</button>";
+    });
+    sug.innerHTML = h + "</div>";
+  } else {
+    sug.innerHTML = "";
+  }
+}
+
+/* 里程碑：金額 → 標題與激勵文字（想改文字或金額，改這裡） */
+var MILESTONES = [
+  { at: 200, title: "🔥 破 200 了！", text: "點得很有誠意，今天吃得開心！" },
+  { at: 300, title: "🎉 破 300 了！", text: "朋友聚會的規模，太豪邁啦！" },
+  { at: 400, title: "🍗 破 400 了！", text: "這桌太強了，老闆都想給你拍手！" },
+  { at: 500, title: "🏆 破 500 了！", text: "全家歡聚級！今天就是要大吃特吃！" },
+  { at: 600, title: "👑 破 600 了！", text: "鹽酥雞之王就是你！" },
+  { at: 700, title: "🚀 破 700 了！", text: "傳說級大胃王，載入鹽酥雞史冊！" }
+];
+var prevT = 0;
+var fxRun = 0;
+var popTimer = null;
+
+function showPop(m) {
+  var pop = document.getElementById("pop");
+  pop.innerHTML = m.title + "<small>" + m.text + "</small>";
+  pop.classList.add("show");
+  clearTimeout(popTimer);
+  popTimer = setTimeout(function () { pop.classList.remove("show"); }, 3400);
+}
+
+function celebrate(idx) {
+  var m = MILESTONES[idx];
+  showPop(m);
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  var c = document.getElementById("fx");
+  var ctx = c.getContext("2d");
+  if (!ctx) return;
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  var W = window.innerWidth, H = window.innerHeight;
+  c.width = W * dpr; c.height = H * dpr;
+  c.style.display = "block";
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  var colors = ["#F4B223", "#FF5A3C", "#FFFFFF", "#FFD76A", "#FF8F78", "#7DE0A1"];
+  var total = 5 + idx * 2;          /* 越高的里程，煙火越多 */
+  var per = 48 + idx * 6;
+  var parts = [], bursts = 0, start = null;
+  var id = ++fxRun;
+
+  function burst() {
+    var x = W * (0.12 + Math.random() * 0.76);
+    var y = H * (0.10 + Math.random() * 0.45);
+    var col = colors[Math.floor(Math.random() * colors.length)];
+    for (var k = 0; k < per; k++) {
+      var a = Math.PI * 2 * k / per, sp = 2 + Math.random() * 3.8;
+      parts.push({ x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, col: col });
+    }
+  }
+  function frame(ts) {
+    if (id !== fxRun) return;
+    if (start === null) start = ts;
+    var el = ts - start;
+    if (bursts < total && el > bursts * 300) { burst(); bursts++; }
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.fillStyle = "rgba(0,0,0,0.22)";
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalCompositeOperation = "source-over";
+    parts = parts.filter(function (p) { return p.life > 0; });
+    parts.forEach(function (p) {
+      p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.vx *= 0.985; p.life -= 0.014;
+      ctx.globalAlpha = Math.max(p.life, 0);
+      ctx.fillStyle = p.col;
+      ctx.beginPath(); ctx.arc(p.x, p.y, 2.4, 0, Math.PI * 2); ctx.fill();
+    });
+    if ((bursts < total || parts.length) && el < 9000) {
+      requestAnimationFrame(frame);
+    } else {
+      ctx.clearRect(0, 0, W, H);
+      c.style.display = "none";
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+function update() {
+  var t = total();
+  renderExtras(t);
+  var hit = -1;
+  MILESTONES.forEach(function (m, k) { if (prevT < m.at && t >= m.at) hit = k; });
+  if (hit >= 0) celebrate(hit);
+  prevT = t;
+  ALL.forEach(function (i) {
+    var q = qty[i.id] || 0;
+    document.getElementById("qty-" + i.id).textContent = q;
+    var row = document.getElementById("row-" + i.id);
+    row.classList.toggle("on", q > 0);
+    row.querySelector(".minus").disabled = q === 0;
+    row.querySelector(".plus").disabled = q >= MAX_QTY;
+  });
+
+  document.getElementById("total").textContent = money(t);
+
+  var status = document.getElementById("status");
+  var track = document.getElementById("track");
+  var fill = document.getElementById("fill");
+  if (!budget) {
+    status.textContent = "輸入上方預算，就會顯示還能點多少";
+    status.className = "";
+    track.classList.remove("over");
+    fill.style.width = "0%";
+  } else if (t <= budget) {
+    status.textContent = "預算還剩 " + money(budget - t);
+    status.className = "ok";
+    track.classList.remove("over");
+    fill.style.width = Math.min(t / budget, 1) * 100 + "%";
+  } else {
+    status.textContent = "超出預算 " + money(t - budget);
+    status.className = "over";
+    track.classList.add("over");
+    fill.style.width = "100%";
+  }
+
+  var lines = "";
+  var any = false;
+  ALL.forEach(function (i) {
+    var q = qty[i.id] || 0;
+    if (q > 0) {
+      any = true;
+      lines += "<li><span>" + i.name + " × " + q + "</span><span>" + money(q * i.price) + "</span></li>";
+    }
+  });
+  var box = document.getElementById("lines");
+  if (!any) {
+    box.innerHTML = '<p class="empty">還沒點任何東西。按品項右邊的 + 開始。</p>';
+  } else {
+    lines += '<li class="sum"><span>合計</span><span>' + money(t) + "</span></li>";
+    if (budget) {
+      lines += "<li><span>" + (t <= budget ? "預算還剩" : "超出預算") + "</span><span>" + money(Math.abs(budget - t)) + "</span></li>";
+    }
+    box.innerHTML = "<ul>" + lines + "</ul>";
+  }
+}
+
+document.getElementById("menu").addEventListener("click", function (e) {
+  var b = e.target.closest("button[data-id]");
+  if (!b) return;
+  var id = b.getAttribute("data-id");
+  var d = parseInt(b.getAttribute("data-d"), 10);
+  qty[id] = Math.max(0, Math.min(MAX_QTY, (qty[id] || 0) + d));
+  update();
+});
+
+document.getElementById("suggest").addEventListener("click", function (e) {
+  var b = e.target.closest("button[data-add]");
+  if (!b) return;
+  var id = b.getAttribute("data-add");
+  qty[id] = Math.min(MAX_QTY, (qty[id] || 0) + 1);
+  update();
+});
+
+var input = document.getElementById("budget");
+input.addEventListener("input", function () {
+  var v = parseInt(input.value, 10);
+  budget = isNaN(v) || v < 0 ? 0 : Math.min(v, 99999);
+  update();
+});
+document.getElementById("chips").addEventListener("click", function (e) {
+  var c = e.target.closest("button[data-v]");
+  if (!c) return;
+  budget = parseInt(c.getAttribute("data-v"), 10);
+  input.value = budget;
+  update();
+});
+/* ===== 點餐單（給店員看） ===== */
+var orderEl = document.getElementById("order");
+var lastFocus = null, wake = null;
+
+function orderCode() {
+  var L = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+  var r = new Uint32Array(2);
+  if (window.crypto && window.crypto.getRandomValues) {
+    window.crypto.getRandomValues(r);
+  } else {
+    r[0] = Math.floor(Math.random() * 4294967295);
+    r[1] = Math.floor(Math.random() * 4294967295);
+  }
+  return L.charAt(r[0] % L.length) + ("0" + (r[1] % 100)).slice(-2);
+}
+
+var orderSent = false, sending = false;
+function setSendMsg(text, kind) {
+  var m = document.getElementById("sendMsg");
+  m.textContent = text;
+  m.className = "send-msg" + (kind ? " " + kind : "");
+}
+function buildOrderText() {
+  var code = document.getElementById("orderNum").textContent;
+  var name = document.getElementById("custName").value.trim();
+  var time = document.getElementById("custTime").value;
+  var note = document.getElementById("custNote").value.trim();
+  var lines = [];
+  ALL.forEach(function (i) {
+    var q = qty[i.id] || 0;
+    if (q > 0) lines.push(i.name + " × " + q + " = " + money(q * i.price));
+  });
+  var msg = "號碼 " + code + "｜取餐 " + time + "\n稱呼：" + name + "\n" + lines.join("\n") +
+            "\n總計 " + money(total()) + "（共 " + count() + " 份）";
+  if (note) msg += "\n備註：" + note;
+  return { title: "🍗 新訂單 " + code + "・" + name + "・" + time + "取", message: msg };
+}
+function sendOrder() {
+  if (sending || orderSent || !ORDER_TOPIC) return;
+  var name = document.getElementById("custName").value.trim();
+  var time = document.getElementById("custTime").value;
+  if (!count()) { setSendMsg("還沒點餐喔", "err"); return; }
+  if (!name) { setSendMsg("請填寫稱呼", "err"); document.getElementById("custName").focus(); return; }
+  if (!time) { setSendMsg("請選擇預計取餐時間", "err"); document.getElementById("custTime").focus(); return; }
+  var o = buildOrderText();
+  var btn = document.getElementById("sendBtn");
+  sending = true; btn.disabled = true;
+  setSendMsg("送出中…", "");
+  var ctl = window.AbortController ? new AbortController() : null;
+  var timer = setTimeout(function () { if (ctl) ctl.abort(); }, 12000);
+  fetch(ORDER_SERVER, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=UTF-8" },
+    body: JSON.stringify({ topic: ORDER_TOPIC, title: o.title, message: o.message, priority: 4, tags: ["poultry_leg"] }),
+    signal: ctl ? ctl.signal : undefined
+  }).then(function (r) {
+    if (!r.ok) throw new Error("http " + r.status);
+    orderSent = true;
+    setSendMsg("✅ 已送出！店家收到通知了", "ok");
+    document.getElementById("orderHow").textContent = "取餐時請出示這個畫面或告訴店員你的號碼，並在現場付款";
+  }).catch(function () {
+    btn.disabled = false;
+    setSendMsg("送出失敗，請確認網路後再試一次", "err");
+  }).then(function () {
+    clearTimeout(timer);
+    sending = false;
+  });
+}
+document.getElementById("sendBtn").addEventListener("click", sendOrder);
+
+function openOrder() {
+  var n = count();
+  if (!n) {
+    showPop({ title: "還沒點餐喔", text: "先選幾樣喜歡的吧" });
+    return;
+  }
+  var now = new Date();
+  var hh = ("0" + now.getHours()).slice(-2), mm = ("0" + now.getMinutes()).slice(-2);
+  document.getElementById("orderTime").textContent = (now.getMonth() + 1) + "/" + now.getDate() + "　" + hh + ":" + mm;
+  document.getElementById("orderNum").textContent = orderCode();
+  document.getElementById("orderCount").textContent = "共 " + n + " 份";
+  orderSent = false;
+  document.getElementById("sendBox").style.display = ORDER_TOPIC ? "block" : "none";
+  document.getElementById("sendBtn").disabled = false;
+  setSendMsg("", "");
+  document.getElementById("orderHow").textContent = "請把這個畫面拿給店員看，並在櫃檯付款取餐";
+  var li = "";
+  ALL.forEach(function (i) {
+    var q = qty[i.id] || 0;
+    if (q > 0) li += "<li><span>" + i.name + " × " + q + "</span><span>" + money(q * i.price) + "</span></li>";
+  });
+  document.getElementById("orderLines").innerHTML = li;
+  document.getElementById("orderTotal").textContent = money(total());
+  lastFocus = document.activeElement;
+  orderEl.classList.add("open");
+  document.body.style.overflow = "hidden";
+  orderEl.scrollTop = 0;
+  document.getElementById("orderBack").focus();
+  try {
+    if (navigator.wakeLock) navigator.wakeLock.request("screen").then(function (l) { wake = l; }).catch(function () {});
+  } catch (e) {}
+}
+function closeOrder() {
+  orderEl.classList.remove("open");
+  document.body.style.overflow = "";
+  try { if (wake) { wake.release(); wake = null; } } catch (e) {}
+  if (lastFocus && lastFocus.focus) lastFocus.focus();
+}
+document.getElementById("finish").addEventListener("click", openOrder);
+document.getElementById("finish2").addEventListener("click", openOrder);
+document.getElementById("orderBack").addEventListener("click", closeOrder);
+document.getElementById("orderNew").addEventListener("click", function () {
+  if (!window.confirm("確定要清空，開始新的一單嗎？")) return;
+  qty = {};
+  document.getElementById("custTime").value = "";
+  document.getElementById("custNote").value = "";
+  update();
+  closeOrder();
+  window.scrollTo(0, 0);
+});
+document.addEventListener("keydown", function (e) {
+  if (e.key === "Escape" && orderEl.classList.contains("open")) closeOrder();
+});
+
+document.getElementById("clear").addEventListener("click", function () {
+  qty = {};
+  update();
+});
+
+update();
+</script>
+</body>
+</html>
