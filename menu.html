@@ -97,6 +97,16 @@ h2{margin:28px 0 4px;font-size:23px;letter-spacing:.04em;padding-bottom:6px;bord
 .summary li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px dashed var(--line)}
 .summary li.sum{font-weight:700;font-size:19px;border-bottom:0}
 .empty{color:var(--muted);margin:8px 0 0}
+.hours{display:inline-block;margin:14px 0 0;padding:6px 16px;font-weight:700;border:2px solid var(--gold);border-radius:999px}
+.social{margin:28px 0 0;padding:18px 16px;text-align:center;background:var(--card);border:2px solid var(--line);border-radius:16px}
+.social h2{margin:0;font-size:20px;color:var(--accent)}
+.social .hrs{margin:4px 0 0;font-size:24px;font-weight:900}
+.social .follow{margin:16px 0 8px;font-weight:700;color:var(--muted)}
+.social .btns{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.social a{display:inline-flex;align-items:center;min-height:48px;padding:0 20px;font-weight:900;text-decoration:none;
+  background:var(--btn);color:#fff;border-radius:12px}
+.social a[hidden]{display:none}
+.social a:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
 .note{margin:20px 0 0;font-size:14px;color:var(--muted)}
 
 /* cheer + suggestions */
@@ -151,6 +161,7 @@ h2{margin:28px 0 4px;font-size:23px;letter-spacing:.04em;padding-bottom:6px;bord
     <div class="stamp serif">30年老店</div>
     <div class="calc-name serif">餐點計算機</div>
     <p class="lead">自己點，自己算。選好份數，馬上知道這一餐要花多少。</p>
+    <p class="hours">🕕 營業時間 18:00–23:00</p>
   </div>
 </header>
 
@@ -176,6 +187,17 @@ h2{margin:28px 0 4px;font-size:23px;letter-spacing:.04em;padding-bottom:6px;bord
     <div id="lines"></div>
     <div id="suggest"></div>
     <p class="note">點餐時把這個畫面給老闆看就可以。實際價格與供應品項以現場為準。</p>
+  </section>
+  <section class="social" aria-label="營業資訊與社群">
+    <h2 class="serif">營業時間</h2>
+    <p class="hrs">18:00 – 23:00</p>
+    <div id="socialLinks" hidden>
+      <p class="follow">追蹤我們的粉絲專頁</p>
+      <div class="btns">
+        <a id="fbLink" href="#" target="_blank" rel="noopener noreferrer" hidden>Facebook 粉絲專頁</a>
+        <a id="igLink" href="#" target="_blank" rel="noopener noreferrer" hidden>Instagram 粉絲專頁</a>
+      </div>
+    </div>
   </section>
 </main>
 
@@ -224,6 +246,22 @@ var MENU = [
   ]}
 ];
 var MAX_QTY = 20;
+/* 營業時間與社群連結（連結請貼完整網址，例如 https://www.facebook.com/你的粉專；留空就不顯示） */
+var FB_URL = "https://www.facebook.com/share/1A9nX6ikWY/";
+var IG_URL = "https://www.instagram.com/taiwan_no.1_c_s_c/";
+function setupSocial() {
+  var any = false;
+  [["fbLink", FB_URL], ["igLink", IG_URL]].forEach(function (x) {
+    var a = document.getElementById(x[0]);
+    if (/^https:\/\//i.test(x[1])) {
+      a.href = x[1];
+      a.hidden = false;
+      any = true;
+    }
+  });
+  document.getElementById("socialLinks").hidden = !any;
+}
+setupSocial();
 var qty = {};
 var budget = 0;
 var ALL = [];
