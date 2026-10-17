@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#B3241A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="鹽酥雞收銀">
+<title>台灣第一家鹽酥雞｜收銀記帳</title>
+<style>
+:root{
+  --hero:#B3241A;
+  --bg:#FFFBF2; --card:#FFFFFF; --ink:#211A16; --muted:#6B5E55; --line:#E8DDCB;
+  --accent:#B3241A; --btn:#B3241A; --tint:rgba(244,178,35,.20);
+  --gold:#F4B223; --bar-ink:#211A16;
+  --ok:#14532D; --over:#8E1A12;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#17120F; --card:#231C18; --ink:#FBF1E0; --muted:#BDAE9E; --line:#3A2F28;
+    --accent:#FF8F78; --btn:#D9352A; --tint:rgba(244,178,35,.16);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17120F; --card:#231C18; --ink:#FBF1E0; --muted:#BDAE9E; --line:#3A2F28;
+  --accent:#FF8F78; --btn:#D9352A; --tint:rgba(244,178,35,.16);
+}
+*,*::before,*::after{box-sizing:inherit}
+html{background:var(--hero);scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  font-size:17px;line-height:1.5;padding-bottom:240px;
+}
+.wrap{max-width:520px;margin:0 auto;padding:0 16px}
+.serif{font-family:"Noto Serif TC","Songti TC","PMingLiU",serif;font-weight:900}
+
+/* hero */
+.hero{background:var(--hero);color:#fff;padding:30px 0 44px}
+.hero h1{margin:0;font-size:38px;line-height:1.15;letter-spacing:.03em}
+.calc-name{margin-top:14px;font-size:30px;line-height:1.2;letter-spacing:.2em}
+.stamp{
+  display:inline-block;margin-top:12px;padding:4px 16px 5px;
+  background:var(--gold);color:#211A16;font-size:24px;letter-spacing:.12em;
+  border-radius:4px;transform:rotate(-2deg);
+}
+.lead{margin:16px 0 0;font-size:17px;max-width:22em}
+
+/* menu */
+h2{margin:28px 0 4px;font-size:23px;letter-spacing:.04em;padding-bottom:6px;border-bottom:3px double var(--line)}
+.row{
+  display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;
+  padding:10px 8px;border-bottom:1px solid var(--line);border-radius:8px;
+}
+.row.on{background:var(--tint)}
+.name{font-size:18px;font-weight:700}
+.price{font-size:15px;color:var(--muted)}
+.step{display:flex;align-items:center;gap:6px}
+.step button{
+  width:44px;height:44px;border-radius:50%;font:inherit;font-size:26px;line-height:1;font-weight:700;
+  cursor:pointer;display:grid;place-items:center;padding:0;
+}
+.step .minus{background:transparent;color:var(--accent);border:2px solid var(--accent)}
+.step .plus{background:var(--btn);color:#fff;border:2px solid var(--btn)}
+.step button:disabled{opacity:.3;cursor:default}
+.qty{min-width:30px;text-align:center;font-size:21px;font-weight:700;font-variant-numeric:tabular-nums}
+
+/* bottom bar */
+.bar{
+  position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--gold);color:var(--bar-ink);
+  padding:12px 0 calc(12px + env(safe-area-inset-bottom,0px));
+  box-shadow:0 -3px 0 rgba(33,26,22,.18);
+}
+.bar-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.bar .lbl{font-size:14px;font-weight:700;display:block;line-height:1.2}
+.bar #total{font-size:30px;line-height:1.1;display:block}
+.bar-btns{display:flex;gap:8px}
+.bar button,.bar .btn{
+  min-height:44px;padding:0 16px;font:inherit;font-weight:700;border-radius:10px;cursor:pointer;
+  display:inline-flex;align-items:center;text-decoration:none;
+}
+.bar button{background:transparent;color:var(--bar-ink);border:2px solid var(--bar-ink)}
+.bar .btn{background:var(--bar-ink);color:var(--gold);border:2px solid var(--bar-ink)}
+
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ok:#7DE0A1;--over:#FF8F78}}
+:root[data-theme="dark"]{--ok:#7DE0A1;--over:#FF8F78}
+/* POS */
+.badge{display:inline-block;margin-left:4px;min-width:20px;padding:0 6px;border-radius:10px;background:var(--gold);color:#211A16;font-size:13px;line-height:20px}
+.badge[hidden]{display:none}
+.olbar{position:sticky;top:calc(env(safe-area-inset-top,0px) + 66px);z-index:5;display:flex;justify-content:space-between;align-items:center;gap:8px;margin:8px 0;padding:8px 12px;background:var(--tint);border:2px solid var(--gold);border-radius:12px;font-weight:700}
+.olbar[hidden]{display:none}
+.ocard{padding:10px 0;border-top:1px solid var(--line)}
+.ocard:first-of-type{border-top:0}
+.hero{padding:16px 0 18px}
+.hero h1{font-size:28px}
+.stamp{font-size:17px;margin-top:8px;padding:2px 12px 3px}
+.calc-name{margin-top:8px;font-size:20px;letter-spacing:.18em}
+body{padding-bottom:40px}
+body.withbar{padding-bottom:calc(130px + env(safe-area-inset-bottom,0px))}
+.tabw{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:var(--bg);border-bottom:1px solid var(--line)}
+.tabs{display:flex;gap:8px;padding-top:10px;padding-bottom:10px}
+.tabs button,.seg button,.quick button,.mini,.card,.tx button,.item .ops button{font:inherit;font-weight:700;color:var(--ink);background:transparent;border:2px solid var(--line);border-radius:10px;cursor:pointer}
+.tabs button{flex:1;min-height:44px}
+.tabs button[aria-selected="true"],.seg button.on{background:var(--btn);border-color:var(--btn);color:#fff}
+button:focus-visible,input:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+section[hidden]{display:none}
+.row.outr{opacity:.5}
+.row .minus:disabled,.row .plus:disabled{opacity:.3}
+.bar{display:none}
+body.withbar .bar{display:block}
+.empty{color:var(--muted);margin:8px 0 0}
+.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:14px 0}
+.box h3{margin:0 0 8px;font-size:17px;color:var(--muted)}
+.lr{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;font-size:17px}
+.s{color:var(--muted);font-size:14px}
+.mini{min-height:44px;padding:0 14px}
+.ops{display:flex;gap:6px;flex-wrap:wrap}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}
+.card{padding:10px 4px;text-align:center;background:var(--card)}
+.card[aria-pressed="true"]{border-color:var(--btn)}
+.card span{display:block;color:var(--muted);font-size:14px;font-weight:400}
+.card b{font-size:19px;color:var(--accent)}
+.bw{flex:1;height:14px;background:var(--line);border-radius:7px;overflow:hidden}
+.bw i{display:block;height:100%;background:var(--btn)}
+.tx{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid var(--line)}
+.tx.v{opacity:.5;text-decoration:line-through}
+.tx .r{text-align:right;flex-shrink:0}
+.tx button{margin-top:4px;min-height:36px;padding:0 10px;border-radius:8px}
+input[type=date],#cash{min-height:46px;padding:4px 12px;border:2px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:19px}
+#cash{width:100%;font-size:24px;font-weight:700}
+.item{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)}
+.item.o b{opacity:.5}
+.item .ops button{min-height:44px;padding:0 10px;font-size:15px}
+.item .ops .x{color:var(--accent)}
+.seg{display:flex;gap:6px;margin:10px 0}
+.seg button{flex:1;min-height:46px;font-size:15px}
+.quick{display:flex;gap:6px;margin:8px 0}
+.quick button{flex:1;min-height:42px;border-radius:8px}
+.chg{min-height:24px;font-weight:800;color:var(--ok);text-align:right}
+.chg.bad{color:var(--over)}
+.go{display:block;width:100%;min-height:54px;margin-top:6px;border:0;border-radius:12px;background:var(--btn);color:#fff;font:inherit;font-size:22px;font-weight:900;cursor:pointer}
+.sheet{display:none;position:fixed;inset:0;z-index:15;background:rgba(0,0,0,.55);align-items:flex-end}
+.sheet.on{display:flex}
+.sheet-in{background:var(--card);width:100%;max-width:520px;margin:0 auto;border-radius:18px 18px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px))}
+.sh-top{display:flex;justify-content:space-between;align-items:center}
+.sh-top h2{margin:0;border:0;padding:0}
+.sh-total{font-size:36px;color:var(--accent);text-align:center;margin:6px 0}
+.chgs{display:none;position:fixed;inset:0;z-index:30;background:var(--card);flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px}
+.chgs.on{display:flex}
+.chgs h2{margin:0;border:0;font-size:48px}
+.chgs .v{font-size:30vw;line-height:1.1;font-weight:900;color:var(--accent)}
+.chgs p{color:var(--muted);font-size:20px}
+.chgs button{margin-top:16px;padding:16px 48px;border:0;border-radius:14px;background:var(--btn);color:#fff;font:inherit;font-size:30px;font-weight:900;cursor:pointer}
+.toast{position:fixed;left:50%;top:calc(110px + env(safe-area-inset-top,0px));transform:translateX(-50%);background:#211A16;color:#fff;padding:10px 18px;border-radius:20px;font-weight:700;z-index:40;display:none;max-width:90vw;text-align:center}
+.note{color:var(--muted);font-size:13px;margin:6px 0 0}
+</style>
+</head>
+<body>
+<header class="hero"><div class="wrap">
+  <h1 class="serif">台灣第一家鹽酥雞</h1>
+  <div class="stamp serif">30年老店</div>
+  <div class="calc-name serif">收銀・記帳</div>
+</div></header>
+<div class="tabw"><nav class="wrap tabs" role="tablist">
+  <button role="tab" data-tab="pos">收銀</button>
+  <button role="tab" data-tab="orders">訂單<span class="badge" id="obadge" hidden></span></button>
+  <button role="tab" data-tab="ledger">帳本</button>
+  <button role="tab" data-tab="items">品項</button>
+</nav></div>
+<main class="wrap">
+  <section id="v-pos"><div class="olbar" id="olbar" hidden></div><div id="menu"></div></section>
+  <section id="v-orders" hidden><div class="box"><h3>線上訂單（客人按「送出訂單給店家」後出現）</h3><p class="note" id="ostat"></p><div id="olist"></div></div></section>
+  <section id="v-ledger" hidden>
+    <div class="cards" id="cards"></div>
+    <div class="box"><h3>收款方式</h3><div id="pays"></div></div>
+    <div class="box"><h3>各品項賣出</h3><div id="sold"></div></div>
+    <div class="box"><h3>最忙時段（筆數）</h3><div class="bars" id="hours"></div></div>
+    <div class="box"><h3>生意最好的一天</h3><div id="best"></div></div>
+    <div class="box"><h3>查詢交易、核對帳目</h3>
+      <input type="date" id="qd" aria-label="選擇日期">
+      <p class="note" id="dsum"></p><div id="txs"></div>
+    </div>
+    <div class="box"><h3>備份與匯出</h3>
+      <div class="ops" style="flex-wrap:wrap">
+        <button class="mini" id="bk">下載備份</button>
+        <button class="mini" id="rs">還原備份</button>
+        <button class="mini" id="csv">匯出 CSV</button>
+        <button class="mini" id="wipe">清除全部交易</button>
+      </div>
+      <input type="file" id="file" accept="application/json,.json" hidden>
+      <p class="note">資料只存在這支手機的瀏覽器裡。換手機、清除網站資料前，請先「下載備份」。</p>
+    </div>
+  </section>
+
+  <section id="v-items" hidden>
+    <div class="box"><h3>品項管理（售完後收銀頁會變灰，無法點選）</h3><div id="ilist"></div>
+      <button class="mini" id="add" style="margin-top:10px">＋ 新增品項</button></div>
+  </section>
+</main>
+
+<div class="bar" id="bar"><div class="wrap"><div class="bar-top">
+  <div><span class="lbl" id="cnt">共 0 份</span><span id="total" class="serif">NT$ 0</span></div>
+  <div class="bar-btns"><button type="button" id="clr">清除</button><button type="button" class="btn" id="pay">結帳</button></div>
+</div></div></div>
+
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-t"><div class="sheet-in">
+  <div class="sh-top"><h2 class="serif" id="sh-t">結帳</h2><button type="button" class="mini" id="sh-x">關閉</button></div>
+  <div class="sh-total serif" id="sh-total">NT$ 0</div>
+  <div class="seg" id="seg"></div>
+  <div id="cashbox">
+    <input id="cash" type="number" inputmode="numeric" placeholder="收現金額" aria-label="收現金額">
+    <div class="quick" id="quick"></div>
+    <div class="chg" id="chg"></div>
+  </div>
+  <button class="go" id="go" type="button">確認收款</button>
+</div></div>
+
+<div class="chgs" id="chgs" role="dialog" aria-modal="true">
+  <h2 class="serif" id="ct">找零</h2><div class="v serif" id="cv">0</div><p id="ci"></p>
+  <button id="cb" type="button">返回</button>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const p2=n=>("0"+n).slice(-2);
+const PAYS=["現金","LINE Pay","街口","全支付"];
+const MAX=99;
+var MENU = [
+  { group: "雞肉類", items: [
+    { id: "i1", name: "鹽酥雞", price: 60, unit: "份" },
+    { id: "i2", name: "雞皮", price: 40, unit: "份" },
+    { id: "i3", name: "雞屁股", price: 30, unit: "份" },
+    { id: "i4", name: "雞心", price: 30, unit: "份" },
+    { id: "i5", name: "雞胗", price: 30, unit: "份" },
+    { id: "i6", name: "雞脖子", price: 20, unit: "份" }
+  ]},
+  { group: "海鮮與加工品", items: [
+    { id: "i7", name: "魷魚", price: 60, unit: "份" },
+    { id: "i8", name: "花枝丸", price: 30, unit: "份" },
+    { id: "i9", name: "甜不辣", price: 25, unit: "份" },
+    { id: "i10", name: "豬血糕", price: 20, unit: "份" },
+    { id: "i11", name: "芋頭籤", price: 20, unit: "份" },
+    { id: "i12", name: "芋頭巧", price: 20, unit: "份" },
+    { id: "i13", name: "魚板", price: 20, unit: "份" }
+  ]},
+  { group: "蔬菜與豆製品", items: [
+    { id: "i14", name: "地瓜條", price: 40, unit: "份" },
+    { id: "i15", name: "四季豆", price: 40, unit: "份" },
+    { id: "i16", name: "玉米", price: 45, unit: "份" },
+    { id: "i17", name: "豆乾", price: 20, unit: "份" },
+    { id: "i18", name: "百葉豆腐", price: 20, unit: "份" },
+    { id: "i19", name: "豆包", price: 20, unit: "份" }
+  ]}
+];
+const SEED=[];MENU.forEach(g=>g.items.forEach(i=>SEED.push({id:i.id,name:i.name,price:i.price,group:g.group,out:false})));
+function load(k,d){try{const v=JSON.parse(localStorage.getItem(k));return Array.isArray(v)?v:d}catch(e){return d}}
+let items=load("pos2_items",SEED);
+let tx=load("pos2_tx",[]);
+let cart={},pay="現金",rng="day",view="pos",tt=null;
+function save(){try{localStorage.setItem("pos2_items",JSON.stringify(items));localStorage.setItem("pos2_tx",JSON.stringify(tx))}catch(e){toast("儲存失敗，請不要使用無痕模式")}}
+function toast(m){const t=$("toast");t.textContent=m;t.style.display="block";clearTimeout(tt);tt=setTimeout(()=>{t.style.display="none"},2400)}
+const byId=id=>items.find(i=>i.id===id);
+const ymd=ms=>{const d=new Date(ms);return d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate())};
+const hm=ms=>{const d=new Date(ms);return p2(d.getHours())+":"+p2(d.getMinutes())};
+const sum=l=>l.reduce((s,x)=>s+x.total,0);
+const valid=()=>tx.filter(x=>!x.void);
+function startOf(r){const d=new Date();d.setHours(0,0,0,0);if(r==="week")d.setDate(d.getDate()-(d.getDay()+6)%7);else if(r==="month")d.setDate(1);return d.getTime()}
+const inR=r=>{const s=startOf(r);return valid().filter(x=>x.t>=s)};
+const money=n=>"NT$ "+n.toLocaleString("zh-TW");
+const total=()=>items.reduce((s,i)=>s+(cart[i.id]||0)*i.price,0);
+const count=()=>Object.keys(cart).reduce((s,k)=>s+cart[k],0);
+
+/* ---------- 收銀 ---------- */
+function renderMenu(){
+  const gs=[];
+  items.forEach(i=>{let g=gs.find(x=>x.n===i.group);if(!g){g={n:i.group,l:[]};gs.push(g)}g.l.push(i)});
+  $("menu").innerHTML=gs.map(g=>`<h2 class="serif">${esc(g.n)}</h2>`+g.l.map(i=>`<div class="row${i.out?" outr":""}" id="row-${i.id}"><div><div class="name">${esc(i.name)}</div><div class="price">${i.out?"售完":"NT$ "+i.price+"／份"}</div></div><div class="step"><button class="minus" type="button" data-id="${i.id}" data-d="-1" aria-label="減少${esc(i.name)}">−</button><span class="qty" id="qty-${i.id}">0</span><button class="plus" type="button" data-id="${i.id}" data-d="1" aria-label="增加${esc(i.name)}">+</button></div></div>`).join("")).join("");
+  updateRows();
+}
+function updateRows(){
+  items.forEach(i=>{
+    const q=cart[i.id]||0,row=$("row-"+i.id);if(!row)return;
+    $("qty-"+i.id).textContent=q;
+    row.classList.toggle("on",q>0);
+    row.querySelector(".minus").disabled=q===0;
+    row.querySelector(".plus").disabled=i.out||q>=MAX;
+  });
+  $("total").textContent=money(total());
+  $("cnt").textContent="共 "+count()+" 份";
+  preview();
+}
+function renderCart(){updateRows()}
+function add(id,d){
+  const i=byId(id);if(!i||i.out)return;
+  const q=Math.max(0,Math.min(MAX,(cart[id]||0)+d));
+  if(q)cart[id]=q;else delete cart[id];
+  updateRows();
+}
+function preview(){
+  const c=$("chg");c.className="chg";c.textContent="";
+  $("sh-total").textContent=money(total());
+  if(pay!=="現金"||!total())return;
+  const v=parseInt($("cash").value);
+  if(isNaN(v))return;
+  if(v>=total()){c.textContent="找零 NT$ "+(v-total())}
+  else{c.className="chg bad";c.textContent="還差 NT$ "+(total()-v)}
+}
+function renderPay(){
+  $("seg").innerHTML=PAYS.map(p=>`<button type="button" data-p="${p}" class="${p===pay?"on":""}" aria-pressed="${p===pay}">${p}</button>`).join("");
+  $("cashbox").style.display=pay==="現金"?"block":"none";
+  preview();
+}
+function openSheet(){
+  if(!total())return toast("還沒點餐");
+  renderPay();
+  const co=curOrderInfo();$("sh-t").textContent=co?"結帳・"+co.code+" "+co.name:"結帳";
+  $("sheet").classList.add("on");
+  if(pay==="現金")$("cash").focus();
+}
+function closeSheet(){$("sheet").classList.remove("on")}
+function checkout(){
+  const t=total();
+  if(!t)return toast("還沒點餐");
+  let cash=t,change=0;
+  if(pay==="現金"){
+    cash=parseInt($("cash").value);
+    if(isNaN(cash))return toast("請輸入收現金額");
+    if(cash<t)return toast("金額不足，還差 NT$ "+(t-cash));
+    change=cash-t;
+  }
+  const now=Date.now();
+  tx.push({id:now,t:now,items:Object.keys(cart).map(id=>({n:byId(id).name,p:byId(id).price,q:cart[id]})),total:t,pay:pay,cash:cash,change:change,void:false,on:curOrderInfo()});
+  save();markDone();
+  cart={};$("cash").value="";updateRows();closeSheet();
+  $("ct").textContent=pay==="現金"?"找零":"收款完成";
+  $("cv").textContent=pay==="現金"?change:"NT$ "+t;
+  $("ci").textContent="總計 "+t+"｜"+pay+(pay==="現金"?"｜收現 "+cash:"");
+  $("chgs").classList.add("on");
+  $("cb").focus();
+}
+
+/* ---------- 帳本 ---------- */
+function renderLedger(){
+  const R=[["day","今日"],["week","本週"],["month","本月"]];
+  $("cards").innerHTML=R.map(r=>{const l=inR(r[0]);return `<button class="card" data-r="${r[0]}" aria-pressed="${r[0]===rng}"><span>${r[1]}</span><b>NT$ ${sum(l)}</b><span>${l.length} 筆</span></button>`}).join("");
+  const L=inR(rng);
+  $("pays").innerHTML=PAYS.map(p=>{const l=L.filter(x=>x.pay===p);return `<div class="lr"><span>${p}<span class="s">　${l.length} 筆</span></span><b>NT$ ${sum(l)}</b></div>`}).join("");
+  const m={};
+  L.forEach(x=>x.items.forEach(i=>{const o=m[i.n]||(m[i.n]={q:0,a:0});o.q+=i.q;o.a+=i.q*i.p}));
+  const s=Object.keys(m).sort((a,b)=>m[b].q-m[a].q);
+  $("sold").innerHTML=s.length?s.map((n,k)=>`<div class="lr"><span>${k+1}. ${esc(n)}</span><span>${m[n].q} 份・NT$ ${m[n].a}</span></div>`).join(""):'<div class="empty">還沒有資料</div>';
+  const h={};L.forEach(x=>{const k=new Date(x.t).getHours();h[k]=(h[k]||0)+1});
+  const hs=Object.keys(h).map(Number).sort((a,b)=>a-b),mx=Math.max(0,...hs.map(k=>h[k]));
+  $("hours").innerHTML=hs.length?hs.map(k=>`<div class="lr"><span style="width:52px">${p2(k)}:00</span><div class="bw"><i style="width:${h[k]/mx*100}%"></i></div><b style="width:64px;text-align:right">${h[k]}${h[k]===mx?" 🔥":""}</b></div>`).join(""):'<div class="empty">還沒有資料</div>';
+  const d={};L.forEach(x=>{const k=ymd(x.t);d[k]=(d[k]||0)+x.total});
+  const dk=Object.keys(d).sort((a,b)=>d[b]-d[a])[0];
+  $("best").innerHTML=dk?`<div class="lr"><span>${dk.slice(5).replace("-","/")}（週${"日一二三四五六"[new Date(dk+"T00:00:00").getDay()]}）</span><b>NT$ ${d[dk]}</b></div>`:'<div class="empty">還沒有資料</div>';
+  renderDay();
+}
+function renderDay(){
+  const d=$("qd").value,l=tx.filter(x=>ymd(x.t)===d).sort((a,b)=>b.t-a.t);
+  const v=l.filter(x=>!x.void);
+  $("dsum").textContent=d+"：共 "+v.length+" 筆，NT$ "+sum(v)+(l.length>v.length?"（另有 "+(l.length-v.length)+" 筆作廢）":"");
+  $("txs").innerHTML=l.length?l.map(x=>`<div class="tx${x.void?" v":""}"><div><b>${hm(x.t)}</b> ${esc(x.items.map(i=>i.n+"×"+i.q).join("、"))}<div class="lr s" style="padding:0">${x.on?"🌐 "+esc(x.on.code+" "+x.on.name)+"・":""}${esc(x.pay)}${x.pay==="現金"?"・收 "+x.cash+" 找 "+x.change:""}</div></div><div class="r"><b>NT$ ${x.total}</b><br><button data-v="${x.id}">${x.void?"恢復":"作廢"}</button></div></div>`).join(""):'<div class="empty">這一天沒有交易</div>';
+}
+
+/* ---------- 品項 ---------- */
+function renderItems(){
+  $("ilist").innerHTML=items.map(i=>`<div class="item${i.out?" o":""}"><span><b>${esc(i.name)}</b> $${i.price}${i.out?" ・售完":""}</span><div class="ops"><button class="q" data-i="${i.id}" data-a="out">${i.out?"恢復":"售完"}</button><button class="q" data-i="${i.id}" data-a="price">改價</button><button class="q x" data-i="${i.id}" data-a="del">刪除</button></div></div>`).join("");
+}
+
+/* ---------- 切換頁面 ---------- */
+function setView(v){
+  view=v;
+  ["pos","orders","ledger","items"].forEach(k=>{$("v-"+k).hidden=k!==v});
+  document.querySelectorAll(".tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===v));
+  document.body.classList.toggle("withbar",v==="pos");
+  if(v==="ledger")renderLedger();
+  if(v==="items")renderItems();
+  if(v==="orders")renderOrders();
+  window.scrollTo(0,0);
+}
+
+/* ---------- 事件 ---------- */
+document.querySelector(".tabs").addEventListener("click",e=>{const b=e.target.closest("button[data-tab]");if(b)setView(b.dataset.tab)});
+$("menu").addEventListener("click",e=>{const b=e.target.closest("button[data-id]");if(b)add(b.dataset.id,+b.dataset.d)});
+$("pay").addEventListener("click",openSheet);
+$("sh-x").addEventListener("click",closeSheet);
+$("seg").addEventListener("click",e=>{const b=e.target.closest("button[data-p]");if(b){pay=b.dataset.p;renderPay()}});
+$("cash").addEventListener("input",preview);
+$("quick").innerHTML=[["剛好",0],["100",100],["200",200],["500",500],["1000",1000]].map(x=>`<button data-v="${x[1]}">${x[0]}</button>`).join("");
+$("quick").addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b)return;$("cash").value=+b.dataset.v||total();preview()});
+$("clr").addEventListener("click",()=>{cart={};curOrder=null;renderBanner();$("cash").value="";renderCart()});
+$("go").addEventListener("click",checkout);
+$("cb").addEventListener("click",()=>{$("chgs").classList.remove("on")});
+$("cards").addEventListener("click",e=>{const b=e.target.closest("button[data-r]");if(b){rng=b.dataset.r;renderLedger()}});
+$("qd").addEventListener("change",renderDay);
+$("txs").addEventListener("click",e=>{
+  const b=e.target.closest("button[data-v]");if(!b)return;
+  const x=tx.find(t=>t.id==b.dataset.v);if(!x)return;
+  if(!x.void&&!confirm("確定要作廢這筆交易嗎？（金額不再計入營業額）"))return;
+  x.void=!x.void;save();renderLedger();
+});
+$("ilist").addEventListener("click",e=>{
+  const b=e.target.closest("button[data-i]");if(!b)return;
+  const i=byId(b.dataset.i);if(!i)return;
+  if(b.dataset.a==="out"){i.out=!i.out;if(i.out)delete cart[i.id]}
+  else if(b.dataset.a==="price"){const v=parseInt(prompt("「"+i.name+"」新價格（元）",i.price));if(isNaN(v)||v<0||v>99999)return toast("價格不正確");i.price=v}
+  else if(confirm("確定刪除「"+i.name+"」嗎？（過去的交易紀錄不受影響）")){items=items.filter(x=>x.id!=i.id);delete cart[i.id]}
+  save();renderItems();renderMenu();renderCart();
+});
+$("add").addEventListener("click",()=>{
+  const gs=[...new Set(items.map(i=>i.group))];
+  const n=(prompt("品項名稱")||"").trim().slice(0,12);if(!n)return;
+  const v=parseInt(prompt("價格（元）"));if(isNaN(v)||v<0||v>99999)return toast("價格不正確");
+  const k=parseInt(prompt("放在哪一類？輸入數字\n"+gs.map((g,x)=>(x+1)+" "+g).join("　")+"　0 新分類"));
+  let g=gs[k-1];
+  if(!g){g=(prompt("新分類名稱")||"").trim().slice(0,10)||"其他"}
+  const mx=Math.max(0,...items.map(i=>parseInt(String(i.id).replace(/\D/g,""))||0));
+  items.push({id:"i"+(mx+1),name:n,price:v,group:g,out:false});
+  save();renderItems();renderMenu();
+});
+function dl(name,text,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type:type}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
+$("bk").addEventListener("click",()=>dl("鹽酥雞備份-"+ymd(Date.now())+".json",JSON.stringify({items:items,tx:tx}),"application/json"));
+$("rs").addEventListener("click",()=>$("file").click());
+$("file").addEventListener("change",e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{
+    const o=JSON.parse(r.result);
+    if(!Array.isArray(o.items)||!Array.isArray(o.tx))throw 0;
+    if(!confirm("要用這份備份取代目前的資料嗎？（目前 "+tx.length+" 筆交易會被覆蓋）"))return;
+    items=o.items;tx=o.tx;cart={};save();renderMenu();renderCart();setView(view);toast("已還原")
+  }catch(x){toast("這不是有效的備份檔")}};
+  r.readAsText(f);e.target.value="";
+});
+$("csv").addEventListener("click",()=>{
+  const q=s=>{s=String(s);if(/^[=+\-@]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"'};
+  const rows=[["日期","時間","品項","金額","收款方式","收現","找零","狀態","線上訂單"]].concat(tx.map(x=>[ymd(x.t),hm(x.t),x.items.map(i=>i.n+"×"+i.q).join(" "),x.total,x.pay,x.cash,x.change,x.void?"作廢":"正常",x.on?x.on.code+" "+x.on.name:""]));
+  dl("鹽酥雞帳目-"+ymd(Date.now())+".csv","\ufeff"+rows.map(r=>r.map(q).join(",")).join("\r\n"),"text/csv");
+});
+$("wipe").addEventListener("click",()=>{
+  if(!tx.length)return toast("目前沒有交易");
+  if(!confirm("確定要清除全部 "+tx.length+" 筆交易嗎？這無法復原，建議先下載備份。"))return;
+  if(!confirm("再確認一次：真的要全部清除？"))return;
+  tx=[];save();renderLedger();toast("已清除全部交易");
+});
+
+
+/* ---------- 線上訂單（客人頁送出 → ntfy → 這裡） ---------- */
+const ORDER_TOPIC="salt-chicken-jn7ovfnl4u4als62";
+let orders=load("pos2_orders",[]),seen=load("pos2_seen",[]),curOrder=null,es=null,online=false;
+function saveO(){
+  orders=orders.filter(x=>x.status==="pending"||Date.now()-x.t<864e5).slice(-100);
+  try{localStorage.setItem("pos2_orders",JSON.stringify(orders));localStorage.setItem("pos2_seen",JSON.stringify(seen.slice(-300)))}catch(e){}
+}
+const num=s=>parseInt(String(s).replace(/,/g,""))||0;
+function parseMsg(title,msg){
+  const code=(msg.match(/號碼\s+([A-Z]\d{2})/)||[])[1];if(!code)return null;
+  if(/^❌/.test(title)||/已取消/.test(msg))return{code:code,cancel:true};
+  const its=[];
+  msg.split("\n").forEach(l=>{const m=l.match(/^(.+?) × (\d+) = NT\$ ([\d,]+)$/);if(m)its.push({n:m[1],q:+m[2],a:num(m[3])})});
+  if(!its.length)return null;
+  const g=r=>(msg.match(r)||[])[1]||"";
+  return{code:code,mod:/^🔄/.test(title),name:g(/稱呼：(.+)/),pickup:g(/取餐\s+(\d{2}:\d{2})/),note:g(/備註：(.+)/),items:its,total:num(g(/總計 NT\$ ([\d,]+)/))};
+}
+function handleMsg(m){
+  if(m.event!=="message"||seen.includes(m.id))return;
+  seen.push(m.id);
+  try{localStorage.setItem("pos2_last",String(m.time||""))}catch(e){}
+  const o=parseMsg(m.title||"",m.message||"");
+  if(!o){saveO();return}
+  const pend=orders.find(x=>x.code===o.code&&x.status==="pending");
+  if(o.cancel){
+    if(pend){pend.status="cancelled";toast("客人取消了訂單 "+o.code);if(curOrder===pend.k){curOrder=null;renderBanner()}}
+    saveO();renderOrders();return;
+  }
+  const rec={t:(m.time||0)*1000||Date.now(),status:"pending",code:o.code,name:o.name,pickup:o.pickup,note:o.note,items:o.items,total:o.total};
+  if(o.mod&&pend){
+    Object.assign(pend,rec,{ver:(pend.ver||1)+1});
+    toast("訂單 "+o.code+" 已更新"+(curOrder===pend.k?"，請重新載入":""));
+  }else{
+    rec.k=m.id;rec.ver=1;orders.push(rec);
+    toast("🍗 新訂單 "+o.code+"・"+o.name+"・"+o.pickup+"取");
+  }
+  saveO();renderOrders();
+}
+const pending=()=>orders.filter(x=>x.status==="pending");
+function renderOrders(){
+  const l=pending().sort((a,b)=>(a.pickup||"99").localeCompare(b.pickup||"99")||a.t-b.t);
+  $("obadge").textContent=l.length;$("obadge").hidden=!l.length;
+  document.title=(l.length?"("+l.length+") ":"")+"鹽酥雞收銀記帳";
+  $("ostat").textContent=online?"🟢 已連線，客人送單會自動出現在這裡":"🔴 尚未連線，重新連線中…（需要網路）";
+  $("olist").innerHTML=l.length?l.map(o=>`<div class="ocard"><div class="lr"><b>${esc(o.code)}・${esc(o.name)}</b><b>取餐 ${esc(o.pickup)}</b></div>${o.ver>1?'<div class="s">已修改（第 '+o.ver+' 版）</div>':""}<div class="s">${o.items.map(i=>esc(i.n)+"×"+i.q).join("、")}</div>${o.note?'<div class="s">備註：'+esc(o.note)+"</div>":""}<div class="lr"><b>NT$ ${o.total}</b><span class="ops"><button class="mini" type="button" data-o="load" data-k="${esc(o.k)}">載入收銀</button><button class="mini" type="button" data-o="del" data-k="${esc(o.k)}">刪除</button></span></div></div>`).join(""):'<div class="empty">目前沒有待處理的線上訂單</div>';
+}
+function curOrderInfo(){const o=orders.find(x=>x.k===curOrder);return o?{code:o.code,name:o.name,pickup:o.pickup,note:o.note}:undefined}
+function renderBanner(){
+  const o=orders.find(x=>x.k===curOrder),b=$("olbar");
+  b.hidden=!o;
+  if(o)b.innerHTML=`<span>🌐 處理線上訂單 ${esc(o.code)}・${esc(o.name)}（取餐 ${esc(o.pickup)}）${o.note?"<br>備註："+esc(o.note):""}</span><button class="mini" type="button" id="olx">取消載入</button>`;
+}
+function loadOrder(k){
+  const o=orders.find(x=>x.k===k);if(!o)return;
+  if(count()&&!confirm("目前收銀裡的品項會被取代，確定嗎？"))return;
+  cart={};const miss=[];let t=0;
+  o.items.forEach(i=>{const it=items.find(x=>x.name===i.n);if(!it||it.out){miss.push(i.n);return}cart[it.id]=Math.min(MAX,i.q);t+=it.price*i.q});
+  curOrder=k;updateRows();renderBanner();setView("pos");
+  if(miss.length)toast("找不到或已售完："+miss.join("、")+"，請手動處理");
+  else if(t!==o.total)toast("目前價格和客人看到的不同（客人 NT$ "+o.total+"）");
+}
+function markDone(){
+  const o=orders.find(x=>x.k===curOrder);
+  if(o)o.status="done";
+  curOrder=null;saveO();renderBanner();renderOrders();
+}
+function connect(){
+  if(!ORDER_TOPIC||typeof EventSource==="undefined")return;
+  try{if(es)es.close()}catch(e){}
+  let last="";try{last=localStorage.getItem("pos2_last")||""}catch(e){}
+  try{
+    es=new EventSource("https://ntfy.sh/"+ORDER_TOPIC+"/sse?since="+(last||"2h"));
+    es.onopen=()=>{online=true;renderOrders()};
+    es.onerror=()=>{online=false;renderOrders()};
+    es.onmessage=e=>{try{handleMsg(JSON.parse(e.data))}catch(x){}};
+  }catch(e){online=false;renderOrders()}
+}
+$("olist").addEventListener("click",e=>{
+  const b=e.target.closest("button[data-o]");if(!b)return;
+  if(b.dataset.o==="load")loadOrder(b.dataset.k);
+  else if(confirm("確定刪除這張線上訂單嗎？")){orders=orders.filter(x=>x.k!==b.dataset.k);if(curOrder===b.dataset.k){curOrder=null;renderBanner()}saveO();renderOrders()}
+});
+$("olbar").addEventListener("click",e=>{if(e.target.closest("#olx")){curOrder=null;cart={};updateRows();renderBanner()}});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)connect()});
+
+/* ---------- 開始 ---------- */
+$("qd").value=ymd(Date.now());
+renderMenu();renderPay();setView("pos");renderOrders();connect();
+</script>
+</body>
+</html>
