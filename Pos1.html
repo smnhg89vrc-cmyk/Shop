@@ -117,8 +117,8 @@ h2{margin:28px 0 4px;font-size:23px;letter-spacing:.04em;padding-bottom:6px;bord
 .sugg button:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
 
 /* celebration */
-#fx{position:fixed;inset:0;width:100%;height:100%;z-index:20;pointer-events:none;display:none}
-#pop{position:fixed;left:50%;top:32%;z-index:21;transform:translate(-50%,-50%) scale(.8);
+#fx{position:fixed;inset:0;width:100%;height:100%;z-index:60;pointer-events:none;display:none}
+#pop{position:fixed;left:50%;top:32%;z-index:61;transform:translate(-50%,-50%) scale(.8);
   background:var(--gold);color:#211A16;font-size:28px;font-weight:900;line-height:1.3;text-align:center;width:max-content;max-width:86vw;
   padding:14px 24px;border-radius:16px;box-shadow:0 6px 24px rgba(0,0,0,.3);
   opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
@@ -193,12 +193,41 @@ h2{margin:28px 0 4px;font-size:23px;letter-spacing:.04em;padding-bottom:6px;bord
 #status{margin:0;font-size:16px;font-weight:700}
 #status.ok{color:var(--ok)}
 #status.over{color:var(--over)}
+.row.soldout{opacity:.5}
+.row.soldout .name{text-decoration:line-through}
+.done{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.6);display:none;justify-content:center;overflow-y:auto;padding:max(16px,env(safe-area-inset-top,0px)) 16px max(16px,env(safe-area-inset-bottom,0px))}
+.done.open{display:flex}
+.done-in{background:var(--card);color:var(--ink);width:100%;max-width:420px;margin:auto 0;border-radius:16px;padding:20px;border:3px solid var(--gold);text-align:center}
+.done-in h2{margin:0;font-size:26px;color:var(--accent)}
+.done-in .lbl2{margin:12px 0 0;font-weight:700}
+.done-in .num{font-size:72px;line-height:1.05;color:var(--accent);margin:0;letter-spacing:.04em}
+.done-in .who{margin:4px 0 12px;color:var(--muted)}
+.done-in ul{list-style:none;margin:0;padding:10px 0;border-top:2px solid var(--line);border-bottom:2px solid var(--line);text-align:left}
+.done-in li{display:flex;justify-content:space-between;gap:12px;padding:5px 0;font-size:18px}
+.done-in .grand{display:flex;justify-content:space-between;align-items:baseline;margin-top:10px;font-weight:900;font-size:19px}
+.done-in .grand strong{font-size:30px;color:var(--accent)}
+.done-in .how{margin:12px 0 0;padding:10px;background:var(--tint);border-radius:12px;font-weight:700}
+.done-in button{display:block;width:100%;min-height:52px;margin-top:14px;font:inherit;font-size:19px;font-weight:900;cursor:pointer;background:var(--btn);color:#fff;border:0;border-radius:12px}
+.done-in button:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
 </style>
 </head>
 <body>
 
 <canvas id="fx" aria-hidden="true"></canvas>
 <div id="pop" role="status" aria-live="polite"></div>
+
+<div class="done" id="done" role="dialog" aria-modal="true" aria-labelledby="doneT">
+  <div class="done-in">
+    <h2 class="serif" id="doneT">🎉 訂單已送出！</h2>
+    <p class="lbl2">你的號碼</p>
+    <p class="num serif" id="doneNum">A00</p>
+    <p class="who" id="doneWho"></p>
+    <ul id="doneLines"></ul>
+    <div class="grand"><span>總計</span><strong class="serif" id="doneTotal"></strong></div>
+    <p class="how">請截圖保存這張畫面，取餐時告訴店員你的號碼，並在現場付款</p>
+    <button type="button" id="doneOk">知道了</button>
+  </div>
+</div>
 
 <div class="order" id="order" role="dialog" aria-modal="true" aria-labelledby="orderTitle">
   <div class="ticket">
@@ -318,11 +347,13 @@ var MENU = [
     { id: "i15", name: "四季豆", price: 40, unit: "份" },
     { id: "i16", name: "玉米", price: 45, unit: "份" },
     { id: "i17", name: "豆乾", price: 20, unit: "份" },
-    { id: "i18", name: "百葉豆腐", price: 20, unit: "份" },
+    { id: "i18", name: "百頁豆腐", price: 20, unit: "份" },
     { id: "i19", name: "豆包", price: 20, unit: "份" }
   ]}
 ];
 var MAX_QTY = 20;
+var STOCK_TOPIC = "salt-stock-h8ppt9tbymvyced3";   /* 店家收銀頁會把「售完」品項送到這裡 */
+var soldOut = {};
 /* 線上送單：訂單會推播到店家手機的 ntfy App。topic 相當於密碼，被亂用時請換一個新的 */
 var ORDER_TOPIC = "salt-chicken-jn7ovfnl4u4als62";
 var ORDER_SERVER = "https://ntfy.sh/";
@@ -390,7 +421,7 @@ function count() {
 function suggestions(t) {
   var limit = budget ? budget - t : 40;
   return ALL.filter(function (i) {
-    return (qty[i.id] || 0) === 0 && i.price <= limit;
+    return (qty[i.id] || 0) === 0 && i.price <= limit && !soldOut[i.name];
   }).sort(function (a, b) { return b.price - a.price; }).slice(0, 3);
 }
 function renderExtras(t) {
@@ -454,9 +485,9 @@ function showPop(m) {
   popTimer = setTimeout(function () { pop.classList.remove("show"); }, 3400);
 }
 
-function celebrate(idx) {
+function celebrate(idx, noPop) {
   var m = MILESTONES[idx];
-  showPop(m);
+  if (!noPop) showPop(m);
   if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   var c = document.getElementById("fx");
   var ctx = c.getContext("2d");
@@ -521,7 +552,10 @@ function update() {
     var row = document.getElementById("row-" + i.id);
     row.classList.toggle("on", q > 0);
     row.querySelector(".minus").disabled = q === 0;
-    row.querySelector(".plus").disabled = q >= MAX_QTY;
+    var out = !!soldOut[i.name];
+    row.classList.toggle("soldout", out);
+    row.querySelector(".price").textContent = out ? "已售完" : money(i.price) + "／" + i.unit;
+    row.querySelector(".plus").disabled = out || q >= MAX_QTY;
   });
 
   document.getElementById("total").textContent = money(t);
@@ -690,6 +724,7 @@ function sendOrder() {
     document.getElementById("cancelBtn").style.display = "block";
     setSendMsg(ver > 1 ? "✅ 已送出修改，店家會以最新的為準" : "✅ 已送出！店家收到通知了", "ok");
     document.getElementById("orderHow").textContent = "取餐時請出示這個畫面或告訴店員你的號碼，並在現場付款";
+    showDone(code, ver);
   }).catch(function () {
     setSendMsg("送出失敗，請確認網路後再試一次", "err");
   }).then(function () {
@@ -697,6 +732,28 @@ function sendOrder() {
     sending = false;
   });
 }
+function showDone(code, ver) {
+  var li = "";
+  ALL.forEach(function (i) {
+    var q = qty[i.id] || 0;
+    if (q > 0) li += "<li><span>" + i.name + " × " + q + "</span><span>" + money(q * i.price) + "</span></li>";
+  });
+  var note = document.getElementById("custNote").value.trim();
+  document.getElementById("doneT").textContent = ver > 1 ? "🔄 訂單已更新！" : "🎉 訂單已送出！";
+  document.getElementById("doneNum").textContent = code;
+  document.getElementById("doneWho").textContent = document.getElementById("custName").value.trim() + "・預計 " + document.getElementById("custTime").value + " 取餐" + (note ? "・備註：" + note : "");
+  document.getElementById("doneLines").innerHTML = li;
+  document.getElementById("doneTotal").textContent = money(total());
+  document.getElementById("done").classList.add("open");
+  document.getElementById("doneOk").focus();
+  celebrate(3, true);
+}
+function closeDone() {
+  document.getElementById("done").classList.remove("open");
+  var b = document.getElementById("sendBtn");
+  if (b && b.focus) b.focus();
+}
+document.getElementById("doneOk").addEventListener("click", closeDone);
 function cancelOrder() {
   if (sending || !currentCode) return;
   if (!window.confirm("確定要取消這張訂單嗎？")) return;
@@ -768,13 +825,45 @@ document.getElementById("orderNew").addEventListener("click", function () {
   window.scrollTo(0, 0);
 });
 document.addEventListener("keydown", function (e) {
-  if (e.key === "Escape" && orderEl.classList.contains("open")) closeOrder();
+  if (e.key !== "Escape") return;
+  if (document.getElementById("done").classList.contains("open")) closeDone();
+  else if (orderEl.classList.contains("open")) closeOrder();
 });
 
 document.getElementById("clear").addEventListener("click", function () {
   qty = {};
   update();
 });
+
+/* ===== 售完同步（從店家收銀頁） ===== */
+function applyStock(names) {
+  soldOut = {};
+  names.forEach(function (n) { soldOut[n] = true; });
+  var removed = [];
+  ALL.forEach(function (i) {
+    if (soldOut[i.name] && qty[i.id]) { removed.push(i.name); delete qty[i.id]; }
+  });
+  update();
+  if (removed.length) showPop({ title: "有品項剛賣完了", text: removed.join("、") + " 已從你的訂單移除" });
+}
+function pollStock() {
+  if (!STOCK_TOPIC || !window.fetch) return;
+  fetch("https://ntfy.sh/" + STOCK_TOPIC + "/json?poll=1&since=12h", { cache: "no-store" })
+    .then(function (r) { return r.text(); })
+    .then(function (t) {
+      var last = null;
+      t.split("\n").forEach(function (l) {
+        try { var m = JSON.parse(l); if (m.event === "message") last = m; } catch (e) {}
+      });
+      if (!last) return;
+      var d = JSON.parse(last.message);
+      if (d && Array.isArray(d.out)) applyStock(d.out);
+    })
+    .catch(function () {});
+}
+pollStock();
+setInterval(pollStock, 45000);
+document.addEventListener("visibilitychange", function () { if (!document.hidden) pollStock(); });
 
 update();
 </script>

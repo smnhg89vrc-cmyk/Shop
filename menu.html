@@ -148,6 +148,8 @@ h2{margin:28px 0 4px;font-size:23px;letter-spacing:.04em;padding-bottom:6px;bord
 #status{margin:0;font-size:16px;font-weight:700}
 #status.ok{color:var(--ok)}
 #status.over{color:var(--over)}
+.row.soldout{opacity:.5}
+.row.soldout .name{text-decoration:line-through}
 </style>
 </head>
 <body>
@@ -241,11 +243,13 @@ var MENU = [
     { id: "i15", name: "四季豆", price: 40, unit: "份" },
     { id: "i16", name: "玉米", price: 45, unit: "份" },
     { id: "i17", name: "豆乾", price: 20, unit: "份" },
-    { id: "i18", name: "百葉豆腐", price: 20, unit: "份" },
+    { id: "i18", name: "百頁豆腐", price: 20, unit: "份" },
     { id: "i19", name: "豆包", price: 20, unit: "份" }
   ]}
 ];
 var MAX_QTY = 20;
+var STOCK_TOPIC = "salt-stock-h8ppt9tbymvyced3";   /* 店家收銀頁會把「售完」品項送到這裡 */
+var soldOut = {};
 /* 營業時間與社群連結（連結請貼完整網址，例如 https://www.facebook.com/你的粉專；留空就不顯示） */
 var FB_URL = "https://www.facebook.com/share/1A9nX6ikWY/";
 var IG_URL = "https://www.instagram.com/taiwan_no.1_c_s_c/";
@@ -309,7 +313,7 @@ function count() {
 function suggestions(t) {
   var limit = budget ? budget - t : 40;
   return ALL.filter(function (i) {
-    return (qty[i.id] || 0) === 0 && i.price <= limit;
+    return (qty[i.id] || 0) === 0 && i.price <= limit && !soldOut[i.name];
   }).sort(function (a, b) { return b.price - a.price; }).slice(0, 3);
 }
 function renderExtras(t) {
@@ -440,7 +444,10 @@ function update() {
     var row = document.getElementById("row-" + i.id);
     row.classList.toggle("on", q > 0);
     row.querySelector(".minus").disabled = q === 0;
-    row.querySelector(".plus").disabled = q >= MAX_QTY;
+    var out = !!soldOut[i.name];
+    row.classList.toggle("soldout", out);
+    row.querySelector(".price").textContent = out ? "已售完" : money(i.price) + "／" + i.unit;
+    row.querySelector(".plus").disabled = out || q >= MAX_QTY;
   });
 
   document.getElementById("total").textContent = money(t);
@@ -520,6 +527,36 @@ document.getElementById("clear").addEventListener("click", function () {
   qty = {};
   update();
 });
+
+/* ===== 售完同步（從店家收銀頁） ===== */
+function applyStock(names) {
+  soldOut = {};
+  names.forEach(function (n) { soldOut[n] = true; });
+  var removed = [];
+  ALL.forEach(function (i) {
+    if (soldOut[i.name] && qty[i.id]) { removed.push(i.name); delete qty[i.id]; }
+  });
+  update();
+  if (removed.length) showPop({ title: "有品項剛賣完了", text: removed.join("、") + " 已從你的訂單移除" });
+}
+function pollStock() {
+  if (!STOCK_TOPIC || !window.fetch) return;
+  fetch("https://ntfy.sh/" + STOCK_TOPIC + "/json?poll=1&since=12h", { cache: "no-store" })
+    .then(function (r) { return r.text(); })
+    .then(function (t) {
+      var last = null;
+      t.split("\n").forEach(function (l) {
+        try { var m = JSON.parse(l); if (m.event === "message") last = m; } catch (e) {}
+      });
+      if (!last) return;
+      var d = JSON.parse(last.message);
+      if (d && Array.isArray(d.out)) applyStock(d.out);
+    })
+    .catch(function () {});
+}
+pollStock();
+setInterval(pollStock, 45000);
+document.addEventListener("visibilitychange", function () { if (!document.hidden) pollStock(); });
 
 update();
 </script>

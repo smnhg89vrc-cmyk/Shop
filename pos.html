@@ -197,7 +197,7 @@ input[type=date],#cash{min-height:46px;padding:4px 12px;border:2px solid var(--l
   </section>
 
   <section id="v-items" hidden>
-    <div class="box"><h3>品項管理（售完後收銀頁會變灰，無法點選）</h3><div id="ilist"></div>
+    <div class="box"><h3>品項管理（設定售完後，收銀頁會變灰，客人頁也會同步顯示售完）</h3><div id="ilist"></div>
       <button class="mini" id="add" style="margin-top:10px">＋ 新增品項</button></div>
   </section>
 </main>
@@ -254,7 +254,7 @@ var MENU = [
     { id: "i15", name: "四季豆", price: 40, unit: "份" },
     { id: "i16", name: "玉米", price: 45, unit: "份" },
     { id: "i17", name: "豆乾", price: 20, unit: "份" },
-    { id: "i18", name: "百葉豆腐", price: 20, unit: "份" },
+    { id: "i18", name: "百頁豆腐", price: 20, unit: "份" },
     { id: "i19", name: "豆包", price: 20, unit: "份" }
   ]}
 ];
@@ -262,6 +262,9 @@ const SEED=[];MENU.forEach(g=>g.items.forEach(i=>SEED.push({id:i.id,name:i.name,
 function load(k,d){try{const v=JSON.parse(localStorage.getItem(k));return Array.isArray(v)?v:d}catch(e){return d}}
 let items=load("pos2_items",SEED);
 let tx=load("pos2_tx",[]);
+const REN={"百葉豆腐":"百頁豆腐"};
+items.forEach(i=>{if(REN[i.name])i.name=REN[i.name]});
+tx.forEach(x=>(x.items||[]).forEach(i=>{if(REN[i.n])i.n=REN[i.n]}));
 let cart={},pay="現金",rng="day",view="pos",tt=null;
 function save(){try{localStorage.setItem("pos2_items",JSON.stringify(items));localStorage.setItem("pos2_tx",JSON.stringify(tx))}catch(e){toast("儲存失敗，請不要使用無痕模式")}}
 function toast(m){const t=$("toast");t.textContent=m;t.style.display="block";clearTimeout(tt);tt=setTimeout(()=>{t.style.display="none"},2400)}
@@ -413,7 +416,7 @@ $("ilist").addEventListener("click",e=>{
   if(b.dataset.a==="out"){i.out=!i.out;if(i.out)delete cart[i.id]}
   else if(b.dataset.a==="price"){const v=parseInt(prompt("「"+i.name+"」新價格（元）",i.price));if(isNaN(v)||v<0||v>99999)return toast("價格不正確");i.price=v}
   else if(confirm("確定刪除「"+i.name+"」嗎？（過去的交易紀錄不受影響）")){items=items.filter(x=>x.id!=i.id);delete cart[i.id]}
-  save();renderItems();renderMenu();renderCart();
+  save();renderItems();renderMenu();renderCart();publishStock();
 });
 $("add").addEventListener("click",()=>{
   const gs=[...new Set(items.map(i=>i.group))];
@@ -456,6 +459,7 @@ $("wipe").addEventListener("click",()=>{
 /* ---------- 線上訂單（客人頁送出 → ntfy → 這裡） ---------- */
 const ORDER_TOPIC="salt-chicken-jn7ovfnl4u4als62";
 let orders=load("pos2_orders",[]),seen=load("pos2_seen",[]),curOrder=null,es=null,online=false;
+orders.forEach(o=>(o.items||[]).forEach(i=>{if(REN[i.n])i.n=REN[i.n]}));
 function saveO(){
   orders=orders.filter(x=>x.status==="pending"||Date.now()-x.t<864e5).slice(-100);
   try{localStorage.setItem("pos2_orders",JSON.stringify(orders));localStorage.setItem("pos2_seen",JSON.stringify(seen.slice(-300)))}catch(e){}
@@ -465,7 +469,7 @@ function parseMsg(title,msg){
   const code=(msg.match(/號碼\s+([A-Z]\d{2})/)||[])[1];if(!code)return null;
   if(/^❌/.test(title)||/已取消/.test(msg))return{code:code,cancel:true};
   const its=[];
-  msg.split("\n").forEach(l=>{const m=l.match(/^(.+?) × (\d+) = NT\$ ([\d,]+)$/);if(m)its.push({n:m[1],q:+m[2],a:num(m[3])})});
+  msg.split("\n").forEach(l=>{const m=l.match(/^(.+?) × (\d+) = NT\$ ([\d,]+)$/);if(m)its.push({n:REN[m[1]]||m[1],q:+m[2],a:num(m[3])})});
   if(!its.length)return null;
   const g=r=>(msg.match(r)||[])[1]||"";
   return{code:code,mod:/^🔄/.test(title),name:g(/稱呼：(.+)/),pickup:g(/取餐\s+(\d{2}:\d{2})/),note:g(/備註：(.+)/),items:its,total:num(g(/總計 NT\$ ([\d,]+)/))};
@@ -536,11 +540,21 @@ $("olist").addEventListener("click",e=>{
   else if(confirm("確定刪除這張線上訂單嗎？")){orders=orders.filter(x=>x.k!==b.dataset.k);if(curOrder===b.dataset.k){curOrder=null;renderBanner()}saveO();renderOrders()}
 });
 $("olbar").addEventListener("click",e=>{if(e.target.closest("#olx")){curOrder=null;cart={};updateRows();renderBanner()}});
-document.addEventListener("visibilitychange",()=>{if(!document.hidden)connect()});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){connect();publishStock()}});
+
+/* ---------- 售完同步（送到客人頁） ---------- */
+const STOCK_TOPIC="salt-stock-h8ppt9tbymvyced3";
+function publishStock(){
+  if(!STOCK_TOPIC||typeof fetch==="undefined")return;
+  try{
+    fetch("https://ntfy.sh/",{method:"POST",headers:{"Content-Type":"text/plain;charset=UTF-8"},
+      body:JSON.stringify({topic:STOCK_TOPIC,title:"品項狀態",message:JSON.stringify({out:items.filter(i=>i.out).map(i=>i.name),t:Date.now()}),priority:1})}).catch(()=>{});
+  }catch(e){}
+}
 
 /* ---------- 開始 ---------- */
 $("qd").value=ymd(Date.now());
-renderMenu();renderPay();setView("pos");renderOrders();connect();
+renderMenu();renderPay();setView("pos");renderOrders();connect();publishStock();setInterval(publishStock,20*60*1000);
 </script>
 </body>
 </html>
