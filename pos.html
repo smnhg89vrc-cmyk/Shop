@@ -136,8 +136,11 @@ input[type=date],#cash{min-height:46px;padding:4px 12px;border:2px solid var(--l
 .item.o b{opacity:.5}
 .item .ops button{min-height:44px;padding:0 10px;font-size:15px}
 .item .ops .x{color:var(--accent)}
-.seg{display:flex;gap:6px;margin:10px 0}
-.seg button{flex:1;min-height:46px;font-size:15px}
+.seg{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.seg button{flex:1 1 30%;min-height:46px;font-size:15px}
+.paynote{margin:6px 0;padding:8px 10px;background:var(--tint);border:2px solid var(--gold);border-radius:10px;font-weight:700}
+.paynote[hidden]{display:none}
+.paidtag{color:var(--ok)}
 .quick{display:flex;gap:6px;margin:8px 0}
 .quick button{flex:1;min-height:42px;border-radius:8px}
 .chg{min-height:24px;font-weight:800;color:var(--ok);text-align:right}
@@ -210,6 +213,7 @@ input[type=date],#cash{min-height:46px;padding:4px 12px;border:2px solid var(--l
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-t"><div class="sheet-in">
   <div class="sh-top"><h2 class="serif" id="sh-t">結帳</h2><button type="button" class="mini" id="sh-x">關閉</button></div>
   <div class="sh-total serif" id="sh-total">NT$ 0</div>
+  <p class="paynote" id="sh-note" hidden></p>
   <div class="seg" id="seg"></div>
   <div id="cashbox">
     <input id="cash" type="number" inputmode="numeric" placeholder="收現金額" aria-label="收現金額">
@@ -229,7 +233,7 @@ input[type=date],#cash{min-height:46px;padding:4px 12px;border:2px solid var(--l
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const p2=n=>("0"+n).slice(-2);
-const PAYS=["現金","LINE Pay","街口","全支付"];
+const PAYS=["現金","LINE Pay","一卡通","街口","全支付","其他 TWQR"];
 const MAX=99;
 var MENU = [
   { group: "雞肉類", items: [
@@ -323,6 +327,8 @@ function openSheet(){
   if(!total())return toast("還沒點餐");
   renderPay();
   const co=curOrderInfo();$("sh-t").textContent=co?"結帳・"+co.code+" "+co.name:"結帳";
+  const nt=co?"客人選擇："+co.pay+(co.online?(co.paid?"・💰 已回報付款，請先到收款 App 核對再確認":"・尚未回報付款，請確認已收到款項"):""):"";
+  $("sh-note").textContent=nt;$("sh-note").hidden=!nt;
   $("sheet").classList.add("on");
   if(pay==="現金")$("cash").focus();
 }
@@ -465,14 +471,17 @@ function saveO(){
   try{localStorage.setItem("pos2_orders",JSON.stringify(orders));localStorage.setItem("pos2_seen",JSON.stringify(seen.slice(-300)))}catch(e){}
 }
 const num=s=>parseInt(String(s).replace(/,/g,""))||0;
+const payKeyOf=l=>{if(!l||/^現場付現/.test(l))return"現金";if(/^LINE Pay/.test(l))return"LINE Pay";if(/^一卡通/.test(l))return"一卡通";const m=l.match(/^TWQR（(.+)）/),a=m?m[1]:"";return a==="街口"?"街口":a==="全支付"?"全支付":"其他 TWQR"};
 function parseMsg(title,msg){
   const code=(msg.match(/號碼\s+([A-Z]\d{2})/)||[])[1];if(!code)return null;
+  if(/^💰/.test(title))return{code:code,paidClaim:true,payLabel:(msg.match(/已用 (.+?) 付款/)||[])[1]||""};
   if(/^❌/.test(title)||/已取消/.test(msg))return{code:code,cancel:true};
   const its=[];
   msg.split("\n").forEach(l=>{const m=l.match(/^(.+?) × (\d+) = NT\$ ([\d,]+)$/);if(m)its.push({n:REN[m[1]]||m[1],q:+m[2],a:num(m[3])})});
   if(!its.length)return null;
   const g=r=>(msg.match(r)||[])[1]||"";
-  return{code:code,mod:/^🔄/.test(title),name:g(/稱呼：(.+)/),pickup:g(/取餐\s+(\d{2}:\d{2})/),note:g(/備註：(.+)/),items:its,total:num(g(/總計 NT\$ ([\d,]+)/))};
+  const raw=(msg.match(/^付款：(.+)$/m)||[])[1]||"",lab=raw.replace(/（線上）$/,"");
+  return{payLabel:lab||"現場付現",payKey:payKeyOf(lab),online:!!lab&&!/^現場付現/.test(lab),code:code,mod:/^🔄/.test(title),name:g(/稱呼：(.+)/),pickup:g(/取餐\s+(\d{2}:\d{2})/),note:g(/備註：(.+)/),items:its,total:num(g(/總計 NT\$ ([\d,]+)/))};
 }
 function handleMsg(m){
   if(m.event!=="message"||seen.includes(m.id))return;
@@ -481,14 +490,20 @@ function handleMsg(m){
   const o=parseMsg(m.title||"",m.message||"");
   if(!o){saveO();return}
   const pend=orders.find(x=>x.code===o.code&&x.status==="pending");
+  if(o.paidClaim){
+    if(pend){pend.paid=true;pend.paidAt=Date.now();toast("💰 "+o.code+"・"+pend.name+" 回報已付款（"+(o.payLabel||pend.payLabel)+"），請到 App 核對");if(curOrder===pend.k)renderBanner()}
+    else toast("收到 "+o.code+" 的付款回報，但找不到待處理的訂單");
+    saveO();renderOrders();return;
+  }
   if(o.cancel){
     if(pend){pend.status="cancelled";toast("客人取消了訂單 "+o.code);if(curOrder===pend.k){curOrder=null;renderBanner()}}
     saveO();renderOrders();return;
   }
-  const rec={t:(m.time||0)*1000||Date.now(),status:"pending",code:o.code,name:o.name,pickup:o.pickup,note:o.note,items:o.items,total:o.total};
+  const rec={t:(m.time||0)*1000||Date.now(),status:"pending",code:o.code,name:o.name,pickup:o.pickup,note:o.note,items:o.items,total:o.total,payLabel:o.payLabel,payKey:o.payKey,online:o.online,paid:false};
   if(o.mod&&pend){
+    const wasPaid=pend.paid;
     Object.assign(pend,rec,{ver:(pend.ver||1)+1});
-    toast("訂單 "+o.code+" 已更新"+(curOrder===pend.k?"，請重新載入":""));
+    toast("訂單 "+o.code+" 已更新"+(wasPaid?"（先前已回報付款，請注意金額）":"")+(curOrder===pend.k?"，請重新載入":""));
   }else{
     rec.k=m.id;rec.ver=1;orders.push(rec);
     toast("🍗 新訂單 "+o.code+"・"+o.name+"・"+o.pickup+"取");
@@ -496,25 +511,26 @@ function handleMsg(m){
   saveO();renderOrders();
 }
 const pending=()=>orders.filter(x=>x.status==="pending");
+const payLine=o=>`<div class="s">付款：${esc(o.payLabel||"現場付現")}${o.online?(o.paid?' <b class="paidtag">💰 客人回報已付款，請核對</b>':"　⏳ 尚未付款"):"　💵 取餐時現場收"}</div>`;
 function renderOrders(){
   const l=pending().sort((a,b)=>(a.pickup||"99").localeCompare(b.pickup||"99")||a.t-b.t);
   $("obadge").textContent=l.length;$("obadge").hidden=!l.length;
   document.title=(l.length?"("+l.length+") ":"")+"鹽酥雞收銀記帳";
   $("ostat").textContent=online?"🟢 已連線，客人送單會自動出現在這裡":"🔴 尚未連線，重新連線中…（需要網路）";
-  $("olist").innerHTML=l.length?l.map(o=>`<div class="ocard"><div class="lr"><b>${esc(o.code)}・${esc(o.name)}</b><b>取餐 ${esc(o.pickup)}</b></div>${o.ver>1?'<div class="s">已修改（第 '+o.ver+' 版）</div>':""}<div class="s">${o.items.map(i=>esc(i.n)+"×"+i.q).join("、")}</div>${o.note?'<div class="s">備註：'+esc(o.note)+"</div>":""}<div class="lr"><b>NT$ ${o.total}</b><span class="ops"><button class="mini" type="button" data-o="load" data-k="${esc(o.k)}">載入收銀</button><button class="mini" type="button" data-o="del" data-k="${esc(o.k)}">刪除</button></span></div></div>`).join(""):'<div class="empty">目前沒有待處理的線上訂單</div>';
+  $("olist").innerHTML=l.length?l.map(o=>`<div class="ocard"><div class="lr"><b>${esc(o.code)}・${esc(o.name)}</b><b>取餐 ${esc(o.pickup)}</b></div>${o.ver>1?'<div class="s">已修改（第 '+o.ver+' 版）</div>':""}<div class="s">${o.items.map(i=>esc(i.n)+"×"+i.q).join("、")}</div>${payLine(o)}${o.note?'<div class="s">備註：'+esc(o.note)+"</div>":""}<div class="lr"><b>NT$ ${o.total}</b><span class="ops"><button class="mini" type="button" data-o="load" data-k="${esc(o.k)}">載入收銀</button><button class="mini" type="button" data-o="del" data-k="${esc(o.k)}">刪除</button></span></div></div>`).join(""):'<div class="empty">目前沒有待處理的線上訂單</div>';
 }
-function curOrderInfo(){const o=orders.find(x=>x.k===curOrder);return o?{code:o.code,name:o.name,pickup:o.pickup,note:o.note}:undefined}
+function curOrderInfo(){const o=orders.find(x=>x.k===curOrder);return o?{code:o.code,name:o.name,pickup:o.pickup,note:o.note,pay:o.payLabel||"現場付現",online:!!o.online,paid:!!o.paid}:undefined}
 function renderBanner(){
   const o=orders.find(x=>x.k===curOrder),b=$("olbar");
   b.hidden=!o;
-  if(o)b.innerHTML=`<span>🌐 處理線上訂單 ${esc(o.code)}・${esc(o.name)}（取餐 ${esc(o.pickup)}）${o.note?"<br>備註："+esc(o.note):""}</span><button class="mini" type="button" id="olx">取消載入</button>`;
+  if(o)b.innerHTML=`<span>🌐 處理線上訂單 ${esc(o.code)}・${esc(o.name)}（取餐 ${esc(o.pickup)}）${o.note?"<br>備註："+esc(o.note):""}<br>付款：${esc(o.payLabel||"現場付現")}${o.online&&o.paid?" 💰已回報付款":""}</span><button class="mini" type="button" id="olx">取消載入</button>`;
 }
 function loadOrder(k){
   const o=orders.find(x=>x.k===k);if(!o)return;
   if(count()&&!confirm("目前收銀裡的品項會被取代，確定嗎？"))return;
   cart={};const miss=[];let t=0;
   o.items.forEach(i=>{const it=items.find(x=>x.name===i.n);if(!it||it.out){miss.push(i.n);return}cart[it.id]=Math.min(MAX,i.q);t+=it.price*i.q});
-  curOrder=k;updateRows();renderBanner();setView("pos");
+  curOrder=k;pay=o.payKey||"現金";updateRows();renderBanner();setView("pos");
   if(miss.length)toast("找不到或已售完："+miss.join("、")+"，請手動處理");
   else if(t!==o.total)toast("目前價格和客人看到的不同（客人 NT$ "+o.total+"）");
 }
