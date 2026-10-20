@@ -35,15 +35,18 @@ nav .on{color:#a34832;border-top-color:#a34832}
 <header><h1 id="ttl"></h1></header><main id="app"></main><div id="toast"></div>
 <nav><button data-t="sale">出貨</button><button data-t="buy">進貨</button><button data-t="view">查帳</button><button data-t="items">品項</button><button data-t="out">匯出</button></nav>
 <script>
-const KEY='zj_ledger_v2',UNITS=['份','斤','公斤','包','瓶','箱','袋','個','條','桶'],CATS=['肉品類','醬料類','滷切類','調味類'],NAMES={sale:'出貨',buy:'進貨',view:'查帳',items:'品項',out:'匯出'};
+const KEY='zj_ledger_v2',UNITS=['份','台斤','公斤','包','瓶','箱','袋','個','條','桶'],CATS=['肉品類','醬料類','滷切類','調味類'],NAMES={sale:'出貨',buy:'進貨',view:'查帳',items:'品項',out:'匯出'};
 const $=s=>document.querySelector(s),p2=n=>String(n).padStart(2,'0'),r2=n=>Math.round(n*100)/100,money=n=>r2(n).toLocaleString('en-US'),uid=()=>Math.random().toString(36).slice(2,9);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])),dshow=s=>s.replace(/-/g,'/');
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())};
 function seed(){const L={肉品類:'牛骨,炒肉,一級肉,二級肉,牛肋條,帶骨牛排,牛雜,牛筋條,牛筋粒,牛肉筋,牛尾,牛肉香腸',醬料類:'鹹湯,炒醬,醋醬,咖哩醬,和風醬,三杯醬,黑胡椒醬,壽喜醬',滷切類:'牛心,牛肝,牛腱,牛舌,牛肚,牛腳蹄',調味類:'湯料包'};const items=[];for(const c in L)L[c].split(',').forEach(n=>items.push({id:uid(),cat:c,name:n,unit:'份',price:0,cost:0}));return{items,vendors:[],orders:[]}}
-function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.items)return s}catch(e){}return seed()}
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.items){s.items.forEach(i=>{if(i.unit==='斤')i.unit='台斤'});return s}}catch(e){}return seed()}
 let db=load(),tab='sale';const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){}};
-const drafts={sale:{date:today(),vendor:'',qty:{},price:{},note:''},buy:{date:today(),qty:{},price:{},note:''}},flt={from:today().slice(0,8)+'01',to:today()};
+const drafts={sale:{date:today(),vendor:'',qty:{},price:{},lw:{},note:''},buy:{date:today(),qty:{},price:{},lw:{},note:''}},flt={from:today().slice(0,8)+'01',to:today()};
 function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(t.h);t.h=setTimeout(()=>t.style.display='none',1800)}
+const isJin=u=>u==='台斤'||u==='斤';
+const Q=(d,i)=>(parseFloat(d.qty[i.id])||0)+(isJin(i.unit)?(parseFloat(d.lw[i.id])||0)/16:0);
+const qt=(q,u)=>{if(!isJin(u))return r2(q)+u;let j=Math.floor(q+1e-9),l=Math.round((q-j)*1600)/100;if(l>=16){j++;l=0}return(j||!l?j+'斤':'')+(l?l+'兩':'')};
 const priceOf=(i,t)=>t==='sale'?i.price:i.cost;
 const ep=(i,t)=>{const v=drafts[t].price[i.id];return(v!==undefined&&v!=='')?(parseFloat(v)||0):priceOf(i,t)};
 function orderView(t){const d=drafts[t],S=t==='sale',lab=S?'單價':'進價';
@@ -51,9 +54,9 @@ let h=`<div class="card top"><span>日期</span><input type="date" id="d-date" v
 if(S)h+=`<span>廠商</span><select id="d-vendor"><option value="">（不指定）</option>${db.vendors.map(v=>`<option${v===d.vendor?' selected':''}>${esc(v)}</option>`).join('')}</select>`;
 h+='</div>';
 CATS.forEach(c=>{const its=db.items.filter(i=>i.cat===c&&i.name);if(!its.length)return;h+=`<section class="card"><div class="cat">${c}</div>`;
-its.forEach(i=>{const p=priceOf(i,t);h+=`<div class="row"><div class="nm"><b>${esc(i.name)}</b></div><div class="qty"><button data-m="${i.id}">−</button><input inputmode="decimal" data-q="${i.id}" placeholder="0" value="${d.qty[i.id]||''}"><button data-p="${i.id}">+</button></div><div class="pr"><small>${lab}</small><input inputmode="decimal" data-pr="${i.id}" placeholder="${p||lab}" value="${d.price[i.id]??''}" class="${d.price[i.id]?'ov':''}"><small>元 / ${esc(i.unit)}　（可臨時修改）</small></div></div>`});h+='</section>'});
+its.forEach(i=>{const p=priceOf(i,t);h+=`<div class="row"><div class="nm"><b>${esc(i.name)}</b><small>數量（${esc(i.unit)}）</small></div><div class="qty"><button data-m="${i.id}">−</button><input inputmode="decimal" data-q="${i.id}" placeholder="0" value="${d.qty[i.id]||''}"><button data-p="${i.id}">+</button></div>${isJin(i.unit)?`<div class="pr"><small>再加</small><input inputmode="decimal" data-lw="${i.id}" placeholder="0" value="${d.lw[i.id]||''}"><small>兩　（1斤＝16兩）</small></div>`:''}<div class="pr"><small>${lab}</small><input inputmode="decimal" data-pr="${i.id}" placeholder="${p||lab}" value="${d.price[i.id]??''}" class="${d.price[i.id]?'ov':''}"><small>元 / ${esc(i.unit)}　（可臨時修改）</small></div></div>`});h+='</section>'});
 return h+`<section class="card" id="detail"></section><div class="bar"><div class="tt" id="tot">0 元</div><input id="d-note" placeholder="備註（可不填）" value="${esc(d.note)}"><button class="pri" data-act="save">${S?'存出貨':'存進貨'}</button></div>`}
-function upTotal(){const e=$('#tot');if(!e)return;const d=drafts[tab];let s=0,rows='';db.items.forEach(i=>{const q=parseFloat(d.qty[i.id]);if(q>0){const p=ep(i,tab),a=r2(q*p);s+=a;rows+=`<div class="tr"><span>${esc(i.name)}</span><span>${r2(q)}${esc(i.unit)}</span><span>${p?money(p):'—'}</span><span>${money(a)}</span></div>`}});
+function upTotal(){const e=$('#tot');if(!e)return;const d=drafts[tab];let s=0,rows='';db.items.forEach(i=>{const q=Q(d,i);if(q>0){const p=ep(i,tab),a=r2(q*p);s+=a;rows+=`<div class="tr"><span>${esc(i.name)}</span><span>${qt(q,i.unit)}</span><span>${p?money(p):'—'}</span><span>${money(a)}</span></div>`}});
 e.textContent=money(s)+' 元';$('#detail').innerHTML='<div class="cat">本單明細</div><div class="tr th"><span>品項</span><span>數量</span><span>單價</span><span>金額</span></div>'+(rows?rows+`<div class="tr s"><span>合計</span><span></span><span></span><span>${money(s)}</span></div>`:'<div class="empty">尚未選擇品項</div>')}
 function viewPage(){const os=db.orders.filter(o=>o.date>=flt.from&&o.date<=flt.to).sort((a,b)=>b.date.localeCompare(a.date)||b.ts-a.ts);
 const rev=os.filter(o=>o.type==='sale').reduce((s,o)=>s+o.total,0),cost=os.filter(o=>o.type==='buy').reduce((s,o)=>s+o.total,0),gp=rev-cost;
@@ -61,17 +64,17 @@ let h=`<div class="f"><input type="date" id="f-from" value="${flt.from}"><span>�
 <div class="card sum"><div>營收<b>${money(rev)} 元</b></div><div>進貨支出<b>${money(cost)} 元</b></div><div>毛利<b>${money(gp)} 元</b></div><div>毛利率<b>${rev?Math.round(gp/rev*100):0} %</b></div><div>單數<b>${os.length} 張</b></div></div>`;
 if(!os.length)h+='<p style="text-align:center;color:#8a7a6e">這段期間沒有紀錄</p>';
 os.forEach(o=>{h+=`<div class="card"><div class="oh"><div><b>單號 ${o.no}</b><span class="tag ${o.type==='buy'?'b':''}">${o.type==='sale'?'出貨':'進貨'}</span><div class="sub">${dshow(o.date)}${o.vendor?' · '+esc(o.vendor):''}${o.note?' · '+esc(o.note):''}</div></div><div class="t">${money(o.total)} 元</div></div>
-<div class="tr th"><span>品項</span><span>數量</span><span>單價</span><span>金額</span></div>`+o.lines.map(l=>`<div class="tr"><span>${esc(l.name)}</span><span>${r2(l.qty)}${esc(l.unit)}</span><span>${l.price?money(l.price):'—'}</span><span>${money(l.amt)}</span></div>`).join('')+`<div class="tr s"><span>合計</span><span></span><span></span><span>${money(o.total)}</span></div><div style="text-align:right;margin-top:8px"><button class="soft" data-act="del-order" data-id="${o.id}">刪除這張單</button></div></div>`});return h}
+<div class="tr th"><span>品項</span><span>數量</span><span>單價</span><span>金額</span></div>`+o.lines.map(l=>`<div class="tr"><span>${esc(l.name)}</span><span>${qt(l.qty,l.unit)}</span><span>${l.price?money(l.price):'—'}</span><span>${money(l.amt)}</span></div>`).join('')+`<div class="tr s"><span>合計</span><span></span><span></span><span>${money(o.total)}</span></div><div style="text-align:right;margin-top:8px"><button class="soft" data-act="del-order" data-id="${o.id}">刪除這張單</button></div></div>`});return h}
 function itemsPage(){let h=`<div class="card"><b>廠商</b><div class="f" style="margin-top:8px"><input id="v-new" placeholder="輸入廠商名稱"><button class="pri" data-act="add-vendor">新增</button></div>${db.vendors.map((v,i)=>`<span class="chip">${esc(v)}<button data-act="rm-vendor" data-i="${i}">×</button></span>`).join('')||'<small style="color:#8a7a6e">尚未新增廠商</small>'}</div><div class="card">`;
 db.items.forEach(i=>{const us=UNITS.includes(i.unit)?UNITS:[...UNITS,i.unit];h+=`<div class="it"><div class="g2"><select data-f="cat" data-id="${i.id}">${CATS.map(c=>`<option${c===i.cat?' selected':''}>${c}</option>`).join('')}</select><input data-f="name" data-id="${i.id}" placeholder="品項名稱" value="${esc(i.name)}"></div><div class="g3"><select data-f="unit" data-id="${i.id}">${us.map(u=>`<option${u===i.unit?' selected':''}>${esc(u)}</option>`).join('')}</select><input inputmode="decimal" data-f="price" data-id="${i.id}" placeholder="單價" value="${i.price||''}"><input inputmode="decimal" data-f="cost" data-id="${i.id}" placeholder="進價" value="${i.cost||''}"></div><button class="soft" data-act="rm-item" data-id="${i.id}">刪除此品項</button></div>`});
 return h+'<button class="pri" style="width:100%;margin-top:12px" data-act="add-item">＋ 新增品項</button></div>'}
 const outPage=()=>`<div class="card"><p>把所有出貨與進貨明細存成 CSV 檔，可用 Numbers 開啟查詢。</p><button class="pri" data-act="csv">下載 CSV</button></div><div class="card"><p>清除所有出貨與進貨紀錄（品項、單位、單價、進價、廠商都會保留）。</p><button class="soft" data-act="clear">清除紀錄</button></div>`;
 function render(keep){$('#ttl').textContent=NAMES[tab];document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));
 $('#app').innerHTML=tab==='sale'||tab==='buy'?orderView(tab):tab==='view'?viewPage():tab==='items'?itemsPage():outPage();upTotal();if(!keep)scrollTo(0,0)}
-function saveOrder(){const t=tab,d=drafts[t],lines=[];db.items.forEach(i=>{const q=parseFloat(d.qty[i.id]);if(q>0){const p=ep(i,t);lines.push({name:i.name,unit:i.unit,qty:q,price:p,amt:r2(q*p)})}});
+function saveOrder(){const t=tab,d=drafts[t],lines=[];db.items.forEach(i=>{const q=Q(d,i);if(q>0){const p=ep(i,t);lines.push({name:i.name,unit:i.unit,qty:q,price:p,amt:r2(q*p)})}});
 if(!lines.length)return toast('請先填入品項數量');
 const pre=(t==='buy'?'進':'')+d.date.slice(5,7)+d.date.slice(8,10)+'-',n=Math.max(0,...db.orders.filter(o=>o.no.startsWith(pre)).map(o=>+o.no.slice(pre.length)))+1,no=pre+String(n).padStart(3,'0');
-db.orders.push({id:uid(),no,type:t,date:d.date,vendor:t==='sale'?d.vendor:'',note:d.note,lines,total:r2(lines.reduce((s,l)=>s+l.amt,0)),ts:Date.now()});save();d.qty={};d.price={};d.note='';toast('已存檔 '+no);render()}
+db.orders.push({id:uid(),no,type:t,date:d.date,vendor:t==='sale'?d.vendor:'',note:d.note,lines,total:r2(lines.reduce((s,l)=>s+l.amt,0)),ts:Date.now()});save();d.qty={};d.price={};d.lw={};d.note='';toast('已存檔 '+no);render()}
 function csv(){const R=[['日期','單號','類型','廠商','備註','品項','單位','數量','單價','總價']];db.orders.slice().sort((a,b)=>a.date.localeCompare(b.date)||a.ts-b.ts).forEach(o=>o.lines.forEach(l=>R.push([dshow(o.date),o.no,o.type==='sale'?'出貨':'進貨',o.vendor||'',o.note||'',l.name,l.unit,l.qty,l.price,l.amt])));
 const t='\ufeff'+R.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\r\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv;charset=utf-8'}));a.download='張記黃牛肉帳目.csv';document.body.appendChild(a);a.click();a.remove()}
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const D=b.dataset;
@@ -88,6 +91,7 @@ case'clear':if(confirm('確定清除所有出貨與進貨紀錄？品項與價�
 document.addEventListener('input',e=>{const t=e.target;
 if(t.dataset.q){drafts[tab].qty[t.dataset.q]=t.value;upTotal()}
 else if(t.dataset.pr){drafts[tab].price[t.dataset.pr]=t.value;t.classList.toggle('ov',t.value!=='');upTotal()}
+else if(t.dataset.lw){drafts[tab].lw[t.dataset.lw]=t.value;upTotal()}
 else if(t.id==='d-note')drafts[tab].note=t.value;
 else if(t.dataset.f){const it=db.items.find(i=>i.id===t.dataset.id);if(!it)return;const f=t.dataset.f;it[f]=(f==='price'||f==='cost')?(parseFloat(t.value)||0):t.value;save()}});
 document.addEventListener('change',e=>{const t=e.target;
