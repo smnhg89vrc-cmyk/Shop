@@ -182,6 +182,7 @@ h2{margin:28px 0 4px;font-size:23px;letter-spacing:.04em;padding-bottom:6px;bord
       <button class="chip" type="button" data-v="200">200</button>
       <button class="chip" type="button" data-v="300">300</button>
       <button class="chip" type="button" data-v="500">500</button>
+      <button class="chip" type="button" data-v="800">800</button>
     </div>
   </section>
 
@@ -201,6 +202,7 @@ h2{margin:28px 0 4px;font-size:23px;letter-spacing:.04em;padding-bottom:6px;bord
       <div class="btns">
         <a id="fbLink" href="#" target="_blank" rel="noopener noreferrer" hidden>Facebook 粉絲專頁</a>
         <a id="igLink" href="#" target="_blank" rel="noopener noreferrer" hidden>Instagram 粉絲專頁</a>
+        <a id="thLink" href="#" target="_blank" rel="noopener noreferrer" hidden>Threads 帳號</a>
       </div>
     </div>
   </section>
@@ -256,9 +258,10 @@ var soldOut = {};
 /* 營業時間與社群連結（連結請貼完整網址，例如 https://www.facebook.com/你的粉專；留空就不顯示） */
 var FB_URL = "https://www.facebook.com/share/1A9nX6ikWY/";
 var IG_URL = "https://www.instagram.com/taiwan_no.1_c_s_c/";
+var TH_URL = "https://www.threads.com/@taiwan_no.1_c_s_c";
 function setupSocial() {
   var any = false;
-  [["fbLink", FB_URL], ["igLink", IG_URL]].forEach(function (x) {
+  [["fbLink", FB_URL], ["igLink", IG_URL], ["thLink", TH_URL]].forEach(function (x) {
     var a = document.getElementById(x[0]);
     if (/^https:\/\//i.test(x[1])) {
       a.href = x[1];
