@@ -770,17 +770,28 @@ function refreshSendUI() {
   setSendMsg(paidClaimed ? "已通知店家你已付款" : sentBefore ? "這張訂單已送出過。修改後再送一次，店家會以最新的為準" : "", "");
 }
 function postToShop(title, message) {
-  var ctl = window.AbortController ? new AbortController() : null;
-  var timer = setTimeout(function () { if (ctl) ctl.abort(); }, 12000);
-  return fetch(ORDER_SERVER, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=UTF-8" },
-    body: JSON.stringify({ topic: ORDER_TOPIC, title: title, message: message, priority: 4, tags: ["poultry_leg"] }),
-    signal: ctl ? ctl.signal : undefined
-  }).then(function (r) {
-    clearTimeout(timer);
-    if (!r.ok) throw new Error("http " + r.status);
-  }, function (e) { clearTimeout(timer); throw e; });
+  function attempt(retryServerError) {
+    var ctl = window.AbortController ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctl) ctl.abort(); }, 15000);
+    return fetch(ORDER_SERVER, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=UTF-8" },
+      body: JSON.stringify({
+        topic: ORDER_TOPIC, title: title, message: message,
+        priority: 5, tags: ["rotating_light", "fried_shrimp"],
+        click: "https://ntfy.sh/" + ORDER_TOPIC
+      }),
+      signal: ctl ? ctl.signal : undefined
+    }).then(function (r) {
+      clearTimeout(timer);
+      if (r.ok) return true;
+      if (retryServerError && r.status >= 500) {
+        return new Promise(function (resolve) { setTimeout(resolve, 900); }).then(function () { return attempt(false); });
+      }
+      throw new Error("http " + r.status);
+    }, function (e) { clearTimeout(timer); throw e; });
+  }
+  return attempt(true);
 }
 function buildOrderText(code, ver) {
   var name = document.getElementById("custName").value.trim();
@@ -826,7 +837,7 @@ function sendOrder() {
     document.getElementById("orderNum").textContent = code;
     document.getElementById("sendBtn").textContent = "送出修改（取代先前的訂單）";
     document.getElementById("cancelBtn").style.display = "block";
-    setSendMsg(ver > 1 ? "✅ 已送出修改，店家會以最新的為準" : "✅ 已送出！店家收到通知了", "ok");
+    setSendMsg(ver > 1 ? "✅ 修改已送出！已交給通知服務，請以店家確認為準" : "✅ 訂單已送出！已交給通知服務，請以店家確認為準", "ok");
     document.getElementById("orderHow").textContent = pi.online ? "請依畫面完成線上付款，取餐時出示這個畫面或告訴店員你的號碼" : "取餐時請出示這個畫面或告訴店員你的號碼，並在現場付款";
     showDone(code, ver);
   }).catch(function () {
