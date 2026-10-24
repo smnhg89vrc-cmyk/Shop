@@ -612,7 +612,7 @@ const pending=()=>orders.filter(x=>x.status==="pending");
 const fmtT=ms=>{const d=new Date(ms);return (d.getMonth()+1)+"/"+d.getDate()+"（週"+"日一二三四五六"[d.getDay()]+"）"+hm(ms)};
 const payLine=o=>`<div class="s">付款：${esc(o.payLabel||"現場付現")}${o.online?(o.paid?' <b class="paidtag">💰 客人回報已付款，請核對</b>':"　⏳ 尚未付款"):"　💵 取餐時現場收"}</div>`;
 function renderOrders(){
-  const l=pending().sort((a,b)=>(a.pickup||"99").localeCompare(b.pickup||"99")||a.t-b.t);
+  const l=pending().sort((a,b)=>(Number(b.t0||b.t)||0)-(Number(a.t0||a.t)||0));
   $("obadge").textContent=l.length;$("obadge").hidden=!l.length;
   document.title=(l.length?"("+l.length+") ":"")+"鹽酥雞收銀記帳";
   $("ostat").textContent=(online?"🟢 即時連線＋每 25 秒補查漏單":"🟠 即時連線中斷；會持續嘗試補查漏單（需要網路）")+(lastPoll?"　上次檢查 "+hm(lastPoll):"")+(pollFail>=2?"　⚠️ 網路異常":"")+(alarmOn&&!(alarmAudio&&alarmAudio.state==="running")?"　🔇 請點一下畫面以啟用提示音":"");
