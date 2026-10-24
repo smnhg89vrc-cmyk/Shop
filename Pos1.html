@@ -337,9 +337,7 @@ h2{margin:28px 0 4px;font-size:23px;letter-spacing:.04em;padding-bottom:6px;bord
       <button type="button" id="reopenDone">查看訂單與付款方式</button>
       <p class="send-msg" id="sendMsg" role="status" aria-live="polite"></p>
     </div>
-    <p class="how" id="orderHow">請把這個畫面拿給店員看，並在櫃檯付款取餐</p>
-    <p class="fine">沒有按「送出訂單給店家」的話，這張單只存在你的手機，店家不會收到。若號碼重複，請以時間和內容為準。</p>
-    <div class="acts">
+        <div class="acts">
       <button type="button" id="orderBack">返回修改</button>
       <button type="button" id="orderNew">完成，開始新的一單</button>
     </div>
@@ -862,7 +860,6 @@ function sendOrderNow() {
     document.getElementById("sendBtn").textContent = "送出修改（取代先前的訂單）";
     document.getElementById("cancelBtn").style.display = "block";
     setSendMsg(ver > 1 ? "✅ 修改已送出！已交給通知服務，請以店家確認為準" : "✅ 訂單已送出！已交給通知服務，請以店家確認為準", "ok");
-    document.getElementById("orderHow").textContent = pi.online ? "請依畫面完成線上付款，取餐時出示這個畫面或告訴店員你的號碼" : "取餐時請出示這個畫面或告訴店員你的號碼，並在現場付款";
     showDone(code, ver);
   }).catch(function () {
     setSendMsg("送出失敗，請確認網路後再試一次", "err");
@@ -1095,7 +1092,6 @@ function openOrder() {
   document.getElementById("orderCount").textContent = "共 " + n + " 份" + (getSpice() ? "・辣度：" + getSpice() : "");
   document.getElementById("sendBox").style.display = ORDER_TOPIC ? "block" : "none";
   refreshSendUI();
-  document.getElementById("orderHow").textContent = "請把這個畫面拿給店員看，並在櫃檯付款取餐";
   var li = "";
   ALL.forEach(function (i) {
     var q = qty[i.id] || 0;
