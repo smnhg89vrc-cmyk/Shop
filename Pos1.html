@@ -256,6 +256,17 @@ h2{margin:28px 0 4px;font-size:23px;letter-spacing:.04em;padding-bottom:6px;bord
 .sp:focus-within{outline:3px solid var(--ink);outline-offset:2px}
 .sp-clear{display:block;margin:10px auto 0;min-height:44px;padding:0 16px;font:inherit;font-weight:700;color:var(--ink);background:transparent;border:2px solid var(--line);border-radius:10px;cursor:pointer}
 .sp-clear[hidden]{display:none}
+.send input[type="hidden"]{display:none}
+.tp-hours{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.send .tp-h{flex:1 1 30%;min-height:54px;padding:4px 6px;font:inherit;font-size:18px;font-weight:900;line-height:1.15;color:var(--ink);background:var(--bg);border:3px solid var(--line);border-radius:12px;cursor:pointer}
+.tp-h small{display:block;font-size:13px;font-weight:700;color:var(--muted)}
+.tp-h.on{border-color:var(--btn);background:var(--tint);color:var(--accent)}
+.tp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.send .tp-slot{min-height:50px;font:inherit;font-size:18px;font-weight:800;color:var(--ink);background:var(--bg);border:3px solid var(--line);border-radius:12px;cursor:pointer}
+.tp-slot.sel{border-color:var(--btn);background:var(--btn);color:#fff}
+.tp-slot.taken{text-decoration:line-through;color:var(--muted);opacity:.5;cursor:not-allowed;background:transparent}
+.tp-note,.tp-closed{margin:8px 0 0;color:var(--muted);font-size:14px}
+.tp-closed{font-weight:800;color:var(--accent);font-size:16px}
 </style>
 </head>
 <body>
@@ -290,8 +301,10 @@ h2{margin:28px 0 4px;font-size:23px;letter-spacing:.04em;padding-bottom:6px;bord
       <p class="send-h">📲 不在店裡？先把訂單傳給店家</p>
       <label for="custName">稱呼（必填）</label>
       <input id="custName" type="text" maxlength="20" autocomplete="off" placeholder="例如：王小姐">
-      <label for="custTime">預計取餐時間（必填，營業時間 18:00–23:00）</label>
-      <select id="custTime"><option value="">請選擇取餐時間</option></select>
+      <label id="timeLbl">預計取餐時間（必填，營業時間 18:00–23:00）</label>
+          <input type="hidden" id="custTime" value="">
+          <div id="timePick" class="tp" role="group" aria-labelledby="timeLbl"></div>
+          <p class="tp-note">一鍋約 5 分鐘，每個時段只收 1 張單；已被預約的時段會劃掉。</p>
       <label for="custNote">備註（選填）</label>
       <input id="custNote" type="text" maxlength="80" autocomplete="off" placeholder="例如：不要辣、辣度小辣">
       <fieldset class="paybox" id="payBox">
@@ -814,11 +827,22 @@ function buildOrderText(code, ver) {
 }
 function sendOrder() {
   if (sending || paidClaimed || !ORDER_TOPIC) return;
+  var t0 = document.getElementById("custTime").value;
+  if (!t0) { sendOrderNow(); return; }
+  sending = true; setSendMsg("確認時段中…", "");
+  pollStock().then(function () {
+    sending = false;
+    if (!document.getElementById("custTime").value) return;      /* 時段剛被別人訂走：applyBooked 已清除並顯示訊息 */
+    sendOrderNow();
+  });
+}
+function sendOrderNow() {
+  if (sending || paidClaimed || !ORDER_TOPIC) return;
   var name = document.getElementById("custName").value.trim();
   var time = document.getElementById("custTime").value;
   if (!count()) { setSendMsg("還沒點餐喔", "err"); return; }
   if (!name) { setSendMsg("請填寫稱呼", "err"); document.getElementById("custName").focus(); return; }
-  if (!time) { var ts = document.getElementById("custTime"); setSendMsg(ts.options && ts.options.length === 1 ? "今天營業時間已結束，請明天再訂" : "請選擇預計取餐時間", "err"); ts.focus(); return; }
+  if (!time) { setSendMsg(slotList().length ? "請選擇預計取餐時間" : "今天營業時間已結束，請明天再訂", "err"); var tpb = document.getElementById("timePick"); if (tpb.scrollIntoView) tpb.scrollIntoView({ block: "center" }); return; }
   if (time < OPEN_TIME || time > CLOSE_TIME) { setSendMsg("取餐時間請選 " + OPEN_TIME + " 到 " + CLOSE_TIME + " 之間", "err"); document.getElementById("custTime").focus(); return; }
   var pi0 = payInfo();
   if (pi0.key === "twqr" && !pi0.app) { setSendMsg("請點選你用的支付 App", "err"); return; }
@@ -832,7 +856,7 @@ function sendOrder() {
   sending = true; btn.disabled = true;
   setSendMsg("送出中…", "");
   postToShop(o.title, o.message).then(function () {
-    currentCode = code; lastSig = sig; version = ver; sentPay = pi; sentTotal = total();
+    currentCode = code; lastSig = sig; version = ver; sentPay = pi; sentTotal = total(); sentSlot = time;
     document.getElementById("reopenDone").style.display = "block";
     document.getElementById("orderNum").textContent = code;
     document.getElementById("sendBtn").textContent = "送出修改（取代先前的訂單）";
@@ -982,7 +1006,7 @@ function cancelOrder() {
   sending = true;
   setSendMsg("送出中…", "");
   postToShop("❌ 取消訂單 " + code + "・" + name, "號碼 " + code + " 的訂單已取消，請忽略先前同號碼的單").then(function () {
-    currentCode = null; lastSig = null; version = 0; sentPay = null;
+    currentCode = null; lastSig = null; version = 0; sentPay = null; sentSlot = "";
     document.getElementById("reopenDone").style.display = "none";
     document.getElementById("cancelBtn").style.display = "none";
     document.getElementById("sendBtn").textContent = "送出訂單給店家";
@@ -996,24 +1020,67 @@ function cancelOrder() {
 document.getElementById("sendBtn").addEventListener("click", sendOrder);
 document.getElementById("cancelBtn").addEventListener("click", cancelOrder);
 
-function buildTimeOptions() {
-  var sel = document.getElementById("custTime"), keep = sel.value;
-  var now = new Date(), cur = now.getHours() * 60 + now.getMinutes() + 10;
-  var start = Math.max(18 * 60, Math.ceil(cur / 15) * 15);
-  var h = "", ok = false;
-  for (var m = start; m <= 23 * 60; m += 15) {
-    var v = ("0" + Math.floor(m / 60)).slice(-2) + ":" + ("0" + (m % 60)).slice(-2);
-    h += '<option value="' + v + '">' + v + "</option>";
-    if (v === keep) ok = true;
-  }
-  if (!h) h = '<option value="">今天營業時間已結束</option>';
-  else {
-    if (keep && !ok && currentCode) h = '<option value="' + keep + '">' + keep + "</option>" + h;
-    h = '<option value="">請選擇取餐時間</option>' + h;
-  }
-  sel.innerHTML = h;
-  sel.value = ok || (keep && currentCode) ? keep : "";
+var SLOT_MIN = 5, SLOT_CAP = 1, LEAD_MIN = 10;   /* 一鍋約 5 分鐘，每個時段只收 1 張單 */
+var booked = {}, tpHour = null, sentSlot = "";
+function hhmm(m) { return ("0" + Math.floor(m / 60)).slice(-2) + ":" + ("0" + (m % 60)).slice(-2); }
+function todayStr() { var d = new Date(); return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); }
+function slotList() {
+  var now = new Date(), cur = now.getHours() * 60 + now.getMinutes() + LEAD_MIN;
+  var start = Math.max(18 * 60, Math.ceil(cur / SLOT_MIN) * SLOT_MIN), out = [];
+  for (var m = start; m <= 23 * 60; m += SLOT_MIN) out.push(m);
+  return out;
 }
+function slotTaken(v) {
+  var n = booked[v] || 0;
+  if (currentCode && v === sentSlot) n -= 1;          /* 自己原本訂的時段不算被占用 */
+  return n >= SLOT_CAP;
+}
+function renderTimePick() {
+  var box = document.getElementById("timePick"), cur = document.getElementById("custTime").value;
+  var slots = slotList();
+  if (!slots.length) { box.innerHTML = '<p class="tp-closed">今天營業時間已結束，請明天再訂</p>'; return; }
+  var hours = [], i;
+  for (i = 0; i < slots.length; i++) { var hh = Math.floor(slots[i] / 60); if (hours.indexOf(hh) < 0) hours.push(hh); }
+  function free(h) { return slots.filter(function (m) { return Math.floor(m / 60) === h && !slotTaken(hhmm(m)); }).length; }
+  if (tpHour === null || hours.indexOf(tpHour) < 0) {
+    var selH = cur ? parseInt(cur, 10) : NaN;
+    tpHour = hours.indexOf(selH) >= 0 ? selH : hours[0];
+    if (!cur) { for (i = 0; i < hours.length; i++) { if (free(hours[i])) { tpHour = hours[i]; break; } } }
+  }
+  var hb = hours.map(function (h) {
+    var f = free(h);
+    return '<button type="button" class="tp-h' + (h === tpHour ? " on" : "") + '" data-h="' + h + '">' + h + " 點<small>" + (f ? "可選 " + f : "已滿") + "</small></button>";
+  }).join("");
+  var chips = slots.filter(function (m) { return Math.floor(m / 60) === tpHour; }).map(function (m) {
+    var v = hhmm(m), t = slotTaken(v);
+    return '<button type="button" class="tp-slot' + (v === cur ? " sel" : "") + (t ? " taken" : "") + '" data-v="' + v + '"' + (t ? ' disabled aria-label="' + v + ' 已被預約"' : "") + ">" + v + "</button>";
+  }).join("");
+  box.innerHTML = '<div class="tp-hours">' + hb + '</div><div class="tp-grid">' + chips + "</div>";
+}
+function buildTimeOptions() {
+  var inp = document.getElementById("custTime"), cur = inp.value;
+  var ok = slotList().some(function (m) { return hhmm(m) === cur; }) || (cur && currentCode);
+  if (cur && !ok) inp.value = "";
+  tpHour = null;
+  renderTimePick();
+  pollStock();
+}
+function applyBooked(d) {
+  booked = {};
+  if (d && d.date === todayStr() && Array.isArray(d.booked)) d.booked.forEach(function (v) { booked[v] = (booked[v] || 0) + 1; });
+  var inp = document.getElementById("custTime");
+  if (inp.value && slotTaken(inp.value)) {
+    var gone = inp.value; inp.value = "";
+    setSendMsg("你選的 " + gone + " 剛被別人預約了，請改選其他時間", "err");
+  }
+  renderTimePick();
+}
+document.getElementById("timePick").addEventListener("click", function (e) {
+  var h = e.target.closest("button[data-h]");
+  if (h) { tpHour = parseInt(h.getAttribute("data-h"), 10); renderTimePick(); return; }
+  var sl = e.target.closest("button[data-v]");
+  if (sl && !sl.disabled) { document.getElementById("custTime").value = sl.getAttribute("data-v"); renderTimePick(); }
+});
 function openOrder() {
   var n = count();
   if (!n) {
@@ -1057,7 +1124,7 @@ document.getElementById("orderBack").addEventListener("click", closeOrder);
 document.getElementById("orderNew").addEventListener("click", function () {
   if (!window.confirm("確定要清空，開始新的一單嗎？")) return;
   qty = {};
-  currentCode = null; lastSig = null; version = 0; paidClaimed = false; sentPay = null; sentTotal = 0;
+  currentCode = null; lastSig = null; version = 0; paidClaimed = false; sentPay = null; sentTotal = 0; sentSlot = "";
   document.querySelector('input[name="payM"][value="cash"]').checked = true;
   var ta = document.querySelector('input[name="twApp"]:checked');
   if (ta) ta.checked = false;
@@ -1094,8 +1161,8 @@ function applyStock(names) {
   if (removed.length) showPop({ title: "有品項剛賣完了", text: removed.join("、") + " 已從你的訂單移除" });
 }
 function pollStock() {
-  if (!STOCK_TOPIC || !window.fetch) return;
-  fetch("https://ntfy.sh/" + STOCK_TOPIC + "/json?poll=1&since=12h", { cache: "no-store" })
+  if (!STOCK_TOPIC || !window.fetch) return Promise.resolve();
+  return fetch("https://ntfy.sh/" + STOCK_TOPIC + "/json?poll=1&since=12h", { cache: "no-store" })
     .then(function (r) { return r.text(); })
     .then(function (t) {
       var last = null;
@@ -1105,6 +1172,7 @@ function pollStock() {
       if (!last) return;
       var d = JSON.parse(last.message);
       if (d && Array.isArray(d.out)) applyStock(d.out);
+      applyBooked(d);
     })
     .catch(function () {});
 }

@@ -558,6 +558,7 @@ orders.forEach(o=>(o.items||[]).forEach(i=>{if(REN[i.n])i.n=REN[i.n]}));
 function saveO(){
   orders=orders.filter(x=>x.status==="pending"||Date.now()-x.t<864e5).slice(-100);
   try{localStorage.setItem("pos2_orders",JSON.stringify(orders));localStorage.setItem("pos2_seen",JSON.stringify(seen.slice(-300)))}catch(e){}
+  try{publishStock()}catch(e){}
 }
 const num=s=>parseInt(String(s).replace(/,/g,""))||0;
 const payKeyOf=l=>{if(!l||/^現場付現/.test(l))return"現金";if(/^LINE Pay/.test(l))return"LINE Pay";if(/^一卡通/.test(l))return"一卡通";const m=l.match(/^TWQR（(.+)）/),a=m?m[1]:"";return a==="街口"?"街口":a==="全支付"?"全支付":"其他 TWQR"};
@@ -616,7 +617,8 @@ function renderOrders(){
   document.title=(l.length?"("+l.length+") ":"")+"鹽酥雞收銀記帳";
   $("ostat").textContent=(online?"🟢 即時連線＋每 25 秒補查漏單":"🟠 即時連線中斷；會持續嘗試補查漏單（需要網路）")+(lastPoll?"　上次檢查 "+hm(lastPoll):"")+(pollFail>=2?"　⚠️ 網路異常":"")+(alarmOn&&!(alarmAudio&&alarmAudio.state==="running")?"　🔇 請點一下畫面以啟用提示音":"");
   renderBanner2();
-  $("olist").innerHTML=l.length?l.map(o=>`<div class="ocard"><div class="lr"><b>${esc(o.code)}・${esc(o.name)}</b><b>取餐 ${esc(o.pickup)}</b></div><div class="ts">🕒 下單 ${fmtT(o.t0||o.t)}${o.ver>1?"　✏️ 最後修改 "+hm(o.t):""}</div>${o.ver>1?'<div class="s">✏️ 已修改（第 '+o.ver+' 版）</div>':""}<div class="s">${o.items.map(i=>esc(i.n)+"×"+i.q).join("、")}</div>${o.spice?'<div class="s">🌶️ 辣度：'+esc(o.spice)+"</div>":""}${payLine(o)}${o.note?'<div class="s">備註：'+esc(o.note)+"</div>":""}<div class="lr"><b class="tot">NT$ ${o.total}</b><span class="ops"><button class="mini" type="button" data-o="load" data-k="${esc(o.k)}">載入收銀</button><button class="mini" type="button" data-o="del" data-k="${esc(o.k)}">刪除</button></span></div></div>`).join(""):'<div class="empty">目前沒有待處理的線上訂單</div>';
+  const dup={};l.forEach(o=>{dup[o.pickup]=(dup[o.pickup]||0)+1});
+  $("olist").innerHTML=l.length?l.map(o=>`<div class="ocard"><div class="lr"><b>${esc(o.code)}・${esc(o.name)}</b><b>取餐 ${esc(o.pickup)}</b></div>${dup[o.pickup]>1?'<div class="s"><b style="color:var(--over)">⚠️ 這個時段有 '+dup[o.pickup]+" 張單（一鍋約 5 分鐘）</b></div>":""}<div class="ts">🕒 下單 ${fmtT(o.t0||o.t)}${o.ver>1?"　✏️ 最後修改 "+hm(o.t):""}</div>${o.ver>1?'<div class="s">✏️ 已修改（第 '+o.ver+' 版）</div>':""}<div class="s">${o.items.map(i=>esc(i.n)+"×"+i.q).join("、")}</div>${o.spice?'<div class="s">🌶️ 辣度：'+esc(o.spice)+"</div>":""}${payLine(o)}${o.note?'<div class="s">備註：'+esc(o.note)+"</div>":""}<div class="lr"><b class="tot">NT$ ${o.total}</b><span class="ops"><button class="mini" type="button" data-o="load" data-k="${esc(o.k)}">載入收銀</button><button class="mini" type="button" data-o="del" data-k="${esc(o.k)}">刪除</button></span></div></div>`).join(""):'<div class="empty">目前沒有待處理的線上訂單</div>';
 }
 function curOrderInfo(){const o=orders.find(x=>x.k===curOrder);return o?{placed:o.t0||o.t,code:o.code,name:o.name,pickup:o.pickup,note:o.note,spice:o.spice||"",pay:o.payLabel||"現場付現",online:!!o.online,paid:!!o.paid}:undefined}
 function renderBanner(){
@@ -683,17 +685,24 @@ setInterval(pollMissed,25000);
 
 /* ---------- 售完同步（送到客人頁） ---------- */
 const STOCK_TOPIC="salt-stock-h8ppt9tbymvyced3";
-function publishStock(){
+let lastStockSig="";
+function publishStock(force){
   if(!STOCK_TOPIC||typeof fetch==="undefined")return;
+  const today=ymd(Date.now());
+  const booked=orders.filter(o=>(o.status==="pending"||o.status==="done")&&o.pickup&&ymd(o.t0||o.t)===today).map(o=>o.pickup);
+  const out=items.filter(i=>i.out).map(i=>i.name);
+  const sig=JSON.stringify([out,booked.slice().sort(),today]);
+  if(!force&&sig===lastStockSig)return;
+  lastStockSig=sig;
   try{
     fetch("https://ntfy.sh/",{method:"POST",headers:{"Content-Type":"text/plain;charset=UTF-8"},
-      body:JSON.stringify({topic:STOCK_TOPIC,title:"品項狀態",message:JSON.stringify({out:items.filter(i=>i.out).map(i=>i.name),t:Date.now()}),priority:1})}).catch(()=>{});
+      body:JSON.stringify({topic:STOCK_TOPIC,title:"品項狀態",message:JSON.stringify({out:out,booked:booked,date:today,t:Date.now()}),priority:1})}).catch(()=>{});
   }catch(e){}
 }
 
 /* ---------- 開始 ---------- */
 $("qd").value=ymd(Date.now());
-renderMenu();renderPay();setView("pos");renderOrders();connect();publishStock();setInterval(publishStock,20*60*1000);paintCtl();if(lockOn)acquireLock();
+renderMenu();renderPay();setView("pos");renderOrders();connect();publishStock(true);setInterval(()=>publishStock(true),20*60*1000);paintCtl();if(lockOn)acquireLock();
 </script>
 </body>
 </html>
