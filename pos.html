@@ -95,7 +95,12 @@ h2{margin:28px 0 4px;font-size:23px;letter-spacing:.04em;padding-bottom:6px;bord
 .badge[hidden]{display:none}
 .olbar{position:sticky;top:calc(env(safe-area-inset-top,0px) + 66px);z-index:5;display:flex;justify-content:space-between;align-items:center;gap:8px;margin:8px 0;padding:8px 12px;background:var(--tint);border:2px solid var(--gold);border-radius:12px;font-weight:700}
 .olbar[hidden]{display:none}
-.ocard{padding:10px 0;border-top:1px solid var(--line)}
+.ocard{padding:16px 0;border-top:2px solid var(--line)}
+.ocard .lr{font-size:23px;font-weight:900;line-height:1.35}
+.ocard .ts{margin:2px 0 8px;font-size:17px;font-weight:700;color:var(--muted)}
+.ocard .s{font-size:19px;line-height:1.55;color:var(--ink)}
+.ocard .tot{font-size:28px;color:var(--accent)}
+.ocard .mini{min-height:54px;padding:0 18px;font-size:19px}
 .ocard:first-of-type{border-top:0}
 .hero{padding:16px 0 18px}
 .hero h1{font-size:28px}
@@ -172,6 +177,11 @@ input[type=date],#cash{min-height:46px;padding:4px 12px;border:2px solid var(--l
 #orderAlarm .alarm-small{font-size:14px;opacity:.9;margin-top:14px}
 @keyframes alarmflash{0%,100%{background:rgba(90,0,0,.96)}50%{background:rgba(185,0,0,.96)}}
 @media(prefers-reduced-motion:reduce){#orderAlarm.on{animation:none}}
+.obanner{position:sticky;top:calc(env(safe-area-inset-top,0px) + 66px);z-index:6;padding:12px 16px;background:var(--gold);color:#211A16;font-weight:900;font-size:18px;text-align:center;border-bottom:3px solid #211A16;cursor:pointer}
+.obanner[hidden]{display:none}
+.obanner.warn{background:#B3241A;color:#fff}
+body.hasbanner .olbar{top:calc(env(safe-area-inset-top,0px) + 124px)}
+#orderAlarm #alarmGo{background:#FFD76A;color:#4a0600;margin-bottom:10px}
 </style>
 </head>
 <body>
@@ -186,9 +196,11 @@ input[type=date],#cash{min-height:46px;padding:4px 12px;border:2px solid var(--l
   <button role="tab" data-tab="ledger">帳本</button>
   <button role="tab" data-tab="items">品項</button>
 </nav></div>
+<div class="obanner" id="obanner" hidden role="alert"></div>
 <main class="wrap">
   <section id="v-pos"><div class="olbar" id="olbar" hidden></div><div id="menu"></div></section>
-  <section id="v-orders" hidden><div class="box"><h3>線上訂單（客人按「送出訂單給店家」後出現）</h3><p class="note" id="ostat"></p><div id="olist"></div></div></section>
+  <section id="v-orders" hidden><div class="box"><h3>線上訂單（客人按「送出訂單給店家」後出現）</h3><p class="note" id="ostat"></p>
+    <div class="ops" style="margin:8px 0 12px"><button class="mini" id="alarmBtn" type="button">🔔 提示音：開</button><button class="mini" id="testBtn" type="button">🔊 測試提示音</button><button class="mini" id="lockBtn" type="button">☀️ 螢幕常亮：關</button></div><div id="olist"></div></div></section>
   <section id="v-ledger" hidden>
     <div class="cards" id="cards"></div>
     <div class="box"><h3>收款方式</h3><div id="pays"></div></div>
@@ -220,8 +232,9 @@ input[type=date],#cash{min-height:46px;padding:4px 12px;border:2px solid var(--l
 <div id="orderAlarm" role="alertdialog" aria-modal="true" aria-labelledby="alarmTitle">
   <div class="alarm-in"><div class="alarm-title" id="alarmTitle">🚨 線上新訂單！</div>
   <div class="alarm-detail" id="alarmDetail">請立即查看收銀訂單</div>
+  <button type="button" id="alarmGo">👉 查看訂單</button>
   <button type="button" id="alarmAck">我知道了，停止警報</button>
-  <div class="alarm-small">若要處理訂單，請按上方「我知道了」後進入「訂單」分頁。</div></div>
+  <div class="alarm-small">按「查看訂單」會關掉警報並直接打開訂單分頁。</div></div>
 </div>
 <div class="bar" id="bar"><div class="wrap"><div class="bar-top">
   <div><span class="lbl" id="cnt">共 0 份</span><span id="total" class="serif">NT$ 0</span></div>
@@ -290,8 +303,10 @@ tx.forEach(x=>(x.items||[]).forEach(i=>{if(REN[i.n])i.n=REN[i.n]}));
 let cart={},pay="現金",rng="day",view="pos",tt=null;
 function save(){try{localStorage.setItem("pos2_items",JSON.stringify(items));localStorage.setItem("pos2_tx",JSON.stringify(tx))}catch(e){toast("儲存失敗，請不要使用無痕模式")}}
 function toast(m){const t=$("toast");t.textContent=m;t.style.display="block";clearTimeout(tt);tt=setTimeout(()=>{t.style.display="none"},2400)}
-let alarmAudio=null,alarmTimer=null,alarmCount=0;
+let alarmAudio=null,alarmTimer=null,alarmCount=0,alarmOn=true,lockOn=false,wl=null,pollFail=0,lastPoll=0;
+try{alarmOn=localStorage.getItem("pos2_alarm")!=="0";lockOn=localStorage.getItem("pos2_lock")==="1"}catch(e){}
 function alarmBeep(){
+  if(!alarmOn)return;
   try{
     const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
     if(!alarmAudio)alarmAudio=new AC();
@@ -302,12 +317,49 @@ function alarmBeep(){
 }
 function stopOrderAlarm(){const a=$("orderAlarm");a.classList.remove("on");if(alarmTimer){clearInterval(alarmTimer);alarmTimer=null}try{if(navigator.vibrate)navigator.vibrate(0)}catch(e){}}
 function triggerOrderAlarm(o,modified){
-  const a=$("orderAlarm");$("alarmTitle").textContent=modified?"🚨 訂單內容已修改！":"🚨 線上新訂單！";
-  $("alarmDetail").textContent=(o.code||"")+"・"+(o.name||"客人")+"\n取餐 "+(o.pickup||"時間待確認")+"\n總額 NT$ "+Number(o.total||0).toLocaleString("zh-TW");
+  const a=$("orderAlarm");$("alarmTitle").textContent=modified==="paid"?"💰 客人回報已付款！":modified?"🚨 訂單內容已修改！":"🚨 線上新訂單！";
+  $("alarmDetail").textContent=(o.code||"")+"・"+(o.name||"客人")+"\n取餐 "+(o.pickup||"時間待確認")+"\n下單 "+hm(o.t0||o.t||Date.now())+"\n總額 NT$ "+Number(o.total||0).toLocaleString("zh-TW");
   a.classList.add("on");alarmCount++;alarmBeep();try{if(navigator.vibrate)navigator.vibrate([500,180,500,180,800])}catch(e){}
   if(alarmTimer)clearInterval(alarmTimer);alarmTimer=setInterval(()=>{if($("orderAlarm").classList.contains("on")){alarmBeep();try{if(navigator.vibrate)navigator.vibrate([400,150,400])}catch(e){}}},2400);
 }
 $("alarmAck").addEventListener("click",stopOrderAlarm);
+$("alarmGo").addEventListener("click",()=>{stopOrderAlarm();setView("orders")});
+
+/* ---------- 不漏單補強：首次觸碰就解鎖聲音、螢幕常亮、斷線警告 ---------- */
+function unlockAudio(){
+  try{
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(AC&&!alarmAudio)alarmAudio=new AC();
+    if(alarmAudio&&alarmAudio.state==="suspended")alarmAudio.resume();
+  }catch(e){}
+  if(lockOn&&!wl)acquireLock();
+}
+["pointerdown","touchstart","keydown"].forEach(ev=>document.addEventListener(ev,unlockAudio,{passive:true}));
+async function acquireLock(){
+  if(!navigator.wakeLock){toast("這個瀏覽器不支援螢幕常亮");lockOn=false;paintCtl();return}
+  try{wl=await navigator.wakeLock.request("screen");wl.addEventListener("release",()=>{wl=null})}catch(e){wl=null}
+}
+async function setLock(on){
+  lockOn=on;try{localStorage.setItem("pos2_lock",on?"1":"0")}catch(e){}
+  if(on)await acquireLock();else{try{if(wl)await wl.release()}catch(e){}wl=null}
+  paintCtl();
+}
+function paintCtl(){
+  $("alarmBtn").textContent=alarmOn?"🔔 提示音：開":"🔕 提示音：關";
+  $("lockBtn").textContent=lockOn?"☀️ 螢幕常亮：開":"☀️ 螢幕常亮：關";
+}
+$("alarmBtn").addEventListener("click",()=>{alarmOn=!alarmOn;try{localStorage.setItem("pos2_alarm",alarmOn?"1":"0")}catch(e){}paintCtl();unlockAudio();if(alarmOn)alarmBeep();renderOrders()});
+$("testBtn").addEventListener("click",()=>{unlockAudio();setTimeout(()=>{alarmBeep();if(!alarmAudio||alarmAudio.state!=="running")toast("沒有聲音？請關閉手機側邊的靜音開關、調高音量，再按一次")},150)});
+$("lockBtn").addEventListener("click",()=>setLock(!lockOn));
+function renderBanner2(){
+  const b=$("obanner"),n=pending().length;
+  let txt="",cls="obanner";
+  if(pollFail>=2){txt="⚠️ 網路異常，可能收不到新訂單，請檢查網路";cls+=" warn"}
+  else if(n&&view!=="orders")txt="🔔 "+n+" 筆線上訂單待處理・點此查看";
+  b.hidden=!txt;b.className=cls;b.textContent=txt;
+  document.body.classList.toggle("hasbanner",!!txt);
+}
+$("obanner").addEventListener("click",()=>{setView("orders")});
 
 const byId=id=>items.find(i=>i.id===id);
 const ymd=ms=>{const d=new Date(ms);return d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate())};
@@ -534,7 +586,7 @@ function handleMsg(m){
   if(!o){saveO();return}
   const pend=orders.find(x=>x.code===o.code&&x.status==="pending");
   if(o.paidClaim){
-    if(pend){pend.paid=true;pend.paidAt=Date.now();toast("💰 "+o.code+"・"+pend.name+" 回報已付款（"+(o.payLabel||pend.payLabel)+"），請到 App 核對");if(curOrder===pend.k)renderBanner()}
+    if(pend){pend.paid=true;pend.paidAt=Date.now();triggerOrderAlarm(pend,"paid");toast("💰 "+o.code+"・"+pend.name+" 回報已付款（"+(o.payLabel||pend.payLabel)+"），請到 App 核對");if(curOrder===pend.k)renderBanner()}
     else toast("收到 "+o.code+" 的付款回報，但找不到待處理的訂單");
     saveO();renderOrders();return;
   }
@@ -549,22 +601,24 @@ function handleMsg(m){
     triggerOrderAlarm(pend,true);
     toast("訂單 "+o.code+" 已更新"+(wasPaid?"（先前已回報付款，請注意金額）":"")+(curOrder===pend.k?"，請重新載入":""));
   }else{
-    rec.k=m.id;rec.ver=1;orders.push(rec);
+    rec.k=m.id;rec.ver=1;rec.t0=rec.t;orders.push(rec);
     triggerOrderAlarm(rec,false);
     toast("🍗 新訂單 "+o.code+"・"+o.name+"・"+o.pickup+"取");
   }
   saveO();renderOrders();
 }
 const pending=()=>orders.filter(x=>x.status==="pending");
+const fmtT=ms=>{const d=new Date(ms);return (d.getMonth()+1)+"/"+d.getDate()+"（週"+"日一二三四五六"[d.getDay()]+"）"+hm(ms)};
 const payLine=o=>`<div class="s">付款：${esc(o.payLabel||"現場付現")}${o.online?(o.paid?' <b class="paidtag">💰 客人回報已付款，請核對</b>':"　⏳ 尚未付款"):"　💵 取餐時現場收"}</div>`;
 function renderOrders(){
   const l=pending().sort((a,b)=>(a.pickup||"99").localeCompare(b.pickup||"99")||a.t-b.t);
   $("obadge").textContent=l.length;$("obadge").hidden=!l.length;
   document.title=(l.length?"("+l.length+") ":"")+"鹽酥雞收銀記帳";
-  $("ostat").textContent=online?"🟢 即時連線＋每 25 秒補查漏單":"🟠 即時連線中斷；會持續嘗試補查漏單（需要網路）";
-  $("olist").innerHTML=l.length?l.map(o=>`<div class="ocard"><div class="lr"><b>${esc(o.code)}・${esc(o.name)}</b><b>取餐 ${esc(o.pickup)}</b></div>${o.ver>1?'<div class="s">已修改（第 '+o.ver+' 版）</div>':""}<div class="s">${o.items.map(i=>esc(i.n)+"×"+i.q).join("、")}</div>${o.spice?'<div class="s">🌶️ 辣度：'+esc(o.spice)+"</div>":""}${payLine(o)}${o.note?'<div class="s">備註：'+esc(o.note)+"</div>":""}<div class="lr"><b>NT$ ${o.total}</b><span class="ops"><button class="mini" type="button" data-o="load" data-k="${esc(o.k)}">載入收銀</button><button class="mini" type="button" data-o="del" data-k="${esc(o.k)}">刪除</button></span></div></div>`).join(""):'<div class="empty">目前沒有待處理的線上訂單</div>';
+  $("ostat").textContent=(online?"🟢 即時連線＋每 25 秒補查漏單":"🟠 即時連線中斷；會持續嘗試補查漏單（需要網路）")+(lastPoll?"　上次檢查 "+hm(lastPoll):"")+(pollFail>=2?"　⚠️ 網路異常":"")+(alarmOn&&!(alarmAudio&&alarmAudio.state==="running")?"　🔇 請點一下畫面以啟用提示音":"");
+  renderBanner2();
+  $("olist").innerHTML=l.length?l.map(o=>`<div class="ocard"><div class="lr"><b>${esc(o.code)}・${esc(o.name)}</b><b>取餐 ${esc(o.pickup)}</b></div><div class="ts">🕒 下單 ${fmtT(o.t0||o.t)}${o.ver>1?"　✏️ 最後修改 "+hm(o.t):""}</div>${o.ver>1?'<div class="s">✏️ 已修改（第 '+o.ver+' 版）</div>':""}<div class="s">${o.items.map(i=>esc(i.n)+"×"+i.q).join("、")}</div>${o.spice?'<div class="s">🌶️ 辣度：'+esc(o.spice)+"</div>":""}${payLine(o)}${o.note?'<div class="s">備註：'+esc(o.note)+"</div>":""}<div class="lr"><b class="tot">NT$ ${o.total}</b><span class="ops"><button class="mini" type="button" data-o="load" data-k="${esc(o.k)}">載入收銀</button><button class="mini" type="button" data-o="del" data-k="${esc(o.k)}">刪除</button></span></div></div>`).join(""):'<div class="empty">目前沒有待處理的線上訂單</div>';
 }
-function curOrderInfo(){const o=orders.find(x=>x.k===curOrder);return o?{code:o.code,name:o.name,pickup:o.pickup,note:o.note,spice:o.spice||"",pay:o.payLabel||"現場付現",online:!!o.online,paid:!!o.paid}:undefined}
+function curOrderInfo(){const o=orders.find(x=>x.k===curOrder);return o?{placed:o.t0||o.t,code:o.code,name:o.name,pickup:o.pickup,note:o.note,spice:o.spice||"",pay:o.payLabel||"現場付現",online:!!o.online,paid:!!o.paid}:undefined}
 function renderBanner(){
   const o=orders.find(x=>x.k===curOrder),b=$("olbar");
   b.hidden=!o;
@@ -597,8 +651,8 @@ async function pollMissed(){
     if(!r.ok)throw new Error("HTTP "+r.status);
     const body=await r.text();
     body.split(/\r?\n/).forEach(line=>{if(!line.trim())return;try{handleMsg(JSON.parse(line))}catch(e){}});
-    saveO();renderOrders();
-  }catch(e){/* SSE 之外的補查失敗時，下次排程再試，不中斷收銀 */}
+    pollFail=0;lastPoll=Date.now();saveO();renderOrders();
+  }catch(e){/* SSE 之外的補查失敗時，下次排程再試，不中斷收銀 */pollFail++;renderOrders()}
   finally{if(timer)clearTimeout(timer);pollBusy=false;}
 }
 function connect(){
@@ -621,7 +675,7 @@ $("olist").addEventListener("click",e=>{
   else if(confirm("確定刪除這張線上訂單嗎？")){orders=orders.filter(x=>x.k!==b.dataset.k);if(curOrder===b.dataset.k){curOrder=null;renderBanner()}saveO();renderOrders()}
 });
 $("olbar").addEventListener("click",e=>{if(e.target.closest("#olx")){curOrder=null;cart={};updateRows();renderBanner()}});
-document.addEventListener("visibilitychange",()=>{if(!document.hidden){connect();pollMissed();publishStock()}});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){connect();pollMissed();publishStock();if(lockOn&&!wl)acquireLock()}});
 window.addEventListener("online",()=>{connect();pollMissed()});
 window.addEventListener("pageshow",()=>{connect();pollMissed()});
 /* SSE 可能短暫斷線；定時用 ntfy JSON API 補查游標之後的訊息。 */
@@ -639,7 +693,7 @@ function publishStock(){
 
 /* ---------- 開始 ---------- */
 $("qd").value=ymd(Date.now());
-renderMenu();renderPay();setView("pos");renderOrders();connect();publishStock();setInterval(publishStock,20*60*1000);
+renderMenu();renderPay();setView("pos");renderOrders();connect();publishStock();setInterval(publishStock,20*60*1000);paintCtl();if(lockOn)acquireLock();
 </script>
 </body>
 </html>
