@@ -450,7 +450,8 @@ var MENU = [
   ]}
 ];
 var MAX_QTY = 20;
-var STOCK_TOPIC = "salt-stock-h8ppt9tbymvyced3";   /* 店家收銀頁會把「售完」品項送到這裡 */
+var STOCK_TOPIC = "salt-stock-h8ppt9tbymvyced3";
+var SLOT_TOPIC = "salt-slots-g8smme824r9qqvif";   /* 每張訂單的「時段占用」會公告在這裡，不用開收銀頁也能同步 */   /* 店家收銀頁會把「售完」品項送到這裡 */
 var soldOut = {};
 /* 店家收款碼（和攤位上立牌的 QR 相同；QR 圖是重新產生的清晰版） */
 var LINE_URL = "https://qrcodepay.line.me/qr/payment/meM5GDhawEuFRuaBq42YwhMQLlbp%252Fi917pzSgI9u4YWlY%252FEwAFEN9US%252BmSv2SBgR";
@@ -825,11 +826,13 @@ function buildOrderText(code, ver) {
 }
 function sendOrder() {
   if (sending || paidClaimed || !ORDER_TOPIC) return;
+  if (paused) { setSendMsg("目前暫停線上接單，請稍後再試，或直接到現場點餐", "err"); return; }
   var t0 = document.getElementById("custTime").value;
   if (!t0) { sendOrderNow(); return; }
   sending = true; setSendMsg("確認時段中…", "");
-  pollStock().then(function () {
+  Promise.all([pollStock(), pollSlots()]).then(function () {
     sending = false;
+    if (paused) { setSendMsg("目前暫停線上接單，請稍後再試，或直接到現場點餐", "err"); return; }
     if (!document.getElementById("custTime").value) return;      /* 時段剛被別人訂走：applyBooked 已清除並顯示訊息 */
     sendOrderNow();
   });
@@ -855,6 +858,8 @@ function sendOrderNow() {
   setSendMsg("送出中…", "");
   postToShop(o.title, o.message).then(function () {
     currentCode = code; lastSig = sig; version = ver; sentPay = pi; sentTotal = total(); sentSlot = time;
+    slotMap[code] = { s: time, d: todayStr(), t: Math.floor(Date.now() / 1000), id: "~" };
+    postSlot("book", code, time).then(verifySlot);
     document.getElementById("reopenDone").style.display = "block";
     document.getElementById("orderNum").textContent = code;
     document.getElementById("sendBtn").textContent = "送出修改（取代先前的訂單）";
@@ -1004,6 +1009,7 @@ function cancelOrder() {
   setSendMsg("送出中…", "");
   postToShop("❌ 取消訂單 " + code + "・" + name, "號碼 " + code + " 的訂單已取消，請忽略先前同號碼的單").then(function () {
     currentCode = null; lastSig = null; version = 0; sentPay = null; sentSlot = "";
+    delete slotMap[code]; postSlot("free", code); recomputeBooked();
     document.getElementById("reopenDone").style.display = "none";
     document.getElementById("cancelBtn").style.display = "none";
     document.getElementById("sendBtn").textContent = "送出訂單給店家";
@@ -1018,7 +1024,7 @@ document.getElementById("sendBtn").addEventListener("click", sendOrder);
 document.getElementById("cancelBtn").addEventListener("click", cancelOrder);
 
 var SLOT_MIN = 5, SLOT_CAP = 1, LEAD_MIN = 10;   /* 一鍋約 5 分鐘，每個時段只收 1 張單 */
-var booked = {}, tpHour = null, sentSlot = "";
+var booked = {}, tpHour = null, sentSlot = "", paused = false;
 function hhmm(m) { return ("0" + Math.floor(m / 60)).slice(-2) + ":" + ("0" + (m % 60)).slice(-2); }
 function todayStr() { var d = new Date(); return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); }
 function slotList() {
@@ -1028,13 +1034,12 @@ function slotList() {
   return out;
 }
 function slotTaken(v) {
-  var n = booked[v] || 0;
-  if (currentCode && v === sentSlot) n -= 1;          /* 自己原本訂的時段不算被占用 */
-  return n >= SLOT_CAP;
+  return (booked[v] || 0) >= SLOT_CAP;
 }
 function renderTimePick() {
   var box = document.getElementById("timePick"), cur = document.getElementById("custTime").value;
   var slots = slotList();
+  if (paused) { box.innerHTML = '<p class="tp-closed">目前暫停線上接單，請稍後再試，或直接到現場點餐</p>'; return; }
   if (!slots.length) { box.innerHTML = '<p class="tp-closed">今天營業時間已結束，請明天再訂</p>'; return; }
   var hours = [], i;
   for (i = 0; i < slots.length; i++) { var hh = Math.floor(slots[i] / 60); if (hours.indexOf(hh) < 0) hours.push(hh); }
@@ -1061,16 +1066,73 @@ function buildTimeOptions() {
   tpHour = null;
   renderTimePick();
   pollStock();
+  pollSlots();
 }
-function applyBooked(d) {
+var slotMap = {}, blockedSlots = [];
+function applyBooked(d) {                       /* 店家收銀頁送來的：封鎖時段、暫停接單 */
+  var fresh = !!(d && d.date === todayStr());
+  paused = !!(fresh && d.paused);
+  blockedSlots = fresh && Array.isArray(d.blocked) ? d.blocked.slice() : [];
+  recomputeBooked();
+}
+function recomputeBooked() {
   booked = {};
-  if (d && d.date === todayStr() && Array.isArray(d.booked)) d.booked.forEach(function (v) { booked[v] = (booked[v] || 0) + 1; });
+  var today = todayStr();
+  Object.keys(slotMap).forEach(function (c) {
+    var e = slotMap[c];
+    if (e.d === today && c !== currentCode) booked[e.s] = (booked[e.s] || 0) + 1;     /* 自己的單不算占用 */
+  });
+  blockedSlots.forEach(function (v) { booked[v] = (booked[v] || 0) + SLOT_CAP; });
   var inp = document.getElementById("custTime");
   if (inp.value && slotTaken(inp.value)) {
     var gone = inp.value; inp.value = "";
     setSendMsg("你選的 " + gone + " 剛被別人預約了，請改選其他時間", "err");
   }
   renderTimePick();
+}
+function pollSlots() {
+  if (!SLOT_TOPIC || !window.fetch) return Promise.resolve();
+  return fetch("https://ntfy.sh/" + SLOT_TOPIC + "/json?poll=1&since=12h", { cache: "no-store" })
+    .then(function (r) { return r.text(); })
+    .then(function (t) {
+      var evs = [];
+      t.split("\n").forEach(function (l) {
+        try {
+          var m = JSON.parse(l);
+          if (m.event === "message") { var d = JSON.parse(m.message); d._t = m.time || 0; d._id = m.id || ""; evs.push(d); }
+        } catch (e) {}
+      });
+      evs.sort(function (a, b) { return a._t - b._t || (a._id < b._id ? -1 : a._id > b._id ? 1 : 0); });
+      var map = {};
+      evs.forEach(function (e) {
+        if (!e.c) return;
+        if (e.k === "book" && e.s) map[e.c] = { s: e.s, d: e.d, t: e._t, id: e._id };
+        else if (e.k === "free") delete map[e.c];
+      });
+      slotMap = map;
+      recomputeBooked();
+    })
+    .catch(function () {});
+}
+function postSlot(k, code, slot) {
+  if (!SLOT_TOPIC || !window.fetch) return Promise.resolve();
+  var body = JSON.stringify({ topic: SLOT_TOPIC, title: "時段", message: JSON.stringify({ k: k, c: code, s: slot || "", d: todayStr() }), priority: 1 });
+  var go = function () { return fetch("https://ntfy.sh/", { method: "POST", headers: { "Content-Type": "text/plain;charset=UTF-8" }, body: body }); };
+  return go().catch(function () { return new Promise(function (r) { setTimeout(r, 3000); }).then(go).catch(function () {}); });
+}
+function verifySlot() {                         /* 兩個人同一瞬間選同一格：先公告的人拿到，後面的人要改選 */
+  return pollSlots().then(function () {
+    var mine = currentCode && slotMap[currentCode];
+    if (!mine) return;
+    var same = Object.keys(slotMap).filter(function (c) { return slotMap[c].s === mine.s && slotMap[c].d === mine.d; })
+      .sort(function (a, b) { var x = slotMap[a], y = slotMap[b]; return x.t - y.t || (x.id < y.id ? -1 : x.id > y.id ? 1 : 0); });
+    if (same.indexOf(currentCode) >= SLOT_CAP) {
+      document.getElementById("custTime").value = "";
+      renderTimePick();
+      setSendMsg("⚠️ " + mine.s + " 剛好同時有人預約，請改選其他時段，再按「送出修改」", "err");
+      showPop({ title: "時段重複了", text: mine.s + " 剛被別人先訂走，請改選其他時段並按「送出修改」" });
+    }
+  });
 }
 document.getElementById("timePick").addEventListener("click", function (e) {
   var h = e.target.closest("button[data-h]");
@@ -1174,7 +1236,9 @@ function pollStock() {
 }
 pollStock();
 setInterval(pollStock, 45000);
-document.addEventListener("visibilitychange", function () { if (!document.hidden) pollStock(); });
+setInterval(pollSlots, 20000);
+pollSlots();
+document.addEventListener("visibilitychange", function () { if (!document.hidden) { pollStock(); pollSlots(); } });
 
 update();
 </script>
