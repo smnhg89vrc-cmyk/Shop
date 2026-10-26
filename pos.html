@@ -214,9 +214,9 @@ body.hasbanner .olbar{top:calc(env(safe-area-inset-top,0px) + 124px)}
   <section id="v-orders" hidden><div class="box"><h3>線上訂單（客人按「送出訂單給店家」後出現）</h3><p class="note" id="ostat"></p>
     <div class="ops" style="margin:8px 0 12px"><button class="mini" id="alarmBtn" type="button">🔔 提示音：開</button><button class="mini" id="testBtn" type="button">🔊 測試提示音</button><button class="mini" id="lockBtn" type="button">☀️ 螢幕常亮：關</button><button class="mini" id="sortBtn" type="button">↕ 排序：下單時間（新→舊）</button></div><div id="olist"></div></div>
     <div class="box"><h3>時段管理（封鎖的時段，客人頁會劃掉）</h3>
-      <div class="ops" style="margin-bottom:10px"><button class="mini" id="pauseBtn" type="button">⏸ 暫停線上接單</button></div>
+      <div class="ops" style="margin-bottom:10px"><button class="mini" id="pauseBtn" type="button">⏸ 暫停線上接單</button><button class="mini" id="orphanBtn" type="button">🧹 開放沒有訂單的時段</button></div>
       <div id="slotmgr"></div>
-      <p class="note">點「空」的時段＝封鎖（現場客人多、休息時用），再點一次解除。已經有訂單的時段不能封鎖。</p></div></section>
+      <p class="note">點「空」的時段＝封鎖（現場客人多、休息時用），再點一次解除。點有 📦 的時段＝開放給其他客人預約（訂單會保留，例如客人不來了）。</p></div></section>
   <section id="v-ledger" hidden>
     <div class="cards" id="cards"></div>
     <div class="box"><h3>收款方式</h3><div id="pays"></div></div>
@@ -635,7 +635,7 @@ function renderOrders(){
   $("ostat").textContent=(online?"🟢 即時連線＋每 25 秒補查漏單":"🟠 即時連線中斷；會持續嘗試補查漏單（需要網路）")+(lastPoll?"　上次檢查 "+hm(lastPoll):"")+(pollFail>=2?"　⚠️ 網路異常":"")+(alarmOn&&!(alarmAudio&&alarmAudio.state==="running")?"　🔇 請點一下畫面以啟用提示音":"");
   renderBanner2();
   const dup={};l.forEach(o=>{dup[o.pickup]=(dup[o.pickup]||0)+1});
-  $("olist").innerHTML=l.length?l.map(o=>`<div class="ocard"><div class="lr"><b>${esc(o.code)}・${esc(o.name)}</b><b>取餐 ${esc(o.pickup)}</b></div>${dup[o.pickup]>1?'<div class="s"><b style="color:var(--over)">⚠️ 這個時段有 '+dup[o.pickup]+" 張單（一鍋約 5 分鐘）</b></div>":""}<div class="ts">🕒 下單 ${fmtT(o.t0||o.t)}${o.ver>1?"　✏️ 最後修改 "+hm(o.t):""}</div>${etaLine(o)}${o.ver>1?'<div class="s">✏️ 已修改（第 '+o.ver+' 版）</div>':""}<div class="s">${o.items.map(i=>esc(i.n)+"×"+i.q).join("、")}</div>${o.spice?'<div class="s">🌶️ 辣度：'+esc(o.spice)+"</div>":""}${payLine(o)}${o.note?'<div class="s">備註：'+esc(o.note)+"</div>":""}<div class="lr"><b class="tot">NT$ ${o.total}</b><span class="ops"><button class="mini" type="button" data-o="load" data-k="${esc(o.k)}">載入收銀</button><button class="mini" type="button" data-o="del" data-k="${esc(o.k)}">刪除</button></span></div></div>`).join(""):'<div class="empty">目前沒有待處理的線上訂單</div>';
+  $("olist").innerHTML=l.length?l.map(o=>`<div class="ocard"><div class="lr"><b>${esc(o.code)}・${esc(o.name)}</b><b>取餐 ${esc(o.pickup)}</b></div>${dup[o.pickup]>1?'<div class="s"><b style="color:var(--over)">⚠️ 這個時段有 '+dup[o.pickup]+" 張單（一鍋約 5 分鐘）</b></div>":""}<div class="ts">🕒 下單 ${fmtT(o.t0||o.t)}${o.ver>1?"　✏️ 最後修改 "+hm(o.t):""}</div>${etaLine(o)}${sm.r&&sm.r[o.code]===o.pickup?'<div class="s"><b>🔓 這張單的時段已開放給其他客人</b></div>':""}${o.ver>1?'<div class="s">✏️ 已修改（第 '+o.ver+' 版）</div>':""}<div class="s">${o.items.map(i=>esc(i.n)+"×"+i.q).join("、")}</div>${o.spice?'<div class="s">🌶️ 辣度：'+esc(o.spice)+"</div>":""}${payLine(o)}${o.note?'<div class="s">備註：'+esc(o.note)+"</div>":""}<div class="lr"><b class="tot">NT$ ${o.total}</b><span class="ops"><button class="mini" type="button" data-o="load" data-k="${esc(o.k)}">載入收銀</button><button class="mini" type="button" data-o="del" data-k="${esc(o.k)}">刪除</button></span></div></div>`).join(""):'<div class="empty">目前沒有待處理的線上訂單</div>';
 }
 function curOrderInfo(){const o=orders.find(x=>x.k===curOrder);return o?{placed:o.t0||o.t,code:o.code,name:o.name,pickup:o.pickup,note:o.note,spice:o.spice||"",pay:o.payLabel||"現場付現",online:!!o.online,paid:!!o.paid}:undefined}
 function renderBanner(){
@@ -654,7 +654,7 @@ function loadOrder(k){
 }
 function markDone(){
   const o=orders.find(x=>x.k===curOrder);
-  if(o)o.status="done";
+  if(o){o.status="done";freeOnce(o.code)}
   curOrder=null;saveO();renderBanner();renderOrders();
 }
 function getCursor(){try{return Number(localStorage.getItem("pos2_last")||0)||0}catch(e){return 0}}
@@ -691,10 +691,10 @@ function connect(){
 $("olist").addEventListener("click",e=>{
   const b=e.target.closest("button[data-o]");if(!b)return;
   if(b.dataset.o==="load")loadOrder(b.dataset.k);
-  else if(confirm("確定刪除這張線上訂單嗎？")){const od=orders.find(x=>x.k===b.dataset.k);if(od)postSlotFree(od.code);orders=orders.filter(x=>x.k!==b.dataset.k);if(curOrder===b.dataset.k){curOrder=null;renderBanner()}saveO();renderOrders()}
+  else if(confirm("確定刪除這張線上訂單嗎？")){const od=orders.find(x=>x.k===b.dataset.k);if(od){smFresh();sm.del.push(od.code);smSave();freeOnce(od.code)}orders=orders.filter(x=>x.k!==b.dataset.k);if(curOrder===b.dataset.k){curOrder=null;renderBanner()}saveO();renderOrders()}
 });
 $("olbar").addEventListener("click",e=>{if(e.target.closest("#olx")){curOrder=null;cart={};updateRows();renderBanner()}});
-document.addEventListener("visibilitychange",()=>{if(!document.hidden){connect();pollMissed();publishStock();if(lockOn&&!wl)acquireLock()}});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){connect();pollMissed();pollSlotTopic();publishStock();if(lockOn&&!wl)acquireLock()}});
 window.addEventListener("online",()=>{connect();pollMissed()});
 window.addEventListener("pageshow",()=>{connect();pollMissed()});
 /* SSE 可能短暫斷線；定時用 ntfy JSON API 補查游標之後的訊息。 */
@@ -716,14 +716,49 @@ function etaLine(o){
 }
 setInterval(()=>{try{renderOrders()}catch(e){}},30000);
 
-let sm={d:"",s:[],p:false},smHour=18;
+let sm={d:"",s:[],p:false,r:{},del:[]},smHour=18;
 try{const v=JSON.parse(localStorage.getItem("pos2_slots")||"null");if(v&&typeof v==="object"&&Array.isArray(v.s))sm=v}catch(e){}
 function smSave(){try{localStorage.setItem("pos2_slots",JSON.stringify(sm))}catch(e){}}
-function smFresh(){const t=ymd(Date.now());if(sm.d!==t){sm={d:t,s:[],p:false};smSave()}}
+function smFresh(){const t=ymd(Date.now());if(sm.d!==t){sm={d:t,s:[],p:false,r:{},del:[]};smSave()}if(!sm.r)sm.r={};if(!sm.del)sm.del=[]}
+let slotMapPOS={};const freedSent=new Set();
+function freeOnce(c){if(!c||freedSent.has(c))return;freedSent.add(c);postSlotFree(c)}
 function slotCodes(){
-  const t=ymd(Date.now()),m={};
-  orders.filter(o=>(o.status==="pending"||o.status==="done")&&o.pickup&&ymd(o.t0||o.t)===t).forEach(o=>{(m[o.pickup]=m[o.pickup]||[]).push(o.code)});
+  smFresh();
+  const t=ymd(Date.now()),m={},mine=new Set();
+  orders.filter(o=>ymd(o.t0||o.t)===t).forEach(o=>{
+    mine.add(o.code);
+    if(o.status==="pending"&&o.pickup&&sm.r[o.code]!==o.pickup)(m[o.pickup]=m[o.pickup]||[]).push(o.code);
+  });
+  Object.keys(slotMapPOS).forEach(c=>{            /* 客人公告過、但收銀頁沒有對應訂單的（舊版頁面、亂送的）也要看得到，可以手動開放 */
+    const e=slotMapPOS[c];
+    if(mine.has(c)||e.d!==t||sm.r[c]===e.s||sm.del.includes(c))return;
+    (m[e.s]=m[e.s]||[]).push(c);
+  });
   return m;
+}
+function pollSlotTopic(){
+  if(!SLOT_TOPIC||typeof fetch==="undefined")return Promise.resolve();
+  return fetch("https://ntfy.sh/"+SLOT_TOPIC+"/json?poll=1&since=12h",{cache:"no-store"}).then(r=>r.text()).then(t=>{
+    const evs=[];
+    t.split("\n").forEach(l=>{try{const m=JSON.parse(l);if(m.event==="message"){const d=JSON.parse(m.message);d._t=m.time||0;d._id=m.id||"";evs.push(d)}}catch(e){}});
+    evs.sort((x,y)=>x._t-y._t||(x._id<y._id?-1:x._id>y._id?1:0));
+    const map={};
+    evs.forEach(e=>{if(!e.c)return;if(e.k==="book"&&e.s)map[e.c]={s:e.s,d:e.d};else if(e.k==="free")delete map[e.c]});
+    smFresh();const td=ymd(Date.now());
+    Object.keys(map).forEach(c=>{                 /* 已結帳、已取消、已刪除的單，時段自動放出來 */
+      const e=map[c];if(e.d!==td)return;
+      const o=orders.find(x=>x.code===c&&ymd(x.t0||x.t)===td);
+      if((o&&o.status!=="pending")||(!o&&sm.del.includes(c))){freeOnce(c);delete map[c]}
+    });
+    slotMapPOS=map;renderSlotMgr();
+  }).catch(()=>{});
+}
+setInterval(pollSlotTopic,30000);
+function releaseSlot(v,codes){
+  smFresh();
+  codes.forEach(c=>{sm.r[c]=v;delete slotMapPOS[c];postSlotFree(c);freedSent.add(c)});
+  smSave();renderSlotMgr();renderOrders();publishStock();
+  toast(v+" 已開放，客人可以重新預約");
 }
 function renderSlotMgr(){
   smFresh();
@@ -742,10 +777,22 @@ $("slotmgr").addEventListener("click",e=>{
   const h=e.target.closest("button[data-h]");if(h){smHour=+h.dataset.h;renderSlotMgr();return}
   const b=e.target.closest("button[data-v]");if(!b)return;
   const v=b.dataset.v,c=slotCodes()[v];
-  if(c){toast("這個時段已有訂單："+c.join("、"));return}
+  if(c){
+    if(confirm("要開放 "+v+" 這個時段嗎？\n目前占用的單："+c.join("、")+"\n訂單會保留，只是把這個時段放出來讓其他客人預約。"))releaseSlot(v,c);
+    return;
+  }
   smFresh();
   sm.s=sm.s.includes(v)?sm.s.filter(x=>x!==v):sm.s.concat(v);
   smSave();renderSlotMgr();publishStock();
+});
+$("orphanBtn").addEventListener("click",()=>{
+  smFresh();
+  const waiting=new Set(orders.filter(o=>o.status==="pending").map(o=>o.code)),all=slotCodes(),list=[];
+  Object.keys(all).forEach(v=>all[v].forEach(c=>{if(!waiting.has(c))list.push([v,c])}));
+  if(!list.length){toast("沒有需要清理的時段");return}
+  if(!confirm("要開放這些沒有待處理訂單的時段嗎？\n"+list.map(x=>x[0]+"（"+x[1]+"）").join("、")))return;
+  list.forEach(x=>{sm.r[x[1]]=x[0];delete slotMapPOS[x[1]];postSlotFree(x[1]);freedSent.add(x[1])});
+  smSave();renderSlotMgr();publishStock();toast("已開放 "+list.length+" 個時段");
 });
 $("pauseBtn").addEventListener("click",()=>{smFresh();sm.p=!sm.p;smSave();renderSlotMgr();publishStock();toast(sm.p?"已暫停線上接單，客人頁會顯示暫停":"已恢復線上接單")});
 
@@ -761,7 +808,8 @@ let lastStockSig="";
 function publishStock(force){
   if(!STOCK_TOPIC||typeof fetch==="undefined")return;
   const today=ymd(Date.now());
-  const booked=orders.filter(o=>(o.status==="pending"||o.status==="done")&&o.pickup&&ymd(o.t0||o.t)===today).map(o=>o.pickup);
+  smFresh();
+  const booked=orders.filter(o=>o.status==="pending"&&o.pickup&&ymd(o.t0||o.t)===today&&sm.r[o.code]!==o.pickup).map(o=>o.pickup);
   const out=items.filter(i=>i.out).map(i=>i.name);
   smFresh();
   const sig=JSON.stringify([out,booked.slice().sort(),today,sm.s.slice().sort(),sm.p]);
@@ -775,7 +823,7 @@ function publishStock(force){
 
 /* ---------- 開始 ---------- */
 $("qd").value=ymd(Date.now());
-renderMenu();renderPay();setView("pos");renderOrders();connect();publishStock(true);setInterval(()=>publishStock(true),20*60*1000);paintCtl();paintSort();if(lockOn)acquireLock();
+renderMenu();renderPay();setView("pos");renderOrders();connect();publishStock(true);setInterval(()=>publishStock(true),20*60*1000);paintCtl();paintSort();pollSlotTopic();if(lockOn)acquireLock();
 </script>
 </body>
 </html>
