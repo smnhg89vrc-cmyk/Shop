@@ -182,6 +182,18 @@ input[type=date],#cash{min-height:46px;padding:4px 12px;border:2px solid var(--l
 .obanner.warn{background:#B3241A;color:#fff}
 body.hasbanner .olbar{top:calc(env(safe-area-inset-top,0px) + 124px)}
 #orderAlarm #alarmGo{background:#FFD76A;color:#4a0600;margin-bottom:10px}
+.eta{margin:2px 0 8px;font-size:19px;font-weight:900}
+.eta.soon{color:var(--accent)}
+.eta.late{color:var(--over)}
+.sm-hours{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.sm-h{flex:1 1 30%;min-height:48px;padding:4px;font:inherit;font-size:17px;font-weight:900;color:var(--ink);background:transparent;border:2px solid var(--line);border-radius:10px;cursor:pointer}
+.sm-h.on{border-color:var(--btn);background:var(--tint);color:var(--accent)}
+.sm-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.sm-slot{min-height:58px;padding:2px;font:inherit;font-size:16px;font-weight:800;line-height:1.2;color:var(--ink);background:transparent;border:2px solid var(--line);border-radius:10px;cursor:pointer}
+.sm-slot small{display:block;font-size:12px;font-weight:700;color:var(--muted)}
+.sm-slot.booked{background:var(--tint);border-color:var(--gold)}
+.sm-slot.blocked{background:var(--line);color:var(--muted);text-decoration:line-through}
+.sm-slot.past{opacity:.35}
 </style>
 </head>
 <body>
@@ -200,7 +212,11 @@ body.hasbanner .olbar{top:calc(env(safe-area-inset-top,0px) + 124px)}
 <main class="wrap">
   <section id="v-pos"><div class="olbar" id="olbar" hidden></div><div id="menu"></div></section>
   <section id="v-orders" hidden><div class="box"><h3>線上訂單（客人按「送出訂單給店家」後出現）</h3><p class="note" id="ostat"></p>
-    <div class="ops" style="margin:8px 0 12px"><button class="mini" id="alarmBtn" type="button">🔔 提示音：開</button><button class="mini" id="testBtn" type="button">🔊 測試提示音</button><button class="mini" id="lockBtn" type="button">☀️ 螢幕常亮：關</button></div><div id="olist"></div></div></section>
+    <div class="ops" style="margin:8px 0 12px"><button class="mini" id="alarmBtn" type="button">🔔 提示音：開</button><button class="mini" id="testBtn" type="button">🔊 測試提示音</button><button class="mini" id="lockBtn" type="button">☀️ 螢幕常亮：關</button><button class="mini" id="sortBtn" type="button">↕ 排序：下單時間（新→舊）</button></div><div id="olist"></div></div>
+    <div class="box"><h3>時段管理（封鎖的時段，客人頁會劃掉）</h3>
+      <div class="ops" style="margin-bottom:10px"><button class="mini" id="pauseBtn" type="button">⏸ 暫停線上接單</button><button class="mini" id="orphanBtn" type="button">🧹 開放沒有訂單的時段</button></div>
+      <div id="slotmgr"></div>
+      <p class="note">點「空」的時段＝封鎖（現場客人多、休息時用），再點一次解除。點有 📦 的時段＝開放給其他客人預約（訂單會保留，例如客人不來了）。</p></div></section>
   <section id="v-ledger" hidden>
     <div class="cards" id="cards"></div>
     <div class="box"><h3>收款方式</h3><div id="pays"></div></div>
@@ -612,13 +628,14 @@ const pending=()=>orders.filter(x=>x.status==="pending");
 const fmtT=ms=>{const d=new Date(ms);return (d.getMonth()+1)+"/"+d.getDate()+"（週"+"日一二三四五六"[d.getDay()]+"）"+hm(ms)};
 const payLine=o=>`<div class="s">付款：${esc(o.payLabel||"現場付現")}${o.online?(o.paid?' <b class="paidtag">💰 客人回報已付款，請核對</b>':"　⏳ 尚未付款"):"　💵 取餐時現場收"}</div>`;
 function renderOrders(){
-  const l=pending().sort((a,b)=>(Number(b.t0||b.t)||0)-(Number(a.t0||a.t)||0));
+  const l=pending().sort(sortMode==="pickup"?((a,b)=>(a.pickup||"99").localeCompare(b.pickup||"99")||(Number(a.t0||a.t)||0)-(Number(b.t0||b.t)||0)):((a,b)=>(Number(b.t0||b.t)||0)-(Number(a.t0||a.t)||0)));
   $("obadge").textContent=l.length;$("obadge").hidden=!l.length;
+  renderSlotMgr();
   document.title=(l.length?"("+l.length+") ":"")+"鹽酥雞收銀記帳";
   $("ostat").textContent=(online?"🟢 即時連線＋每 25 秒補查漏單":"🟠 即時連線中斷；會持續嘗試補查漏單（需要網路）")+(lastPoll?"　上次檢查 "+hm(lastPoll):"")+(pollFail>=2?"　⚠️ 網路異常":"")+(alarmOn&&!(alarmAudio&&alarmAudio.state==="running")?"　🔇 請點一下畫面以啟用提示音":"");
   renderBanner2();
   const dup={};l.forEach(o=>{dup[o.pickup]=(dup[o.pickup]||0)+1});
-  $("olist").innerHTML=l.length?l.map(o=>`<div class="ocard"><div class="lr"><b>${esc(o.code)}・${esc(o.name)}</b><b>取餐 ${esc(o.pickup)}</b></div>${dup[o.pickup]>1?'<div class="s"><b style="color:var(--over)">⚠️ 這個時段有 '+dup[o.pickup]+" 張單（一鍋約 5 分鐘）</b></div>":""}<div class="ts">🕒 下單 ${fmtT(o.t0||o.t)}${o.ver>1?"　✏️ 最後修改 "+hm(o.t):""}</div>${o.ver>1?'<div class="s">✏️ 已修改（第 '+o.ver+' 版）</div>':""}<div class="s">${o.items.map(i=>esc(i.n)+"×"+i.q).join("、")}</div>${o.spice?'<div class="s">🌶️ 辣度：'+esc(o.spice)+"</div>":""}${payLine(o)}${o.note?'<div class="s">備註：'+esc(o.note)+"</div>":""}<div class="lr"><b class="tot">NT$ ${o.total}</b><span class="ops"><button class="mini" type="button" data-o="load" data-k="${esc(o.k)}">載入收銀</button><button class="mini" type="button" data-o="del" data-k="${esc(o.k)}">刪除</button></span></div></div>`).join(""):'<div class="empty">目前沒有待處理的線上訂單</div>';
+  $("olist").innerHTML=l.length?l.map(o=>`<div class="ocard"><div class="lr"><b>${esc(o.code)}・${esc(o.name)}</b><b>取餐 ${esc(o.pickup)}</b></div>${dup[o.pickup]>1?'<div class="s"><b style="color:var(--over)">⚠️ 這個時段有 '+dup[o.pickup]+" 張單（一鍋約 5 分鐘）</b></div>":""}<div class="ts">🕒 下單 ${fmtT(o.t0||o.t)}${o.ver>1?"　✏️ 最後修改 "+hm(o.t):""}</div>${etaLine(o)}${sm.r&&sm.r[o.code]===o.pickup?'<div class="s"><b>🔓 這張單的時段已開放給其他客人</b></div>':""}${o.ver>1?'<div class="s">✏️ 已修改（第 '+o.ver+' 版）</div>':""}<div class="s">${o.items.map(i=>esc(i.n)+"×"+i.q).join("、")}</div>${o.spice?'<div class="s">🌶️ 辣度：'+esc(o.spice)+"</div>":""}${payLine(o)}${o.note?'<div class="s">備註：'+esc(o.note)+"</div>":""}<div class="lr"><b class="tot">NT$ ${o.total}</b><span class="ops"><button class="mini" type="button" data-o="load" data-k="${esc(o.k)}">載入收銀</button><button class="mini" type="button" data-o="del" data-k="${esc(o.k)}">刪除</button></span></div></div>`).join(""):'<div class="empty">目前沒有待處理的線上訂單</div>';
 }
 function curOrderInfo(){const o=orders.find(x=>x.k===curOrder);return o?{placed:o.t0||o.t,code:o.code,name:o.name,pickup:o.pickup,note:o.note,spice:o.spice||"",pay:o.payLabel||"現場付現",online:!!o.online,paid:!!o.paid}:undefined}
 function renderBanner(){
@@ -637,7 +654,7 @@ function loadOrder(k){
 }
 function markDone(){
   const o=orders.find(x=>x.k===curOrder);
-  if(o)o.status="done";
+  if(o){o.status="done";freeOnce(o.code)}
   curOrder=null;saveO();renderBanner();renderOrders();
 }
 function getCursor(){try{return Number(localStorage.getItem("pos2_last")||0)||0}catch(e){return 0}}
@@ -674,35 +691,139 @@ function connect(){
 $("olist").addEventListener("click",e=>{
   const b=e.target.closest("button[data-o]");if(!b)return;
   if(b.dataset.o==="load")loadOrder(b.dataset.k);
-  else if(confirm("確定刪除這張線上訂單嗎？")){orders=orders.filter(x=>x.k!==b.dataset.k);if(curOrder===b.dataset.k){curOrder=null;renderBanner()}saveO();renderOrders()}
+  else if(confirm("確定刪除這張線上訂單嗎？")){const od=orders.find(x=>x.k===b.dataset.k);if(od){smFresh();sm.del.push(od.code);smSave();freeOnce(od.code)}orders=orders.filter(x=>x.k!==b.dataset.k);if(curOrder===b.dataset.k){curOrder=null;renderBanner()}saveO();renderOrders()}
 });
 $("olbar").addEventListener("click",e=>{if(e.target.closest("#olx")){curOrder=null;cart={};updateRows();renderBanner()}});
-document.addEventListener("visibilitychange",()=>{if(!document.hidden){connect();pollMissed();publishStock();if(lockOn&&!wl)acquireLock()}});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){connect();pollMissed();pollSlotTopic();publishStock();if(lockOn&&!wl)acquireLock()}});
 window.addEventListener("online",()=>{connect();pollMissed()});
 window.addEventListener("pageshow",()=>{connect();pollMissed()});
 /* SSE 可能短暫斷線；定時用 ntfy JSON API 補查游標之後的訊息。 */
 setInterval(pollMissed,25000);
 
+/* ---------- 排序 / 取餐倒數 / 時段管理 ---------- */
+let sortMode="placed";
+try{sortMode=localStorage.getItem("pos2_sort")==="pickup"?"pickup":"placed"}catch(e){}
+function paintSort(){$("sortBtn").textContent=sortMode==="pickup"?"↕ 排序：取餐時間（早→晚）":"↕ 排序：下單時間（新→舊）"}
+$("sortBtn").addEventListener("click",()=>{sortMode=sortMode==="pickup"?"placed":"pickup";try{localStorage.setItem("pos2_sort",sortMode)}catch(e){}paintSort();renderOrders()});
+function etaLine(o){
+  if(!o.pickup||ymd(o.t0||o.t)!==ymd(Date.now()))return "";
+  const [h,m]=o.pickup.split(":").map(Number);if(isNaN(h)||isNaN(m))return "";
+  const d=new Date();d.setHours(h,m,0,0);
+  const mins=Math.round((d-Date.now())/60000);
+  if(mins<0)return `<div class="eta late">⚠️ 已超過取餐時間 ${-mins} 分鐘</div>`;
+  const txt=mins>=60?Math.floor(mins/60)+" 小時 "+(mins%60)+" 分":mins+" 分鐘";
+  return `<div class="eta${mins<=10?" soon":""}">⏱ 距離取餐 ${txt}</div>`;
+}
+setInterval(()=>{try{renderOrders()}catch(e){}},30000);
+
+let sm={d:"",s:[],p:false,r:{},del:[]},smHour=18;
+try{const v=JSON.parse(localStorage.getItem("pos2_slots")||"null");if(v&&typeof v==="object"&&Array.isArray(v.s))sm=v}catch(e){}
+function smSave(){try{localStorage.setItem("pos2_slots",JSON.stringify(sm))}catch(e){}}
+function smFresh(){const t=ymd(Date.now());if(sm.d!==t){sm={d:t,s:[],p:false,r:{},del:[]};smSave()}if(!sm.r)sm.r={};if(!sm.del)sm.del=[]}
+let slotMapPOS={};const freedSent=new Set();
+function freeOnce(c){if(!c||freedSent.has(c))return;freedSent.add(c);postSlotFree(c)}
+function slotCodes(){
+  smFresh();
+  const t=ymd(Date.now()),m={},mine=new Set();
+  orders.filter(o=>ymd(o.t0||o.t)===t).forEach(o=>{
+    mine.add(o.code);
+    if(o.status==="pending"&&o.pickup&&sm.r[o.code]!==o.pickup)(m[o.pickup]=m[o.pickup]||[]).push(o.code);
+  });
+  Object.keys(slotMapPOS).forEach(c=>{            /* 客人公告過、但收銀頁沒有對應訂單的（舊版頁面、亂送的）也要看得到，可以手動開放 */
+    const e=slotMapPOS[c];
+    if(mine.has(c)||e.d!==t||sm.r[c]===e.s||sm.del.includes(c))return;
+    (m[e.s]=m[e.s]||[]).push(c);
+  });
+  return m;
+}
+function pollSlotTopic(){
+  if(!SLOT_TOPIC||typeof fetch==="undefined")return Promise.resolve();
+  return fetch("https://ntfy.sh/"+SLOT_TOPIC+"/json?poll=1&since=12h",{cache:"no-store"}).then(r=>r.text()).then(t=>{
+    const evs=[];
+    t.split("\n").forEach(l=>{try{const m=JSON.parse(l);if(m.event==="message"){const d=JSON.parse(m.message);d._t=m.time||0;d._id=m.id||"";evs.push(d)}}catch(e){}});
+    evs.sort((x,y)=>x._t-y._t||(x._id<y._id?-1:x._id>y._id?1:0));
+    const map={};
+    evs.forEach(e=>{if(!e.c)return;if(e.k==="book"&&e.s)map[e.c]={s:e.s,d:e.d};else if(e.k==="free")delete map[e.c]});
+    smFresh();const td=ymd(Date.now());
+    Object.keys(map).forEach(c=>{                 /* 已結帳、已取消、已刪除的單，時段自動放出來 */
+      const e=map[c];if(e.d!==td)return;
+      const o=orders.find(x=>x.code===c&&ymd(x.t0||x.t)===td);
+      if((o&&o.status!=="pending")||(!o&&sm.del.includes(c))){freeOnce(c);delete map[c]}
+    });
+    slotMapPOS=map;renderSlotMgr();
+  }).catch(()=>{});
+}
+setInterval(pollSlotTopic,30000);
+function releaseSlot(v,codes){
+  smFresh();
+  codes.forEach(c=>{sm.r[c]=v;delete slotMapPOS[c];postSlotFree(c);freedSent.add(c)});
+  smSave();renderSlotMgr();renderOrders();publishStock();
+  toast(v+" 已開放，客人可以重新預約");
+}
+function renderSlotMgr(){
+  smFresh();
+  const box=$("slotmgr");if(!box)return;
+  const codes=slotCodes(),now=new Date(),cur=now.getHours()*60+now.getMinutes(),hh=n=>("0"+n).slice(-2);
+  const hb=[18,19,20,21,22,23].map(h=>`<button type="button" class="sm-h${h===smHour?" on":""}" data-h="${h}">${h} 點</button>`).join("");
+  let chips="";
+  for(let m=smHour*60;m<smHour*60+60&&m<=23*60;m+=5){
+    const v=hh(Math.floor(m/60))+":"+hh(m%60),c=codes[v],b=sm.s.includes(v);
+    chips+=`<button type="button" class="sm-slot${c?" booked":""}${b?" blocked":""}${m<cur?" past":""}" data-v="${v}">${v}<small>${c?"📦 "+esc(c.join("、")):b?"已封鎖":"空"}</small></button>`;
+  }
+  box.innerHTML=`<div class="sm-hours">${hb}</div><div class="sm-grid">${chips}</div>`;
+  $("pauseBtn").textContent=sm.p?"▶ 恢復線上接單（目前暫停中）":"⏸ 暫停線上接單";
+}
+$("slotmgr").addEventListener("click",e=>{
+  const h=e.target.closest("button[data-h]");if(h){smHour=+h.dataset.h;renderSlotMgr();return}
+  const b=e.target.closest("button[data-v]");if(!b)return;
+  const v=b.dataset.v,c=slotCodes()[v];
+  if(c){
+    if(confirm("要開放 "+v+" 這個時段嗎？\n目前占用的單："+c.join("、")+"\n訂單會保留，只是把這個時段放出來讓其他客人預約。"))releaseSlot(v,c);
+    return;
+  }
+  smFresh();
+  sm.s=sm.s.includes(v)?sm.s.filter(x=>x!==v):sm.s.concat(v);
+  smSave();renderSlotMgr();publishStock();
+});
+$("orphanBtn").addEventListener("click",()=>{
+  smFresh();
+  const waiting=new Set(orders.filter(o=>o.status==="pending").map(o=>o.code)),all=slotCodes(),list=[];
+  Object.keys(all).forEach(v=>all[v].forEach(c=>{if(!waiting.has(c))list.push([v,c])}));
+  if(!list.length){toast("沒有需要清理的時段");return}
+  if(!confirm("要開放這些沒有待處理訂單的時段嗎？\n"+list.map(x=>x[0]+"（"+x[1]+"）").join("、")))return;
+  list.forEach(x=>{sm.r[x[1]]=x[0];delete slotMapPOS[x[1]];postSlotFree(x[1]);freedSent.add(x[1])});
+  smSave();renderSlotMgr();publishStock();toast("已開放 "+list.length+" 個時段");
+});
+$("pauseBtn").addEventListener("click",()=>{smFresh();sm.p=!sm.p;smSave();renderSlotMgr();publishStock();toast(sm.p?"已暫停線上接單，客人頁會顯示暫停":"已恢復線上接單")});
+
 /* ---------- 售完同步（送到客人頁） ---------- */
 const STOCK_TOPIC="salt-stock-h8ppt9tbymvyced3";
+const SLOT_TOPIC="salt-slots-g8smme824r9qqvif";
+function postSlotFree(code){
+  if(!SLOT_TOPIC||typeof fetch==="undefined"||!code)return;
+  try{fetch("https://ntfy.sh/",{method:"POST",headers:{"Content-Type":"text/plain;charset=UTF-8"},
+    body:JSON.stringify({topic:SLOT_TOPIC,title:"時段",message:JSON.stringify({k:"free",c:code,s:"",d:ymd(Date.now())}),priority:1})}).catch(()=>{})}catch(e){}
+}
 let lastStockSig="";
 function publishStock(force){
   if(!STOCK_TOPIC||typeof fetch==="undefined")return;
   const today=ymd(Date.now());
-  const booked=orders.filter(o=>(o.status==="pending"||o.status==="done")&&o.pickup&&ymd(o.t0||o.t)===today).map(o=>o.pickup);
+  smFresh();
+  const booked=orders.filter(o=>o.status==="pending"&&o.pickup&&ymd(o.t0||o.t)===today&&sm.r[o.code]!==o.pickup).map(o=>o.pickup);
   const out=items.filter(i=>i.out).map(i=>i.name);
-  const sig=JSON.stringify([out,booked.slice().sort(),today]);
+  smFresh();
+  const sig=JSON.stringify([out,booked.slice().sort(),today,sm.s.slice().sort(),sm.p]);
   if(!force&&sig===lastStockSig)return;
   lastStockSig=sig;
   try{
     fetch("https://ntfy.sh/",{method:"POST",headers:{"Content-Type":"text/plain;charset=UTF-8"},
-      body:JSON.stringify({topic:STOCK_TOPIC,title:"品項狀態",message:JSON.stringify({out:out,booked:booked,date:today,t:Date.now()}),priority:1})}).catch(()=>{});
+      body:JSON.stringify({topic:STOCK_TOPIC,title:"品項狀態",message:JSON.stringify({out:out,booked:booked,blocked:sm.s,paused:sm.p,date:today,t:Date.now()}),priority:1})}).catch(()=>{});
   }catch(e){}
 }
 
 /* ---------- 開始 ---------- */
 $("qd").value=ymd(Date.now());
-renderMenu();renderPay();setView("pos");renderOrders();connect();publishStock(true);setInterval(()=>publishStock(true),20*60*1000);paintCtl();if(lockOn)acquireLock();
+renderMenu();renderPay();setView("pos");renderOrders();connect();publishStock(true);setInterval(()=>publishStock(true),20*60*1000);paintCtl();paintSort();pollSlotTopic();if(lockOn)acquireLock();
 </script>
 </body>
 </html>
