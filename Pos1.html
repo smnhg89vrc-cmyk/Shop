@@ -267,6 +267,20 @@ h2{margin:28px 0 4px;font-size:23px;letter-spacing:.04em;padding-bottom:6px;bord
 .tp-slot.taken{text-decoration:line-through;color:var(--muted);opacity:.5;cursor:not-allowed;background:transparent}
 .tp-note,.tp-closed{margin:8px 0 0;color:var(--muted);font-size:14px}
 .tp-closed{font-weight:800;color:var(--accent);font-size:16px}
+
+.pay-tools{margin:18px 0 28px;padding:16px;border:1px solid #ead7c7;border-radius:16px;background:#fffaf4}
+.pay-tools h2{margin:0 0 8px;font-size:1.15rem}
+.pay-tools p{margin:0 0 12px;color:#6b625b;font-size:.9rem}
+.pay-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.pay-open{border:0;border-radius:12px;padding:13px 8px;background:#b3241a;color:#fff;font-weight:700;font-size:1rem}
+.pay-modal{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.72);padding:18px;overflow:auto;align-items:center;justify-content:center}
+.pay-modal.open{display:flex}
+.pay-card{width:min(100%,420px);background:#fff;border-radius:18px;padding:18px;text-align:center;color:#222;max-height:92vh;overflow:auto}
+.pay-card h2{margin:0 0 8px}
+.pay-card .pay-qr{display:block;width:min(78vw,300px);height:auto;max-height:48vh;object-fit:contain;margin:12px auto;background:#fff}
+.pay-card .pay-close{border:0;border-radius:10px;background:#333;color:#fff;padding:12px 22px;font-size:1rem;font-weight:700}
+.pay-card .pay-note{font-size:.88rem;color:#625b55}
+
 </style>
 </head>
 <body>
@@ -417,6 +431,27 @@ h2{margin:28px 0 4px;font-size:23px;letter-spacing:.04em;padding-bottom:6px;bord
     </div>
     <div class="track" id="track" aria-hidden="true"><i id="fill"></i></div>
     <p id="status" aria-live="polite"></p>
+  </div>
+</div>
+
+
+<section class="pay-tools" aria-label="電子支付">
+  <h2>📱 電子支付｜點選開啟收款 QR Code</h2>
+  <p>選擇要使用的支付方式。LINE Pay 使用專屬 QR；街口、全支付及 iPASS MONEY 使用店家 TWQR 收款碼。</p>
+  <div class="pay-grid">
+    <button class="pay-open" type="button" data-payqr="line">LINE Pay</button>
+    <button class="pay-open" type="button" data-payqr="jko">街口支付</button>
+    <button class="pay-open" type="button" data-payqr="plus">全支付</button>
+    <button class="pay-open" type="button" data-payqr="ipass">iPASS MONEY</button>
+  </div>
+</section>
+<div class="pay-modal" id="payQrModal" role="dialog" aria-modal="true" aria-labelledby="payQrTitle">
+  <div class="pay-card">
+    <h2 id="payQrTitle">電子支付</h2>
+    <p class="pay-note" id="payQrNote">請使用另一支手機掃描，或在支付 App 選擇相簿掃描。</p>
+    <img class="pay-qr" id="payQrImage" alt="電子支付收款 QR Code">
+    <p class="pay-note">此 QR Code 不會自動帶入金額，請依計算機顯示金額輸入。</p>
+    <button class="pay-close" type="button" id="payQrClose">關閉</button>
   </div>
 </div>
 
@@ -1218,6 +1253,29 @@ function applyStock(names) {
   update();
   if (removed.length) showPop({ title: "有品項剛賣完了", text: removed.join("、") + " 已從你的訂單移除" });
 }
+function applySyncedPrices(prices) {
+  if (!Array.isArray(prices)) return;
+  var changed = false;
+  prices.forEach(function (p) {
+    if (!p || !p.id || !Number.isFinite(Number(p.price))) return;
+    var item = ALL.find(function (i) { return i.id === p.id; });
+    if (item && item.price !== Number(p.price)) { item.price = Number(p.price); changed = true; }
+  });
+  if (changed) {
+    try { localStorage.setItem("salt_menu_prices_cache", JSON.stringify(prices)); } catch (e) {}
+    update();
+  }
+}
+function loadCachedPrices() {
+  try {
+    var saved = JSON.parse(localStorage.getItem("salt_menu_prices_cache") || "[]");
+    if (Array.isArray(saved)) saved.forEach(function (p) {
+      var item = p && ALL.find(function (i) { return i.id === p.id; });
+      if (item && Number.isFinite(Number(p.price))) item.price = Number(p.price);
+    });
+  } catch (e) {}
+}
+loadCachedPrices();
 function pollStock() {
   if (!STOCK_TOPIC || !window.fetch) return Promise.resolve();
   return fetch("https://ntfy.sh/" + STOCK_TOPIC + "/json?poll=1&since=12h", { cache: "no-store" })
@@ -1230,6 +1288,7 @@ function pollStock() {
       if (!last) return;
       var d = JSON.parse(last.message);
       if (d && Array.isArray(d.out)) applyStock(d.out);
+      if (d && Array.isArray(d.prices)) applySyncedPrices(d.prices);
       applyBooked(d);
     })
     .catch(function () {});
@@ -1239,6 +1298,30 @@ setInterval(pollStock, 45000);
 setInterval(pollSlots, 20000);
 pollSlots();
 document.addEventListener("visibilitychange", function () { if (!document.hidden) { pollStock(); pollSlots(); } });
+
+
+/* 電子支付 QR Code 選單 */
+(function(){
+  var modal=document.getElementById("payQrModal");
+  if(!modal)return;
+  var configs={
+    line:{name:"LINE Pay",img:function(){return QR_LINE;},note:"請使用 LINE Pay 掃描店家專屬 QR Code。"},
+    jko:{name:"街口支付",img:function(){return QR_TWQR;},note:"請開啟街口支付，掃描店家 TWQR 收款碼。"},
+    plus:{name:"全支付",img:function(){return QR_TWQR;},note:"請開啟全支付，掃描店家 TWQR 收款碼。"},
+    ipass:{name:"iPASS MONEY",img:function(){return QR_TWQR;},note:"請開啟 iPASS MONEY，掃描店家 TWQR 收款碼。"}
+  };
+  document.querySelectorAll("[data-payqr]").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      var c=configs[btn.getAttribute("data-payqr")]; if(!c)return;
+      document.getElementById("payQrTitle").textContent=c.name+" 收款 QR Code";
+      document.getElementById("payQrNote").textContent=c.note+" 若用同一支手機，請截圖後在 App 選「相簿掃描」。";
+      document.getElementById("payQrImage").src=c.img();
+      modal.classList.add("open");
+    });
+  });
+  document.getElementById("payQrClose").addEventListener("click",function(){modal.classList.remove("open");});
+  modal.addEventListener("click",function(e){if(e.target===modal)modal.classList.remove("open");});
+})();
 
 update();
 </script>
