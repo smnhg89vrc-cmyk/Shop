@@ -112,25 +112,6 @@ h2{margin:28px 0 4px;font-size:23px;letter-spacing:.04em;padding-bottom:6px;bord
 .social a:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
 .note{margin:20px 0 0;font-size:14px;color:var(--muted)}
 
-
-/* 電子支付 */
-.payment{margin:28px 0 32px;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:16px}
-.payment h2{margin:0 0 6px;color:var(--accent)}
-.payment-intro{margin:0 0 14px;color:var(--muted);font-size:14px;line-height:1.6}
-.pay-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.pay-option{min-height:52px;border:2px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);font:inherit;font-weight:700;cursor:pointer;padding:10px}
-.pay-option[aria-pressed="true"]{border-color:var(--accent);background:#FFF1E8;box-shadow:inset 0 0 0 1px var(--accent)}
-.pay-option:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
-.pay-panel{margin-top:16px;padding:16px 12px;border:1px dashed var(--line);border-radius:12px;text-align:center;background:var(--bg)}
-.pay-panel[hidden]{display:none}
-.pay-panel h3{margin:0 0 6px;font-size:21px}
-.pay-total{font-size:24px;font-weight:900;color:var(--accent);margin:8px 0 12px}
-.pay-qr{display:block;width:min(78vw,320px);height:auto;max-height:380px;object-fit:contain;margin:0 auto;border-radius:8px;background:#fff}
-.qr-placeholder{max-width:320px;margin:0 auto;padding:24px 14px;border:1px dashed #B8A895;border-radius:10px;background:#fff;color:var(--muted);line-height:1.7}
-.qr-placeholder strong{display:block;color:var(--ink);font-size:16px;margin-bottom:5px}
-.pay-note{margin:12px 0 0;font-size:13px;color:var(--muted);line-height:1.65}
-@media(min-width:520px){.pay-options{grid-template-columns:repeat(4,minmax(0,1fr))}}
-
 /* cheer + suggestions */
 .cheer{font-size:15px;font-weight:700;line-height:1.35;margin:0 0 8px;min-height:20px}
 .sugg-title{margin:16px 0 8px;font-weight:700}
@@ -213,30 +194,6 @@ h2{margin:28px 0 4px;font-size:23px;letter-spacing:.04em;padding-bottom:6px;bord
     <div id="suggest"></div>
     <p class="note">點餐時把這個畫面給老闆看就可以。實際價格與供應品項以現場為準。</p>
   </section>
-
-  <section class="payment" id="payment" aria-label="電子支付選擇">
-    <h2 class="serif">電子支付</h2>
-    <p class="payment-intro">選好餐點、確認金額後，點選付款方式查看店家收款 QR Code。</p>
-    <div class="pay-options" role="group" aria-label="選擇付款方式">
-      <button type="button" class="pay-option" data-pay="linepay" aria-pressed="false">LINE Pay</button>
-      <button type="button" class="pay-option" data-pay="jkopay" aria-pressed="false">街口支付</button>
-      <button type="button" class="pay-option" data-pay="pxpay" aria-pressed="false">全支付</button>
-      <button type="button" class="pay-option" data-pay="ipass" aria-pressed="false">iPASS MONEY</button>
-    </div>
-    <div class="pay-panel" id="payPanel" hidden aria-live="polite">
-      <h3 id="payTitle">店家收款 QR Code</h3>
-      <p>本次點餐金額</p>
-      <div class="pay-total" id="payTotal">NT$ 0</div>
-      <img class="pay-qr" id="payQr" src="" alt="店家收款 QR Code" hidden>
-      <div class="qr-placeholder" id="qrPlaceholder">
-        <strong id="qrPlaceholderTitle">尚未放入收款碼圖片</strong>
-        請將店家的收款碼圖片放在 menu.html 同一個資料夾，並依照下方檔名命名：<br>
-        <span id="qrFileName">qr-linepay.png</span>
-      </div>
-      <p class="pay-note">請掃描上方店家收款碼，並依支付 App 畫面確認付款。此為店家靜態 QR Code，金額不會自動帶入；請在支付 App 內確認／輸入正確金額，付款完成後再向店家出示成功畫面。</p>
-    </div>
-  </section>
-
   <section class="social" aria-label="營業資訊與社群">
     <h2 class="serif">營業時間</h2>
     <p class="hrs">18:00 – 23:00</p>
@@ -480,56 +437,6 @@ function celebrate(idx) {
   requestAnimationFrame(frame);
 }
 
-
-/* ===== 電子支付 QR Code =====
-   請將店家收款碼圖片與 menu.html 放在同一個資料夾，檔名如下：
-   LINE Pay: qr-linepay.png
-   街口支付: qr-jkopay.png
-   全支付: qr-pxpay.png
-   iPASS MONEY: qr-ipass.png
-*/
-var PAYMENT_METHODS = {
-  linepay: { name: "LINE Pay", file: "qr-linepay.png" },
-  jkopay:  { name: "街口支付", file: "qr-jkopay.png" },
-  pxpay:   { name: "全支付", file: "qr-pxpay.png" },
-  ipass:   { name: "iPASS MONEY", file: "qr-ipass.png" }
-};
-var selectedPayment = "";
-function selectPayment(method) {
-  var item = PAYMENT_METHODS[method];
-  if (!item) return;
-  selectedPayment = method;
-  var panel = document.getElementById("payPanel");
-  var qr = document.getElementById("payQr");
-  var placeholder = document.getElementById("qrPlaceholder");
-  document.querySelectorAll(".pay-option").forEach(function (b) {
-    b.setAttribute("aria-pressed", b.getAttribute("data-pay") === method ? "true" : "false");
-  });
-  document.getElementById("payTitle").textContent = item.name + "｜店家收款 QR Code";
-  document.getElementById("qrFileName").textContent = item.file;
-  document.getElementById("qrPlaceholderTitle").textContent = "正在確認收款碼圖片…";
-  qr.hidden = true;
-  qr.onerror = function () {
-    qr.hidden = true;
-    placeholder.hidden = false;
-    document.getElementById("qrPlaceholderTitle").textContent = "尚未找到收款碼圖片";
-  };
-  qr.onload = function () {
-    qr.hidden = false;
-    placeholder.hidden = true;
-  };
-  qr.src = item.file;
-  panel.hidden = false;
-  updatePaymentTotal();
-}
-function updatePaymentTotal() {
-  var el = document.getElementById("payTotal");
-  if (el) el.textContent = money(total());
-}
-document.querySelectorAll(".pay-option").forEach(function (b) {
-  b.addEventListener("click", function () { selectPayment(b.getAttribute("data-pay")); });
-});
-
 function update() {
   var t = total();
   renderExtras(t);
@@ -550,7 +457,6 @@ function update() {
   });
 
   document.getElementById("total").textContent = money(t);
-  updatePaymentTotal();
 
   var status = document.getElementById("status");
   var track = document.getElementById("track");
