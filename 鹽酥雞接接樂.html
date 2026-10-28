@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>鹽酥雞接接樂</title>
+<style>
+:root{--red:#c8102e;--yel:#ffd23f;--bg:#fff3d6;--ink:#2b1a0e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1d0f08;--ink:#fff3d6}}
+:root[data-theme="dark"]{--bg:#1d0f08;--ink:#fff3d6}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:system-ui,"Noto Sans TC","PingFang TC",sans-serif;display:flex;flex-direction:column;align-items:center;user-select:none;-webkit-user-select:none}
+header{width:100%;background:var(--red);color:var(--yel);text-align:center;padding:8px 6px;font-weight:800;font-size:15px;letter-spacing:1px}
+.hud{width:100%;max-width:480px;display:flex;justify-content:space-between;padding:8px 14px;font-size:18px;font-weight:700;box-sizing:border-box}
+#stage{position:relative;flex:1;width:100%;max-width:480px;min-height:0;margin-bottom:8px}
+canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;border-radius:14px;background:#3a0d0d}
+#ov{position:absolute;inset:0;border-radius:14px;background:rgba(30,8,4,.88);color:#fff3d6;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;gap:10px}
+#ov h1{margin:0;font-size:28px;color:var(--yel)}
+#ov p{margin:0;line-height:1.6;font-size:16px}
+button{background:var(--yel);color:#7a1b0c;border:0;border-radius:999px;padding:12px 34px;font-size:20px;font-weight:800;margin-top:6px}
+</style></head>
+<body>
+<header>台灣第一家鹽酥雞－30年老店</header>
+<div class="hud"><span>得分 <b id="sc">0</b></span><span>最高 <b id="bs">0</b></span><span>⏱ <b id="tm">30</b></span></div>
+<div id="stage"><canvas id="c"></canvas>
+<div id="ov"><h1>🍗 鹽酥雞接接樂</h1>
+<p>用手指左右拖動竹籃<br>接住好料 🍗🦑🍠🌽🍢<br>小心別接到 🔥 焦掉的！</p>
+<button id="go">開始</button></div></div>
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d'),ov=document.getElementById('ov');
+const $=id=>document.getElementById(id);
+const GOOD=[['🍗',3],['🍗',3],['🦑',3],['🍠',2],['🌽',2],['🍢',1],['🍢',1]],BAD=['🔥',-3];
+const RANKS=[[60,'30年老師傅 👑','今天的你，鹽酥雞界傳說！'],[35,'炸雞達人 🔥','手速驚人，截圖給老闆看！'],[15,'出師學徒 😎','再玩一次，挑戰達人！'],[0,'實習小工 🐣','別氣餒，下一把更好！']];
+let W,H,dpr,px,items=[],pops=[],score=0,left=30,running=false,last=0,acc=0,best=0;
+try{best=+localStorage.getItem('yansuji-best')||0}catch(e){}
+$('bs').textContent=best;
+function fit(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;W=r.width;H=r.height;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);if(px==null||px>W)px=W/2}
+addEventListener('resize',fit);fit();
+function move(e){const r=cv.getBoundingClientRect();px=Math.max(30,Math.min(W-30,e.clientX-r.left))}
+cv.addEventListener('pointermove',move);cv.addEventListener('pointerdown',move);
+function spawn(){const b=Math.random()<.2,it=b?BAD:GOOD[Math.floor(Math.random()*GOOD.length)];items.push({x:30+Math.random()*(W-60),y:-30,e:it[0]||it,v:b?BAD[1]:it[1],k:.8+Math.random()*.4})}
+function start(){score=0;left=30;items=[];pops=[];acc=0;running=true;last=performance.now();ov.style.display='none';$('sc').textContent=0;requestAnimationFrame(loop)}
+function end(){running=false;if(score>best){best=score;try{localStorage.setItem('yansuji-best',best)}catch(e){}}$('bs').textContent=best;
+const r=RANKS.find(x=>score>=x[0]);
+ov.innerHTML='<h1>時間到！</h1><p style="font-size:44px;font-weight:800;color:#ffd23f">'+score+' 分</p><p>稱號：<b>'+r[1]+'</b><br>'+r[2]+'</p><button id="go2">再玩一次</button>';
+ov.style.display='flex';$('go2').onclick=start}
+function loop(ts){if(!running)return;const dt=Math.min(.05,(ts-last)/1000);last=ts;left-=dt;
+if(left<=0){left=0;$('tm').textContent=0;return end()}
+const el=30-left;acc+=dt;const iv=Math.max(.35,.7-el*.012);
+while(acc>iv){acc-=iv;spawn()}
+ctx.clearRect(0,0,W,H);const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#2a0808');g.addColorStop(1,'#8a2410');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+ctx.textAlign='center';ctx.textBaseline='middle';
+for(let i=0;i<5;i++){ctx.font='26px serif';ctx.fillText('🏮',W*(i+.5)/5,22)}
+for(let i=items.length-1;i>=0;i--){const s=items[i];s.y+=(H/5)*(1+el/30*.8)*s.k*dt;
+if(s.y>H-75&&s.y<H-20&&Math.abs(s.x-px)<50){score=Math.max(0,score+s.v);pops.push({x:s.x,y:H-90,t:.6,s:(s.v>0?'+':'')+s.v,c:s.v>0?'#ffd23f':'#ff6b6b'});items.splice(i,1);$('sc').textContent=score;continue}
+if(s.y>H+30){items.splice(i,1);continue}
+ctx.font='40px serif';ctx.fillText(s.e,s.x,s.y)}
+ctx.font='56px serif';ctx.fillText('🧺',px,H-40);
+for(let i=pops.length-1;i>=0;i--){const p=pops[i];p.t-=dt;p.y-=40*dt;if(p.t<=0){pops.splice(i,1);continue}ctx.globalAlpha=Math.min(1,p.t*2);ctx.font='bold 24px sans-serif';ctx.fillStyle=p.c;ctx.fillText(p.s,p.x,p.y);ctx.globalAlpha=1}
+$('tm').textContent=Math.ceil(left);requestAnimationFrame(loop)}
+$('go').onclick=start;
+</script></body></html>
