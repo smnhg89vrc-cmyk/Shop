@@ -525,7 +525,7 @@ $("ilist").addEventListener("click",e=>{
   const b=e.target.closest("button[data-i]");if(!b)return;
   const i=byId(b.dataset.i);if(!i)return;
   if(b.dataset.a==="out"){i.out=!i.out;if(i.out)delete cart[i.id]}
-  else if(b.dataset.a==="price"){const v=parseInt(prompt("「"+i.name+"」新價格（元）",i.price));if(isNaN(v)||v<0||v>99999)return toast("價格不正確");i.price=v}
+  else if(b.dataset.a==="price"){const v=parseInt(prompt("「"+i.name+"」新價格（元）",i.price));if(isNaN(v)||v<0||v>99999)return toast("價格不正確");i.price=v;toast("「"+i.name+"」改為 $"+v+"，已同步到線上點餐與計算機")}
   else if(confirm("確定刪除「"+i.name+"」嗎？（過去的交易紀錄不受影響）")){items=items.filter(x=>x.id!=i.id);delete cart[i.id]}
   save();renderItems();renderMenu();renderCart();publishStock();
 });
@@ -811,13 +811,14 @@ function publishStock(force){
   smFresh();
   const booked=orders.filter(o=>o.status==="pending"&&o.pickup&&ymd(o.t0||o.t)===today&&sm.r[o.code]!==o.pickup).map(o=>o.pickup);
   const out=items.filter(i=>i.out).map(i=>i.name);
+  const prices={};items.forEach(i=>{prices[i.name]=i.price});
   smFresh();
-  const sig=JSON.stringify([out,booked.slice().sort(),today,sm.s.slice().sort(),sm.p]);
+  const sig=JSON.stringify([out,booked.slice().sort(),today,sm.s.slice().sort(),sm.p,prices]);
   if(!force&&sig===lastStockSig)return;
   lastStockSig=sig;
   try{
     fetch("https://ntfy.sh/",{method:"POST",headers:{"Content-Type":"text/plain;charset=UTF-8"},
-      body:JSON.stringify({topic:STOCK_TOPIC,title:"品項狀態",message:JSON.stringify({out:out,booked:booked,blocked:sm.s,paused:sm.p,date:today,t:Date.now()}),priority:1})}).catch(()=>{});
+      body:JSON.stringify({topic:STOCK_TOPIC,title:"品項狀態",message:JSON.stringify({out:out,prices:prices,booked:booked,blocked:sm.s,paused:sm.p,date:today,t:Date.now()}),priority:1})}).catch(()=>{});
   }catch(e){}
 }
 

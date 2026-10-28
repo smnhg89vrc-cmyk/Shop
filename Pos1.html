@@ -1230,10 +1230,30 @@ function pollStock() {
       if (!last) return;
       var d = JSON.parse(last.message);
       if (d && Array.isArray(d.out)) applyStock(d.out);
+      if (d && d.prices && typeof d.prices === "object") {
+        try { localStorage.setItem(PRICE_KEY, JSON.stringify(d.prices)); } catch (e) {}
+        applyPrices(d.prices);
+      }
       applyBooked(d);
     })
     .catch(function () {});
 }
+/* ===== 價格同步（店家收銀頁改價 → 這裡會自動更新） ===== */
+var PRICE_KEY = "salt_prices_v1";
+function applyPrices(map) {
+  if (!map || typeof map !== "object") return;
+  var changed = false;
+  ALL.forEach(function (i) {
+    var p = map[i.name];
+    if (typeof p === "number" && p >= 0 && p <= 99999 && p !== i.price) {
+      i.price = p; changed = true;
+      var el = document.querySelector("#row-" + i.id + " .price");
+      if (el) el.textContent = money(p) + "／" + i.unit;
+    }
+  });
+  if (changed) update();
+}
+try { applyPrices(JSON.parse(localStorage.getItem(PRICE_KEY))); } catch (e) {}
 pollStock();
 setInterval(pollStock, 45000);
 setInterval(pollSlots, 20000);
