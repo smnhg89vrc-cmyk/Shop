@@ -489,8 +489,7 @@ function total() {
   return ALL.reduce(function (s, i) { return s + (qty[i.id] || 0) * i.price; }, 0);
 }
 
-/* build menu once */
-(function build() {
+function buildMenu() {
   var html = "";
   MENU.forEach(function (g) {
     html += '<h2 class="serif">' + g.group + "</h2>";
@@ -508,7 +507,8 @@ function total() {
     });
   });
   document.getElementById("menu").innerHTML = html;
-})();
+}
+buildMenu();
 
 var TIERS = [
   { min: 1,   name: "小點心",       emoji: "🍢" },
@@ -1207,6 +1207,39 @@ document.getElementById("clear").addEventListener("click", function () {
   update();
 });
 
+/* ===== 菜單同步：店家在收銀頁改價、新增、刪除品項，這裡會自動跟著變 ===== */
+function hid(s) { var h = 0; for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return "n" + (h >>> 0).toString(36); }
+var menuSig = "";
+function applyMenu(d) {
+  if (!d || !Array.isArray(d.m) || !Array.isArray(d.g) || !d.m.length) return;
+  var sig = JSON.stringify([d.g, d.m]);
+  if (sig === menuSig) return;
+  var i, e;
+  for (i = 0; i < d.m.length; i++) {                         /* 資料不完整或怪怪的，整份不採用 */
+    e = d.m[i];
+    if (!Array.isArray(e) || typeof e[0] !== "string" || !e[0] || typeof e[1] !== "number" || !(e[1] >= 0 && e[1] <= 9999) || typeof d.g[e[2]] !== "string") return;
+  }
+  var byName = {}; ALL.forEach(function (x) { byName[x.name] = x; });
+  var groups = [], gi = {}, all = [], priceChanged = false;
+  d.m.forEach(function (en) {
+    var g = d.g[en[2]], it = byName[en[0]];
+    if (!it) it = { id: hid(en[0]), name: en[0], unit: "份" };
+    else if (it.price !== en[1]) priceChanged = true;
+    it.price = en[1];
+    if (!(g in gi)) { gi[g] = groups.length; groups.push({ group: g, items: [] }); }
+    groups[gi[g]].items.push(it); all.push(it);
+  });
+  var removed = [];
+  ALL.forEach(function (x) {
+    if (!all.some(function (y) { return y.id === x.id; })) { if (qty[x.id]) removed.push(x.name); delete qty[x.id]; }
+  });
+  var hadTotal = total() > 0;
+  MENU = groups; ALL = all; menuSig = sig;
+  buildMenu(); update();
+  if (removed.length) showPop({ title: "有品項調整了", text: removed.join("、") + " 暫時不供應，已從你的餐點移除" });
+  else if (priceChanged && hadTotal) showPop({ title: "價格已更新", text: "菜單價格有調整，金額已重新計算" });
+}
+
 /* ===== 售完同步（從店家收銀頁） ===== */
 function applyStock(names) {
   soldOut = {};
@@ -1230,30 +1263,11 @@ function pollStock() {
       if (!last) return;
       var d = JSON.parse(last.message);
       if (d && Array.isArray(d.out)) applyStock(d.out);
-      if (d && d.prices && typeof d.prices === "object") {
-        try { localStorage.setItem(PRICE_KEY, JSON.stringify(d.prices)); } catch (e) {}
-        applyPrices(d.prices);
-      }
+      applyMenu(d);
       applyBooked(d);
     })
     .catch(function () {});
 }
-/* ===== 價格同步（店家收銀頁改價 → 這裡會自動更新） ===== */
-var PRICE_KEY = "salt_prices_v1";
-function applyPrices(map) {
-  if (!map || typeof map !== "object") return;
-  var changed = false;
-  ALL.forEach(function (i) {
-    var p = map[i.name];
-    if (typeof p === "number" && p >= 0 && p <= 99999 && p !== i.price) {
-      i.price = p; changed = true;
-      var el = document.querySelector("#row-" + i.id + " .price");
-      if (el) el.textContent = money(p) + "／" + i.unit;
-    }
-  });
-  if (changed) update();
-}
-try { applyPrices(JSON.parse(localStorage.getItem(PRICE_KEY))); } catch (e) {}
 pollStock();
 setInterval(pollStock, 45000);
 setInterval(pollSlots, 20000);

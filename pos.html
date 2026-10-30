@@ -525,7 +525,7 @@ $("ilist").addEventListener("click",e=>{
   const b=e.target.closest("button[data-i]");if(!b)return;
   const i=byId(b.dataset.i);if(!i)return;
   if(b.dataset.a==="out"){i.out=!i.out;if(i.out)delete cart[i.id]}
-  else if(b.dataset.a==="price"){const v=parseInt(prompt("「"+i.name+"」新價格（元）",i.price));if(isNaN(v)||v<0||v>99999)return toast("價格不正確");i.price=v;toast("「"+i.name+"」改為 $"+v+"，已同步到線上點餐與計算機")}
+  else if(b.dataset.a==="price"){const v=parseInt(prompt("「"+i.name+"」新價格（元）",i.price));if(isNaN(v)||v<0||v>99999)return toast("價格不正確");i.price=v}
   else if(confirm("確定刪除「"+i.name+"」嗎？（過去的交易紀錄不受影響）")){items=items.filter(x=>x.id!=i.id);delete cart[i.id]}
   save();renderItems();renderMenu();renderCart();publishStock();
 });
@@ -538,7 +538,7 @@ $("add").addEventListener("click",()=>{
   if(!g){g=(prompt("新分類名稱")||"").trim().slice(0,10)||"其他"}
   const mx=Math.max(0,...items.map(i=>parseInt(String(i.id).replace(/\D/g,""))||0));
   items.push({id:"i"+(mx+1),name:n,price:v,group:g,out:false});
-  save();renderItems();renderMenu();
+  save();renderItems();renderMenu();publishStock();
 });
 function dl(name,text,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type:type}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
 $("bk").addEventListener("click",()=>dl("鹽酥雞備份-"+ymd(Date.now())+".json",JSON.stringify({items:items,tx:tx}),"application/json"));
@@ -550,7 +550,7 @@ $("file").addEventListener("change",e=>{
     const o=JSON.parse(r.result);
     if(!Array.isArray(o.items)||!Array.isArray(o.tx))throw 0;
     if(!confirm("要用這份備份取代目前的資料嗎？（目前 "+tx.length+" 筆交易會被覆蓋）"))return;
-    items=o.items;tx=o.tx;cart={};save();renderMenu();renderCart();setView(view);toast("已還原")
+    items=o.items;tx=o.tx;cart={};save();renderMenu();renderCart();setView(view);publishStock(true);toast("已還原")
   }catch(x){toast("這不是有效的備份檔")}};
   r.readAsText(f);e.target.value="";
 });
@@ -809,16 +809,15 @@ function publishStock(force){
   if(!STOCK_TOPIC||typeof fetch==="undefined")return;
   const today=ymd(Date.now());
   smFresh();
-  const booked=orders.filter(o=>o.status==="pending"&&o.pickup&&ymd(o.t0||o.t)===today&&sm.r[o.code]!==o.pickup).map(o=>o.pickup);
   const out=items.filter(i=>i.out).map(i=>i.name);
-  const prices={};items.forEach(i=>{prices[i.name]=i.price});
-  smFresh();
-  const sig=JSON.stringify([out,booked.slice().sort(),today,sm.s.slice().sort(),sm.p,prices]);
+  const gl=[],gm={};
+  const m=items.map(i=>{if(!(i.group in gm)){gm[i.group]=gl.length;gl.push(i.group)}return[i.name,i.price,gm[i.group]]});
+  const sig=JSON.stringify([out,today,sm.s.slice().sort(),sm.p,gl,m]);
   if(!force&&sig===lastStockSig)return;
   lastStockSig=sig;
   try{
     fetch("https://ntfy.sh/",{method:"POST",headers:{"Content-Type":"text/plain;charset=UTF-8"},
-      body:JSON.stringify({topic:STOCK_TOPIC,title:"品項狀態",message:JSON.stringify({out:out,prices:prices,booked:booked,blocked:sm.s,paused:sm.p,date:today,t:Date.now()}),priority:1})}).catch(()=>{});
+      body:JSON.stringify({topic:STOCK_TOPIC,title:"品項狀態",message:JSON.stringify({out:out,blocked:sm.s,paused:sm.p,date:today,g:gl,m:m,t:Date.now()}),priority:1})}).catch(()=>{});
   }catch(e){}
 }
 
