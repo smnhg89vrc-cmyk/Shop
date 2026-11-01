@@ -43,7 +43,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
 <div id="bk"></div><div id="sh"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-const GAME='https://claude.ai/artifact/Vh2hUxDdWhNFdmNF8Mi2Mq';const PH={};
+const GAME='game.html';const PH={};
 const YAN=[['鹽酥雞',60],['魷魚',60],['地瓜',40],['雞皮',40],['四季豆',40],['玉米',45],['花枝丸',30],['雞心',30],['雞胗',30],['雞屁股',30],['雞脖子',20],['甜不辣（三片）',25],['豆干（五片）',20],['鑫鑫腸（五個）',20],['豬血糕',20],['百頁豆腐',20],['魚板',20],['豆包',20],['芋頭籤',20],['芋頭巧',20]];
 const DEF={
 fz:['福氣豬腳','🐖','#b5651d',[['豬腳飯'],['豬腳（半隻）'],['滷蛋'],['燙青菜']]],
@@ -58,24 +58,24 @@ sm:['肆木食堂','🍳','#e8761e',[['蛋炒飯'],['雞塊炒飯'],['排骨炒�
 zj:['展記古早味','🍲','#8d4b1f',[['甜不辣'],['肉圓'],['鍋燒意麵'],['鍋燒烏龍麵'],['肉粽'],['麻辣臭豆腐']]],
 gd:['集美廣東粥','🥣','#c49a3a',[['霸王粥',110],['綜合粥',100],['廣東粥',90],['海鮮粥',90],['香菇雞蓉粥',90],['香菇芋頭粥',90],['魚片粥',90],['蝦仁粥',80],['花枝粥',80],['吻仔魚粥',80],['皮蛋瘦肉粥',80],['玉米瘦肉粥',80],['芋頭蔬菜粥',80],['玉米蔬菜粥',80],['皮蛋玉米粥',80],['玉米雞蓉粥',80],['香菇瘦肉粥',80],['南瓜瘦肉粥',80],['豬肝粥',80],['瘦肉粥',70]],0,0,'可加料：魚片、芋頭、雞蓉、香菇、玉米、皮蛋'],
 fr:['水果攤','🍉','#558b2f',[['切盤水果'],['香蕉'],['西瓜']]],
-jp1:['雞排攤','🍖','#c26a00',[['雞排'],['雞腿排']]],
+jp1:['雞排攤','🍖','#c26a00',[['雞排'],['雞腿排'],['無骨雞排'],['雞柳條'],['雞塊'],['雞米花'],['薯條'],['地瓜條'],['甜不辣'],['百頁豆腐'],['米血糕'],['杏鮑菇'],['花枝丸'],['魚板']]],
 gt:['鍋貼水餃','🥟','#b8860b',[['鍋貼'],['水餃'],['酸辣湯']]],
 rc:['赤肉羹','🍜','#a33a2a',[['赤肉羹'],['羹麵'],['羹飯']]],
 cf:['炒飯','🍚','#d35400',[['肉絲炒飯',90],['羊肉炒飯',100],['火腿炒飯',80],['香腸炒飯'],['蝦仁炒飯',100],['肉絲炒麵',90],['羊肉炒麵',100],['各式燴飯',80]]],
-jp2:['雞排攤','🍖','#b05a00',[['雞排'],['雞腿排']]],
+jp2:['雞排攤','🍖','#b05a00',[['雞排'],['雞腿排'],['無骨雞排'],['雞柳條'],['雞翅'],['雞塊'],['薯條'],['地瓜條'],['黃金魷魚'],['甜不辣'],['米血糕'],['百頁豆腐'],['玉米筍'],['四季豆']]],
 fm:['全家便利商店','🏪','#0a8f4a',[['御飯糰'],['茶葉蛋'],['熱美式咖啡']],1],
 nd:['麵攤','🍜','#d4a017',[['乾麵'],['湯麵'],['滷味小菜']]],
 jm:['集美果汁波霸奶茶','🧋','#6a4fa3',[['招牌波霸奶茶',50],['仙草凍奶茶',50],['椰果珍珠奶茶',50],['冬瓜茶',30],['紅茶／綠茶',30],['珍珠紅／綠茶',35],['蜂蜜紅／綠茶',50],['木瓜牛奶',70],['香蕉牛奶',70],['綜合果汁',70],['紅蘿蔔汁',55],['奇異果鳳梨汁',85]]],
-ay:['阿姨炸雞攤','🥡','#e67e22',[['炸雞排'],['炸雞腿'],['薯條']]],
+ay:['阿姨炸雞攤','🥡','#e67e22',[['炸雞排'],['炸雞腿'],['炸雞翅'],['雞塊'],['雞米花'],['薯條'],['甜不辣'],['黃金魷魚'],['花枝丸'],['魚板'],['地瓜條'],['杏鮑菇'],['米血糕'],['百頁豆腐'],['玉米筍'],['四季豆']]],
 oc:['章魚小丸子','🐙','#c0392b',[['章魚小丸子（6顆）'],['章魚小丸子（10顆）']]],
-jx:['吉祥滷味','🍢','#d32f2f',[['綜合滷味'],['王子麵'],['青菜'],['豆干']]],
+jx:['吉祥滷味','🍢','#d32f2f',[['綜合滷味'],['豆干'],['海帶'],['百頁豆腐'],['米血糕'],['王子麵'],['冬粉'],['青菜'],['花椰菜'],['玉米筍'],['金針菇'],['香菇'],['杏鮑菇'],['鴨血'],['豬血'],['貢丸'],['魚板'],['魚餃'],['蝦餃'],['甜不辣'],['豬耳朵'],['大腸'],['雞翅'],['雞爪'],['滷蛋'],['鵪鶉蛋']]],
 zs:['張三速食館','🍚','#8d4b1f',[['雞腿飯',120],['炸雞腿飯',120],['油雞飯',120],['焢肉飯',115],['排骨飯',110],['叉燒飯',110],['燒鴨飯',110],['三寶飯',115],['雞鴨飯',115],['叉雞飯',115],['叉鴨飯',115],['牛肉飯',130]],0,0,'附湯請自取　營業 11:00～19:30'],
-hj:['何家東山鴨頭','🦆','#1d4fa3',[['東山鴨頭'],['鴨翅'],['滷味拼盤']]],
+hj:['何家東山鴨頭','🦆','#1d4fa3',[['東山鴨頭'],['鴨翅'],['鴨腳'],['鴨脖子'],['鴨舌'],['鴨胗'],['鴨腸'],['鴨血'],['豆干'],['海帶'],['百頁豆腐'],['米血糕'],['甜不辣'],['王子麵'],['滷蛋'],['花椰菜'],['玉米筍'],['青菜']]],
 dd:['淡大鹹水雞','🐔','#7b3fa0',[['小菜一份',20],['去骨鹹水雞'],['去骨麻辣雞']]],
 vn:['越南小吃','🍜','#2e7d32',[['河粉'],['越南春捲'],['法國麵包']]],
 dh:['阿伯豆花（40年老店）','🍮','#d98b5f',[['豆花'],['綠豆湯'],['紅豆湯'],['花生湯'],['火腿三明治'],['木瓜牛奶'],['柳橙汁'],['紅蘿蔔汁'],['西瓜汁'],['西瓜牛奶'],['香蕉牛奶'],['檸檬汁']]],
 sj:['練家臭豆腐（40年老店）','🥢','#6d4c41',[['臭豆腐'],['大腸麵線'],['米腸'],['蘿蔔糕']]],
-ql:['輕食滷味','🥗','#4caf50',[['滷味拼盤'],['青菜'],['豆干']]],
+ql:['輕食滷味','🥗','#4caf50',[['滷味拼盤'],['青菜'],['豆干'],['海帶'],['百頁豆腐'],['米血糕'],['王子麵'],['冬粉'],['金針菇'],['香菇'],['杏鮑菇'],['玉米筍'],['花椰菜'],['高麗菜'],['鴨血'],['貢丸'],['魚板'],['雞胸肉'],['滷蛋'],['鵪鶉蛋'],['豆皮'],['凍豆腐']]],
 sq:['魷魚羹40年老店','🦑','#c0392b',[['魷魚羹'],['肉羹'],['魚酥羹'],['魚酥羹麵'],['魷魚羹麵'],['肉羹麵'],['乾麵'],['炒米粉'],['川燙魷魚']],0,0,'麵類可換米粉、冬粉'],
 dx:['毒水製茶','🍵','#3a8f7a',[['強強紅茶',30],['茉香綠茶',30],['高山青茶',35],['台東紅烏龍',45],['古味冬瓜茶',30],['冬瓜紅／綠',30],['冬瓜青',35],['冬瓜烏龍',40],['烏龍綠',40],['鮮奶冬瓜',60],['鮮奶綠茶',60],['鮮奶紅茶',60],['多多綠茶',50],['牛乳紅／綠',50],['牛乳冬瓜',50],['大人可可',55],['珍珠黑糖牛乳',70],['招牌黑糖厚奶茶',45],['原味奶茶',40],['高山青奶茶',50],['紅烏龍奶茶',60],['珍珠厚奶茶',50],['燕麥奶紅茶',65],['燕麥奶冬瓜',65],['燕麥奶可可',70],['珍珠燕麥奶',85],['阿梅師梅子綠',50],['蜂蜜水',30],['蜂蜜檸檬水',40],['檸檬紅茶',40],['薑汁鮮牛乳茶',60],['薑汁黑糖紅茶',45],['薑汁黑糖可可',60],['阿梅師梅子冰沙（大）',65],['柳橙蜂蜜冰沙（大）',70],['蜂蜜柚子冰沙（大）',70],['黑糖厚奶茶冰沙（大）',60],['冰淇淋紅茶（大）',60]],0,0,'營業 11:30～22:00，週日公休　完整菜單以現場為準'],
 zt:['正土味豆花','🍧','#d98b5f',[['豆花花生芋圓',80],['豆花芋圓',70],['豆花紅豆',60],['豆花紅豆花生',70],['豆花花生湯圓',80],['純豆花',50],['純紅豆',55],['純綠豆',50],['純粉圓',50],['粉圓豆漿',60],['無糖豆漿豆花',60],['仙草冰',60],['薏仁',60],['古早味紅茶（小）',35],['古早味紅茶（大）',50],['無糖豆漿（小）',35],['無糖豆漿（大）',50],['豆漿紅茶（小）',35],['豆漿紅茶（大）',50],['青草茶・無糖（小）',50],['青草茶・無糖（大）',70],['青梅汁（小）',55],['青梅汁（大）',75],['洛神花茶（小）',60],['洛神花茶（大）',85],['冬瓜茶（小）',45],['冬瓜茶（大）',65]],0,0,'營業 11:00～23:00'],
@@ -91,7 +91,7 @@ const PAL=['#e57373','#64b5f6','#81c784','#ba68c8','#ffb74d','#4db6ac','#f06292'
 let W=0,H=0,sc=1,Hv=1,dpr=1,T=0,camY=0,late=true,open=false,nearS=null,cart={},view='';
 function fit(){const r=cv.getBoundingClientRect();dpr=devicePixelRatio||1;W=r.width;H=r.height;cv.width=W*dpr;cv.height=H*dpr;sc=W/360;Hv=H/sc}
 addEventListener('resize',fit);new ResizeObserver(fit).observe(cv);fit();
-const P={x:OWN.side?210:150,y:OWN.y+95,mv:0},NP=[],PK=[],SC=[{x:128,y:200,vy:55},{x:232,y:700,vy:-60},{x:150,y:1000,vy:48},{x:140,y:1400,vy:-52},{x:225,y:1750,vy:58},{x:200,y:2150,vy:-55}];
+const P={x:OWN.side?210:150,y:OWN.y+95,mv:0},NP=[],PK=[],SC=[{x:128,y:200,vy:55},{x:232,y:700,vy:-60},{x:150,y:1000,vy:48},{x:140,y:1400,vy:-52},{x:225,y:1750,vy:58},{x:200,y:2150,vy:-55},{x:118,y:600,vy:50},{x:245,y:1300,vy:-62},{x:170,y:2000,vy:54}];
 for(let i=0;i<90;i++)NP.push({x:114+Math.random()*132,y:Math.random()*WH,vy:(Math.random()<.5?-1:1)*(14+Math.random()*26),c:rnd(PAL),k:rnd(SK),p:Math.random()*6});
 ST.forEach(s=>{const n=s.own?7:2;for(let i=0;i<n;i++)NP.push({x:s.side?252-i*13:108+i*13,y:s.y+(s.own?88:80),vy:0,c:rnd(PAL),k:rnd(SK),p:Math.random()*6})});
 for(let i=0;i<40;i++)PK.push({x:Math.random()<.5?100:252,y:Math.random()*WH,c:rnd(['#555','#7a2a2a','#2a4a7a','#888'])});
@@ -197,12 +197,24 @@ const wpl=new THREE.Mesh(new THREE.BoxGeometry(1.4,32,1.4),M('#8a8f96'));wpl.pos
 const b1=new THREE.Mesh(new THREE.PlaneGeometry(40,31),wmat),b2=new THREE.Mesh(new THREE.PlaneGeometry(40,31),wmat);b2.rotation.y=Math.PI;b2.position.z=-.2;b1.position.z=.2;wb.add(b1,b2);wb.position.y=72;wb.rotation.x=-.45;wg.add(wb);wg.visible=false;scn.add(wg);
 function updW(){const dt=Math.min(.1,T-WK.t);WK.t=T;if(!WK.on){if(T>WK.nx){const dir=Math.random()<.5?-1:1;WK.on=true;WK.y=cl(P.y-dir*320,40,WH-40);WK.vy=dir*26;WK.x=150+Math.random()*60;WK.end=T+55;WK.nb=T+1;wg.visible=true}}else{WK.y+=WK.vy*dt;if(T>WK.end||WK.y<20||WK.y>WH-20){WK.on=false;wg.visible=false;WK.nx=T+25+Math.random()*50}else if(T>WK.nb){WK.nb=T+3.5+Math.random()*2;BUB.push({n:WK,u:T+3.2,t0:T,s:rnd(WL)});if(BUB.length>9)BUB.shift()}}
 if(WK.on){wg.position.set(wx(WK.x),Math.abs(Math.sin(T*8)),wz(WK.y));wg.rotation.y=WK.vy>0?0:Math.PI;wb.rotation.z=Math.sin(T*3)*.08}}
+const CARS=[0,1].map(i=>({on:false,x:0,y:0,vy:0,h:30,nx:T+14+i*12+Math.random()*10,end:0,g:null,hn:0,t:T}));
+function mkCar(c){const g=new THREE.Group(),a=(geo,m,x,y,z)=>{const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);g.add(o);return o};a(new THREE.BoxGeometry(22,9,46),M(c),0,8,0);a(new THREE.BoxGeometry(19,8,24),M('#cfe8f5'),0,15,-2);[[-11,17],[11,17],[-11,-17],[11,-17]].forEach(w=>{const t=a(new THREE.CylinderGeometry(4.5,4.5,3,8),M('#222'),w[0],4.5,w[1]);t.rotation.z=Math.PI/2});[-1,1].forEach(sx=>a(new THREE.BoxGeometry(4,3,1),new THREE.MeshBasicMaterial({color:0xfff0b0}),sx*7,8,23.5));g.visible=false;scn.add(g);return g}
+CARS.forEach(c=>c.g=mkCar(rnd(['#d9534f','#4a90d9','#f0ad4e','#5cb85c','#e8e8e8','#555'])));
+function updC(){CARS.forEach((c,i)=>{const dt=Math.min(.1,T-c.t);c.t=T;if(!c.on){if(T>c.nx){const dir=Math.random()<.5?-1:1;c.on=true;c.vy=dir*40;c.x=dir<0?222:138;c.y=cl(P.y-dir*300,30,WH-30);c.end=T+30;c.hn=T+4;c.g.visible=true}}else{c.y+=c.vy*dt;if(T>c.end||c.y<10||c.y>WH-10){c.on=false;c.g.visible=false;c.nx=T+18+Math.random()*40}else{if(T>c.hn&&Math.abs(c.y-P.y)<130){c.hn=T+6;BUB.push({n:c,u:T+2.2,t0:T,s:rnd(['叭叭！借過～','叭！小心車子','借過借過～'])});if(BUB.length>9)BUB.shift()}c.g.position.set(wx(c.x),0,wz(c.y));c.g.rotation.y=c.vy>0?0:Math.PI}}})}
+const DG={x:200,y:OWN.y+130,tx:200,ty:OWN.y+130,h:50,nb:T+3,nt:T+5,mv:0,rot:0,t:T},DL=['汪！','汪汪！','阿妞來逛街啦','好香喔～汪','我也要吃～汪','主人等等我'];
+function mkDog(){const g=new THREE.Group(),f=M('#e6c08f'),f2=M('#f0d6ae'),a=(geo,m,x,y,z)=>{const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);g.add(o);return o};const b=a(new THREE.SphereGeometry(5,8,6),f,0,8,0);b.scale.set(.85,.8,1.45);[[-2.6,3.5],[2.6,3.5],[-2.6,-3.5],[2.6,-3.5]].forEach(l=>a(new THREE.CylinderGeometry(1.1,1.1,5,6),f,l[0],2.5,l[1]));a(new THREE.SphereGeometry(4.6,8,6),f2,0,13.5,6.5);[-1,1].forEach(sx=>{const e=a(new THREE.SphereGeometry(2.2,6,5),f2,sx*4.4,12,6);e.scale.set(.6,1.3,.9);a(new THREE.SphereGeometry(.6,5,4),M('#111'),sx*1.9,14,10.6)});a(new THREE.SphereGeometry(.9,5,4),M('#2a1a10'),0,12.6,11);g.userData.tail=a(new THREE.SphereGeometry(2,6,5),f2,0,10.5,-7.5);g.scale.setScalar(1.5);scn.add(g);return g}
+const dg=mkDog();
+function updD(){const dt=Math.min(.1,T-DG.t);DG.t=T;if(T>DG.nb){DG.nb=T+4+Math.random()*4;if(Math.random()<.5){DG.tx=P.x+(Math.random()-.5)*60;DG.ty=P.y+(Math.random()-.5)*120}else{DG.tx=120+Math.random()*120;DG.ty=P.y+(Math.random()-.5)*400}DG.tx=cl(DG.tx,115,245);DG.ty=cl(DG.ty,30,WH-30)}
+const dx=DG.tx-DG.x,dy=DG.ty-DG.y,l=Math.hypot(dx,dy);DG.mv=l>4?1:0;if(DG.mv){DG.x+=dx/l*34*dt;DG.y+=dy/l*34*dt;DG.rot=Math.atan2(dx,dy)}
+if(T>DG.nt){DG.nt=T+7+Math.random()*6;BUB.push({n:DG,u:T+2.6,t0:T,s:rnd(DL)});if(BUB.length>9)BUB.shift()}
+dg.position.set(wx(DG.x),DG.mv?Math.abs(Math.sin(T*12))*1.2:0,wz(DG.y));dg.rotation.y=DG.rot;dg.userData.tail.position.x=Math.sin(T*14)*1.2}
+function dtag(){const v=new THREE.Vector3(wx(DG.x),28,wz(DG.y)).project(cam);if(v.z>1)return;const x=(v.x*.5+.5)*W,y=(-v.y*.5+.5)*H;if(x<40||x>W-40||y<110||y>H-60)return;ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='800 17px '+TF+','+EF;const t='🐶 阿妞',w=ctx.measureText(t).width+22;ctx.fillStyle='#ffd23f';ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x-w/2,y-16,w,28,12);else ctx.rect(x-w/2,y-16,w,28);ctx.fill();ctx.fillStyle='#7a1b0c';ctx.fillText(t,x,y-2)}
 const ring=new THREE.Mesh(new THREE.RingGeometry(9,11.5,24),new THREE.MeshBasicMaterial({color:0xffd23f,side:THREE.DoubleSide})),arr=new THREE.Mesh(new THREE.ConeGeometry(3.5,7,5),new THREE.MeshBasicMaterial({color:0xffd23f}));ring.rotation.x=-Math.PI/2;ring.position.y=.5;arr.rotation.x=Math.PI;scn.add(ring,arr);
 const smm=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.4}),sm=[];for(let i=0;i<6;i++){const m=new THREE.Mesh(new THREE.SphereGeometry(3,6,5),smm);scn.add(m);sm.push(m)}
 late=false;$('#tm').textContent='🌆 晚餐';let nf=0,lw=0,lh=0;const ct=new THREE.Vector3(wx(P.x),0,wz(P.y)),s0=new THREE.Color('#a9cfe0'),s1=new THREE.Color('#0e0b20'),tc=new THREE.Color();
 function bub(){ctx.textAlign='center';ctx.textBaseline='middle';BUB.forEach(b=>{const a=T-b.t0,l=b.u-b.t0;if(a<0||T>b.u)return;const v=new THREE.Vector3(wx(b.n.x),b.n.h||36,wz(b.n.y)).project(cam);if(v.z>1)return;const x=(v.x*.5+.5)*W,y=(-v.y*.5+.5)*H;if(x<20||x>W-20||y<90||y>H-60)return;ctx.globalAlpha=Math.max(0,Math.min(1,a*5,(l-a)*3));ctx.font='700 18px '+TF+','+EF;const w=ctx.measureText(b.s).width+26;ctx.fillStyle='#fff';ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x-w/2,y-40,w,36,15);else ctx.rect(x-w/2,y-40,w,36);ctx.fill();ctx.beginPath();ctx.moveTo(x-5,y-5);ctx.lineTo(x+5,y-5);ctx.lineTo(x,y+3);ctx.fill();ctx.fillStyle='#3a2216';ctx.fillText(b.s,x,y-22);ctx.globalAlpha=1})}
-function ov(){ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);const v=new THREE.Vector3(wx(OWN.side?310:50),20,wz(OWN.y+60)).project(cam),sx=(v.x*.5+.5)*W,sy=(-v.y*.5+.5)*H;if(v.z>1||sy<30||sy>H-30){const up=v.z<=1&&sy<30,ay=up?30:H-30,ax=cl(sx,60,W-60),d=up?1:-1;ctx.fillStyle='#ffd23f';ctx.beginPath();ctx.moveTo(ax,ay-12*d);ctx.lineTo(ax-14,ay+8*d);ctx.lineTo(ax+14,ay+8*d);ctx.fill();ctx.fillStyle='#fff';ctx.textAlign='center';ctx.font='800 17px '+TF;ctx.fillText('🍗 鹽酥雞',ax,ay+26*d)}bub();if(J){ctx.strokeStyle='#fff8';ctx.lineWidth=2;ctx.beginPath();ctx.arc(J.x,J.y,50,0,6.3);ctx.stroke();ctx.fillStyle='#ffd23fcc';ctx.beginPath();ctx.arc(J.x+J.cx,J.y+J.cy,20,0,6.3);ctx.fill()}}
-function upd3(){updW();ct.x+=(wx(180+(P.x-180)*.6)-ct.x)*.1;ct.z+=(wz(P.y)-ct.z)*.1;cam.position.set(ct.x,400,ct.z+340);cam.lookAt(ct.x,0,ct.z);nf+=((late?1:0)-nf)*.08;tc.copy(s0).lerp(s1,nf);scn.background=tc;scn.fog.color.copy(tc);hemi.intensity=.62-.45*nf;sun.intensity=.55-.45*nf;own.intensity=.5+1.1*nf+.15*Math.sin(T*9);const px=wx(P.x),pz=wz(P.y);sun.target.position.set(px,0,pz);sun.position.set(px+70,220,pz+110);
+function ov(){ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);const v=new THREE.Vector3(wx(OWN.side?310:50),20,wz(OWN.y+60)).project(cam),sx=(v.x*.5+.5)*W,sy=(-v.y*.5+.5)*H;if(v.z>1||sy<30||sy>H-30){const up=v.z<=1&&sy<30,ay=up?30:H-30,ax=cl(sx,60,W-60),d=up?1:-1;ctx.fillStyle='#ffd23f';ctx.beginPath();ctx.moveTo(ax,ay-12*d);ctx.lineTo(ax-14,ay+8*d);ctx.lineTo(ax+14,ay+8*d);ctx.fill();ctx.fillStyle='#fff';ctx.textAlign='center';ctx.font='800 17px '+TF;ctx.fillText('🍗 鹽酥雞',ax,ay+26*d)}bub();dtag();if(J){ctx.strokeStyle='#fff8';ctx.lineWidth=2;ctx.beginPath();ctx.arc(J.x,J.y,50,0,6.3);ctx.stroke();ctx.fillStyle='#ffd23fcc';ctx.beginPath();ctx.arc(J.x+J.cx,J.y+J.cy,20,0,6.3);ctx.fill()}}
+function upd3(){updW();updC();updD();ct.x+=(wx(180+(P.x-180)*.6)-ct.x)*.1;ct.z+=(wz(P.y)-ct.z)*.1;cam.position.set(ct.x,400,ct.z+340);cam.lookAt(ct.x,0,ct.z);nf+=((late?1:0)-nf)*.08;tc.copy(s0).lerp(s1,nf);scn.background=tc;scn.fog.color.copy(tc);hemi.intensity=.62-.45*nf;sun.intensity=.55-.45*nf;own.intensity=.5+1.1*nf+.15*Math.sin(T*9);const px=wx(P.x),pz=wz(P.y);sun.target.position.set(px,0,pz);sun.position.set(px+70,220,pz+110);
 NP.forEach((n,i)=>{const g=pm[i];g.position.set(wx(n.x),n.vy?Math.abs(Math.sin(T*9+n.p)):0,wz(n.y));g.rotation.y=n.vy?(n.vy>0?0:Math.PI):(n.x>180?Math.PI/2:-Math.PI/2)});
 const dx=jx+kx,dz=jy+ky;pg.position.set(px,P.mv?Math.abs(Math.sin(T*9)):0,pz);if(Math.hypot(dx,dz)>.1)pg.rotation.y=Math.atan2(dx,dz);ring.position.x=px;ring.position.z=pz;ring.scale.setScalar(1+.1*Math.sin(T*5));arr.position.set(px,48+Math.sin(T*4)*2,pz);
 SC.forEach((s,i)=>{sg[i].position.set(wx(s.x),0,wz(s.y));sg[i].rotation.y=s.vy>0?0:Math.PI});for(let i=0;i<6;i++){const ph=(T*.5+i/6)%1;sm[i].position.set(wx(OWN.side?310:50)+(OWN.side?-10:10)+Math.sin(T*2+i)*3,32+ph*40,wz(OWN.y+60)-24+i*9);sm[i].scale.setScalar(.6+ph)}}
