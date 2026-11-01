@@ -6,34 +6,34 @@
 :root{--card:#2d1a10;--ink:#fff3d6;--line:#5a3a24;--red:#c8102e;--yel:#ffd23f;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html,body{margin:0}
 body{background:#120a08;color:var(--ink);font-family:system-ui,"Noto Sans TC","PingFang TC",sans-serif;min-height:100dvh;display:flex;flex-direction:column;user-select:none;-webkit-user-select:none}
-header{background:var(--red);color:var(--yel);text-align:center;padding:10px 6px;font-weight:800;font-size:20px;letter-spacing:1px}
+header{background:var(--red);color:var(--yel);text-align:center;padding:10px 6px;font-weight:800;font-size:clamp(14px,4.0vw,20px);letter-spacing:1px}
 #stage{position:relative;flex:1;min-height:520px;width:100%;max-width:520px;margin:0 auto;overflow:hidden}
 canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
-.hud{position:absolute;top:8px;right:8px;display:flex;flex-direction:column;gap:8px}
-.hud button{background:#000a;color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:10px 15px;font-size:18px;font-weight:700}
+.hud{position:absolute;top:8px;right:8px;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.hud button{background:#000a;color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:8px 12px;font-size:clamp(13px,3.6vw,18px);font-weight:700}
 @keyframes pu{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
 #mb{animation:pu 1.2s infinite}
 #mis.hot{background:#c8102e;animation:bl .5s infinite}
 @keyframes bl{50%{background:#7a0a1e}}
-#cnt{position:absolute;left:10px;bottom:10px;background:#000b;color:#fff3d6;border-radius:999px;padding:8px 14px;font-size:17px;font-weight:700}
-#mis{position:absolute;top:10px;left:10px;background:#000b;border-radius:12px;padding:10px 14px;font-size:17px;line-height:1.6;max-width:62%}
-#hint{position:absolute;top:118px;left:10px;background:#000a;border-radius:12px;padding:10px 14px;font-size:17px;max-width:62%;line-height:1.5}
-#near{position:absolute;left:50%;transform:translateX(-50%);bottom:84px;background:var(--yel);color:#7a1b0c;border:0;border-radius:999px;padding:15px 28px;font-size:23px;font-weight:800;display:none;box-shadow:0 4px 14px #0008}
-#bar{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));max-width:496px;margin:0 auto;background:var(--red);color:var(--yel);border-radius:999px;padding:14px 22px;justify-content:space-between;font-weight:800;font-size:22px;display:none;z-index:10;box-shadow:0 4px 16px #0006}
+#cnt{position:absolute;left:10px;bottom:10px;background:#000b;color:#fff3d6;border-radius:999px;padding:8px 14px;font-size:clamp(12px,3.4vw,17px);font-weight:700}
+#mis{position:absolute;top:10px;left:10px;background:#000b;border-radius:12px;padding:10px 14px;font-size:clamp(12px,3.4vw,17px);line-height:1.6;max-width:calc(100% - 150px)}
+#hint{position:absolute;top:118px;left:10px;background:#000a;border-radius:12px;padding:10px 14px;font-size:clamp(12px,3.4vw,17px);max-width:calc(100% - 150px);line-height:1.5}
+#near{position:absolute;left:50%;transform:translateX(-50%);bottom:84px;background:var(--yel);color:#7a1b0c;border:0;border-radius:999px;padding:15px 28px;font-size:clamp(17px,4.6vw,23px);font-weight:800;display:none;box-shadow:0 4px 14px #0008}
+#bar{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));max-width:496px;margin:0 auto;background:var(--red);color:var(--yel);border-radius:999px;padding:14px 22px;justify-content:space-between;font-weight:800;font-size:clamp(16px,4.4vw,22px);display:none;z-index:10;box-shadow:0 4px 16px #0006}
 #bk{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;z-index:19}
 #sh{position:fixed;left:0;right:0;bottom:0;max-width:520px;margin:0 auto;max-height:78vh;overflow-y:auto;background:var(--card);color:var(--ink);border-radius:20px 20px 0 0;padding:10px 16px calc(16px + env(safe-area-inset-bottom,0px));transform:translateY(110%);transition:transform .25s;z-index:20;box-sizing:border-box}
 .grab{width:44px;height:5px;border-radius:9px;background:var(--line);margin:0 auto 10px}
-#sh h2{margin:4px 0 10px;font-size:27px}
-.row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:22px}
-.row small{margin-left:8px;opacity:.7;font-size:17px}
+#sh h2{margin:4px 0 10px;font-size:clamp(19px,5.4vw,27px)}
+.row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:clamp(16px,4.4vw,22px)}
+.row small{margin-left:8px;opacity:.7;font-size:clamp(12px,3.4vw,17px)}
 .st{display:flex;align-items:center;gap:12px}
-.st button{width:44px;height:44px;border-radius:50%;border:0;background:var(--yel);color:#7a1b0c;font-size:26px;font-weight:800}
+.st button{width:44px;height:44px;border-radius:50%;border:0;background:var(--yel);color:#7a1b0c;font-size:clamp(19px,5.2vw,26px);font-weight:800}
 .st b{min-width:20px;text-align:center}
-.note{font-size:17px;opacity:.8;margin:8px 0}
-.game{display:block;background:#ffd23f33;border:1px dashed var(--yel);border-radius:12px;padding:10px;margin-bottom:6px;color:var(--ink);text-decoration:none;font-weight:700;text-align:center;font-size:19px}
-.grp{margin:12px 0 0;font-weight:800;color:var(--yel);font-size:21px}
-.tot{text-align:right;font-size:26px;font-weight:800;margin:14px 0 4px}
-.done,.clr{display:block;width:100%;border:0;border-radius:999px;padding:15px;font-size:23px;font-weight:800;margin-top:10px}
+.note{font-size:clamp(12px,3.4vw,17px);opacity:.8;margin:8px 0}
+.game{display:block;background:#ffd23f33;border:1px dashed var(--yel);border-radius:12px;padding:10px;margin-bottom:6px;color:var(--ink);text-decoration:none;font-weight:700;text-align:center;font-size:clamp(14px,3.8vw,19px)}
+.grp{margin:12px 0 0;font-weight:800;color:var(--yel);font-size:clamp(15px,4.2vw,21px)}
+.tot{text-align:right;font-size:clamp(19px,5.2vw,26px);font-weight:800;margin:14px 0 4px}
+.done,.clr{display:block;width:100%;border:0;border-radius:999px;padding:15px;font-size:clamp(17px,4.6vw,23px);font-weight:800;margin-top:10px}
 .done{background:var(--yel);color:#7a1b0c}
 .clr{background:transparent;color:var(--ink);border:1px solid var(--line)}
 </style></head>
@@ -41,7 +41,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
 <header>今天吃什麼！221巷美食天堂</header>
 <div id="stage"><canvas id="c"></canvas>
 <div id="hint">👆 手指按住拖動就能走路<br>走到攤位前，點「看菜單」<br>🎯 想闖關？按右邊「今晚任務」</div>
-<div class="hud"><button id="tm">🌙 宵夜</button><button id="home">🍗 回鹽酥雞</button><button id="mb">🎯 今晚任務</button><div style="display:flex;gap:8px"><button id="mu">🎵 音樂</button><button id="vo">🗣️ 語音</button></div></div><div id="mis"></div>
+<div class="hud"><button id="tm">🌙 宵夜</button><button id="home">🍗 回攤位</button><button id="mb">🎯 任務</button><div style="display:flex;gap:8px"><button id="lbb">🏆</button><button id="mu">🎵</button><button id="vo">🗣️</button></div></div><div id="mis"></div>
 <button id="near"></button><div id="cnt"></div></div>
 <div id="bar"><span>🛒 <span id="bn">0</span> 樣</span><span>看購物車 ›</span></div>
 <div id="bk"></div><div id="sh"></div>
@@ -74,7 +74,7 @@ ay:['阿姨炸雞攤','🥡','#e67e22',[['炸雞排'],['炸雞腿'],['炸雞翅'
 oc:['章魚小丸子','🐙','#c0392b',[['章魚小丸子（6顆）'],['章魚小丸子（10顆）']]],
 jx:['吉祥滷味','🍢','#d32f2f',[['綜合滷味'],['豆干'],['海帶'],['百頁豆腐'],['米血糕'],['王子麵'],['冬粉'],['青菜'],['花椰菜'],['玉米筍'],['金針菇'],['香菇'],['杏鮑菇'],['鴨血'],['豬血'],['貢丸'],['魚板'],['魚餃'],['蝦餃'],['甜不辣'],['豬耳朵'],['大腸'],['雞翅'],['雞爪'],['滷蛋'],['鵪鶉蛋']]],
 zs:['張三速食館','🍚','#8d4b1f',[['雞腿飯',120],['炸雞腿飯',120],['油雞飯',120],['焢肉飯',115],['排骨飯',110],['叉燒飯',110],['燒鴨飯',110],['三寶飯',115],['雞鴨飯',115],['叉雞飯',115],['叉鴨飯',115],['牛肉飯',130]],0,0,'附湯請自取　營業 11:00～19:30'],
-hj:['何家東山鴨頭','🦆','#1d4fa3',[['東山鴨頭'],['鴨翅'],['鴨腳'],['鴨脖子'],['鴨舌'],['鴨胗'],['鴨腸'],['鴨血'],['豆干'],['海帶'],['百頁豆腐'],['米血糕'],['甜不辣'],['王子麵'],['滷蛋'],['花椰菜'],['玉米筍'],['青菜']]],
+hj:['何家東山鴨頭','🦆','#1d4fa3',[['東山鴨頭'],['鴨翅'],['大腸'],['大腸頭'],['豬頭皮'],['豬耳朵'],['鴨胗'],['鴨腸'],['豬肉筋'],['豬軟骨'],['豬舌'],['豬心'],['豬小肚'],['雞心'],['雞皮'],['雞尾'],['鳥蛋'],['香腸'],['魚餃'],['炸豬肝'],['豬血糕'],['甜不辣'],['小豆干'],['豆包']]],
 dd:['淡大鹹水雞','🐔','#7b3fa0',[['小菜一份',20],['去骨鹹水雞'],['去骨麻辣雞']]],
 vn:['越南小吃','🍜','#2e7d32',[['河粉'],['越南春捲'],['法國麵包']]],
 dh:['阿伯豆花（40年老店）','🍮','#d98b5f',[['豆花'],['綠豆湯'],['紅豆湯'],['花生湯'],['火腿三明治'],['木瓜牛奶'],['柳橙汁'],['紅蘿蔔汁'],['西瓜汁'],['西瓜牛奶'],['香蕉牛奶'],['檸檬汁']]],
@@ -131,7 +131,7 @@ let J=null,jx=0,jy=0,kx=0,ky=0;const keys={};
 cv.addEventListener('pointerdown',e=>{const r=cv.getBoundingClientRect();J={x:e.clientX-r.left,y:e.clientY-r.top,cx:0,cy:0,id:e.pointerId};try{cv.setPointerCapture(e.pointerId)}catch(x){}});
 cv.addEventListener('pointermove',e=>{if(!J||e.pointerId!=J.id)return;const r=cv.getBoundingClientRect();let dx=e.clientX-r.left-J.x,dy=e.clientY-r.top-J.y;const l=Math.hypot(dx,dy),m=Math.min(l,50);if(l>0){dx=dx/l*m;dy=dy/l*m}J.cx=dx;J.cy=dy;jx=dx/50;jy=dy/50});
 ['pointerup','pointercancel'].forEach(t=>cv.addEventListener(t,e=>{if(J&&e.pointerId==J.id){J=null;jx=jy=0}}));
-addEventListener('keydown',e=>{keys[e.key]=1;kd()});addEventListener('keyup',e=>{keys[e.key]=0;kd()});
+addEventListener('keydown',e=>{if(e.target&&e.target.tagName=='INPUT')return;keys[e.key]=1;kd()});addEventListener('keyup',e=>{if(e.target&&e.target.tagName=='INPUT')return;keys[e.key]=0;kd()});
 function kd(){kx=(keys.ArrowRight||keys.d?1:0)-(keys.ArrowLeft||keys.a?1:0);ky=(keys.ArrowDown||keys.s?1:0)-(keys.ArrowUp||keys.w?1:0)}
 let last=performance.now();
 function loop(ts){const dt=Math.min(.05,(ts-last)/1000);last=ts;T+=dt;
@@ -150,7 +150,7 @@ function bar(){const n=count();$('#bar').style.display=n?'flex':'none';$('#bn').
 function sheet(h){open=true;$('#near').style.display='none';$('#sh').innerHTML='<div class="grab"></div>'+h;$('#bk').style.display='block';$('#sh').style.transform='translateY(0)'}
 function close(){open=false;view='';$('#bk').style.display='none';$('#sh').style.transform='translateY(110%)';nearS=null}
 function row(k,m){return '<div class="row"><span>'+m[0]+(m[1]?'<small>NT$'+m[1]+'</small>':'')+'</span><span class="st"><button data-k="'+k+'" data-d="-1">−</button><b>'+(cart[k]||0)+'</b><button data-k="'+k+'" data-d="1">＋</button></span></div>'}
-function stallView(s){view=s.id;sheet('<h2>'+s.e+' '+s.n+'</h2>'+(s.own?'<a class="game" href="'+GAME+'" target="_blank" rel="noopener">🎮 等餐無聊？玩「鹽酥雞接接樂」</a>':'')+(s.tip?'<p class="note" style="font-size:19px;opacity:1">'+s.tip+'</p>':'')+s.m.map((m,i)=>row(s.id+'|'+i,m)).join('')+(s.note?'<p style="font-size:21px;line-height:1.6">'+s.note+'</p>':s.own?'':'<p class="note">菜單依招牌整理，以現場為準</p>')+'<button class="done" data-x="1">選好了，繼續逛</button>')}
+function stallView(s){view=s.id;sheet('<h2>'+s.e+' '+s.n+'</h2>'+(s.own?'<a class="game" href="'+GAME+'" target="_blank" rel="noopener">🎮 等餐無聊？玩「鹽酥雞接接樂」</a>':'')+(s.tip?'<p class="note" style="font-size:clamp(14px,3.8vw,19px);opacity:1">'+s.tip+'</p>':'')+s.m.map((m,i)=>row(s.id+'|'+i,m)).join('')+(s.note?'<p style="font-size:clamp(15px,4.2vw,21px);line-height:1.6">'+s.note+'</p>':s.own?'':'<p class="note">菜單依招牌整理，以現場為準</p>')+'<button class="done" data-x="1">選好了，繼續逛</button>')}
 function cartView(){view='cart';const ks=Object.keys(cart);let h='<h2>🛒 今天的夜市晚餐</h2>';if(!ks.length)h+='<p class="note">還沒選東西，去逛逛吧！</p>';
 ST.forEach(s=>{const mine=ks.filter(k=>sid(k)==s.id);if(!mine.length)return;h+='<div class="grp">'+s.e+' '+s.n+'</div>';mine.forEach(k=>h+=row(k,item(k)))});
 h+='<div class="tot">共 '+count()+' 樣'+(total()?'　有標價的 NT$'+total():'')+'</div><p class="note">遊戲裡想買多少都可以 🎉</p><button class="done" data-x="1">繼續逛</button><button class="clr" data-clr="1">清空</button>';const st=$('#sh').scrollTop;sheet(h);$('#sh').scrollTop=st}
@@ -227,24 +227,33 @@ let tapN=0,tapT=0;cv.addEventListener('pointerdown',e=>{const r=cv.getBoundingCl
 const ring=new THREE.Mesh(new THREE.RingGeometry(9,11.5,24),new THREE.MeshBasicMaterial({color:0xffd23f,side:THREE.DoubleSide})),arr=new THREE.Mesh(new THREE.ConeGeometry(3.5,7,5),new THREE.MeshBasicMaterial({color:0xffd23f}));ring.rotation.x=-Math.PI/2;ring.position.y=.5;arr.rotation.x=Math.PI;scn.add(ring,arr);
 const smm=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.4}),sm=[];for(let i=0;i<6;i++){const m=new THREE.Mesh(new THREE.SphereGeometry(3,6,5),smm);scn.add(m);sm.push(m)}
 late=false;$('#tm').textContent='🌆 晚餐';let nf=0,lw=0,lh=0;const ct=new THREE.Vector3(wx(P.x),0,wz(P.y)),s0=new THREE.Color('#a9cfe0'),s1=new THREE.Color('#0e0b20'),tc=new THREE.Color();
-function bub(){ctx.textAlign='center';ctx.textBaseline='middle';BUB.forEach(b=>{const a=T-b.t0,l=b.u-b.t0;if(a<0||T>b.u)return;const v=new THREE.Vector3(wx(b.n.x),b.n.h||36,wz(b.n.y)).project(cam);if(v.z>1)return;const x=(v.x*.5+.5)*W,y=(-v.y*.5+.5)*H;if(x<20||x>W-20||y<90||y>H-60)return;ctx.globalAlpha=Math.max(0,Math.min(1,a*5,(l-a)*3));ctx.font='700 18px '+TF+','+EF;const w=ctx.measureText(b.s).width+26;ctx.fillStyle='#fff';ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x-w/2,y-40,w,36,15);else ctx.rect(x-w/2,y-40,w,36);ctx.fill();ctx.beginPath();ctx.moveTo(x-5,y-5);ctx.lineTo(x+5,y-5);ctx.lineTo(x,y+3);ctx.fill();ctx.fillStyle='#3a2216';ctx.fillText(b.s,x,y-22);ctx.globalAlpha=1})}
+function bub(){ctx.textAlign='center';ctx.textBaseline='middle';BUB.forEach(b=>{const a=T-b.t0,l=b.u-b.t0;if(a<0||T>b.u)return;const v=new THREE.Vector3(wx(b.n.x),b.n.h||36,wz(b.n.y)).project(cam);if(v.z>1)return;const x=(v.x*.5+.5)*W,y=(-v.y*.5+.5)*H;if(x<20||x>W-20||y<90||y>H-60)return;ctx.globalAlpha=Math.max(0,Math.min(1,a*5,(l-a)*3));ctx.font='700 '+Math.round(Math.max(13,Math.min(18,W*.042)))+'px '+TF+','+EF;const w=ctx.measureText(b.s).width+26;ctx.fillStyle='#fff';ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x-w/2,y-40,w,36,15);else ctx.rect(x-w/2,y-40,w,36);ctx.fill();ctx.beginPath();ctx.moveTo(x-5,y-5);ctx.lineTo(x+5,y-5);ctx.lineTo(x,y+3);ctx.fill();ctx.fillStyle='#3a2216';ctx.fillText(b.s,x,y-22);ctx.globalAlpha=1})}
 function ov(){ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);fx();const v=new THREE.Vector3(wx(OWN.side?310:50),20,wz(OWN.y+60)).project(cam),sx=(v.x*.5+.5)*W,sy=(-v.y*.5+.5)*H;if(v.z>1||sy<30||sy>H-30){const up=v.z<=1&&sy<30,ay=up?30:H-30,ax=cl(sx,60,W-60),d=up?1:-1;ctx.fillStyle='#ffd23f';ctx.beginPath();ctx.moveTo(ax,ay-12*d);ctx.lineTo(ax-14,ay+8*d);ctx.lineTo(ax+14,ay+8*d);ctx.fill();ctx.fillStyle='#fff';ctx.textAlign='center';ctx.font='800 17px '+TF;ctx.fillText('🍗 鹽酥雞',ax,ay+26*d)}bub();dtag();if(J){ctx.strokeStyle='#fff8';ctx.lineWidth=2;ctx.beginPath();ctx.arc(J.x,J.y,50,0,6.3);ctx.stroke();ctx.fillStyle='#ffd23fcc';ctx.beginPath();ctx.arc(J.x+J.cx,J.y+J.cy,20,0,6.3);ctx.fill()}}
 function upd3(){updW();updC();updD();updE();ct.x+=(wx(180+(P.x-180)*.6)-ct.x)*.1;ct.z+=(wz(P.y)-ct.z)*.1;cam.position.set(ct.x,400,ct.z+340);cam.lookAt(ct.x,0,ct.z);nf+=((late?1:0)-nf)*.08;tc.copy(s0).lerp(s1,nf);scn.background=tc;scn.fog.color.copy(tc);hemi.intensity=.62-.45*nf;sun.intensity=.55-.45*nf;own.intensity=.5+1.1*nf+.15*Math.sin(T*9);const px=wx(P.x),pz=wz(P.y);sun.target.position.set(px,0,pz);sun.position.set(px+70,220,pz+110);
 NP.forEach((n,i)=>{const g=pm[i];g.position.set(wx(n.x),n.vy?Math.abs(Math.sin(T*9+n.p)):0,wz(n.y));g.rotation.y=n.vy?(n.vy>0?0:Math.PI):(n.x>180?Math.PI/2:-Math.PI/2)});
 const dx=jx+kx,dz=jy+ky;pg.position.set(px,P.mv?Math.abs(Math.sin(T*9)):0,pz);if(Math.hypot(dx,dz)>.1)pg.rotation.y=Math.atan2(dx,dz);ring.position.x=px;ring.position.z=pz;ring.scale.setScalar(1+.1*Math.sin(T*5));arr.position.set(px,48+Math.sin(T*4)*2,pz);
 SC.forEach((s,i)=>{sg[i].position.set(wx(s.x),0,wz(s.y));sg[i].rotation.y=s.vy>0?0:Math.PI});for(let i=0;i<6;i++){const ph=(T*.5+i/6)%1;sm[i].position.set(wx(OWN.side?310:50)+(OWN.side?-10:10)+Math.sin(T*2+i)*3,32+ph*40,wz(OWN.y+60)-24+i*9);sm[i].scale.setScalar(.6+ph)}}
 draw=function(){if(!W)return;try{if(W!=lw||H!=lh){lw=W;lh=H;R.setPixelRatio(Math.min(dpr,2));R.setSize(W,H,false);cam.aspect=W/H;cam.updateProjectionMatrix()}upd3();R.render(scn,cam);ov()}catch(e){console.error(e);draw=old;el.remove();late=true}}})()}catch(e){console.error(e)}
-let M2=null,M2e=0,M2t=90,LV=1,BEST=1,lastTick=-1,CELp=false;const stp=new Set();try{JSON.parse(localStorage.getItem('stp221')||'[]').forEach(x=>stp.add(x));BEST=+localStorage.getItem('lv221')||1}catch(e){}
+let M2=null,M2e=0,M2t=90,LV=1,BEST=1,lastTick=-1,CELp=false;let RUN={c:0,t:0},PEND=null,NICK='';const LB_URL='';const stp=new Set();try{JSON.parse(localStorage.getItem('stp221')||'[]').forEach(x=>stp.add(x));BEST=+localStorage.getItem('lv221')||1}catch(e){}
 const lvSec=l=>Math.max(25,100-10*l),lvN=l=>l>=5?4:3;
-function hud2(){if(M2&&T>M2e){M2=null;sound('fail');sheet('<h2>⏰ 時間到！</h2><p class="note">第 '+LV+' 關沒買齊，再挑戰一次吧！</p><button class="done" data-mis="1">再挑戰第 '+LV+' 關</button><button class="clr" data-x="1">先逛逛</button>')}
+function hud2(){if(M2&&T>M2e){endRun()}
 if(CELp&&!open){CELp=false;celebrate()}
-const left=M2?Math.max(0,Math.ceil(M2e-T)):0,hot=!!M2&&left<=10;let h='🏮 集章 '+stp.size+'/'+ST.length+(stp.size>=ST.length?' 🎉':'');if(M2)h+='<br>🎯 第 '+LV+' 關　<b style="font-size:21px">⏱ '+left+' 秒</b><br>'+M2.map(k=>(cart[k]?'✅':'⬜')+item(k)[0]).join(' ');const e=$('#mis');e.innerHTML=h;e.classList.toggle('hot',hot);if(hot&&left!=lastTick){lastTick=left;sound('tick')}}
+const left=M2?Math.max(0,Math.ceil(M2e-T)):0,hot=!!M2&&left<=10;let h='🏮 集章 '+stp.size+'/'+ST.length+(stp.size>=ST.length?' 🎉':'');if(M2)h+='<br>🎯 第 '+LV+' 關　<b style="font-size:clamp(15px,4.2vw,21px)">⏱ '+left+' 秒</b><br>'+M2.map(k=>(cart[k]?'✅':'⬜')+item(k)[0]).join(' ');const e=$('#mis');e.innerHTML=h;e.classList.toggle('hot',hot);if(hot&&left!=lastTick){lastTick=left;sound('tick')}}
 setInterval(hud2,300);
-function startMis(){const n=lvN(LV),r=ST.filter(s=>s!==OWN&&s.m.length).sort(()=>Math.random()-.5).slice(0,n-1);M2=[OWN].concat(r).map(s=>s.id+'|'+Math.floor(Math.random()*s.m.length));M2t=lvSec(LV);M2e=T+M2t;cart={};lastTick=-1;$('#mb').style.animation='none';bar();hud2();sound('go')}
-function celebrate(){sheet('<h2>🎆 恭喜！你是 221巷老饕</h2><p style="font-size:21px;line-height:1.7">'+ST.length+' 家全部逛完啦！<br>截圖給老闆看，今天的你最厲害 🏆</p><button class="done" data-x="1">繼續逛</button>');if(window.fireworks)window.fireworks();sound('win')}
-const _bar=bar;bar=function(){_bar();if(M2&&M2.every(k=>cart[k]>0)){const left=M2e-T,t=Math.round(M2t-left),fr=left/M2t,n=fr>.5?3:fr>.25?2:1,lv=LV;M2=null;LV++;if(LV>BEST){BEST=LV;try{localStorage.setItem('lv221',BEST)}catch(e){}}sound('win');sheet('<h2>🎉 第 '+lv+' 關過關！</h2><p style="font-size:22px">用時 '+t+' 秒　'+'⭐'.repeat(n)+'</p><p class="note">下一關只有 '+lvSec(LV)+' 秒'+(lvN(LV)>lvN(lv)?'，而且要買 '+lvN(LV)+' 樣！':'，加油！')+'　（最高紀錄：第 '+(BEST-1)+' 關過關）</p><button class="done" data-mis="1">挑戰第 '+LV+' 關</button><button class="clr" data-x="1">先逛逛</button>')}};
+function startMis(){if(LV==1)RUN={c:0,t:0};const n=lvN(LV),r=ST.filter(s=>s!==OWN&&s.m.length).sort(()=>Math.random()-.5).slice(0,n-1);M2=[OWN].concat(r).map(s=>s.id+'|'+Math.floor(Math.random()*s.m.length));M2t=lvSec(LV);M2e=T+M2t;cart={};lastTick=-1;$('#mb').style.animation='none';bar();hud2();sound('go')}
+function celebrate(){sheet('<h2>🎆 恭喜！你是 221巷老饕</h2><p style="font-size:clamp(15px,4.2vw,21px);line-height:1.7">'+ST.length+' 家全部逛完啦！<br>截圖給老闆看，今天的你最厲害 🏆</p><button class="done" data-x="1">繼續逛</button>');if(window.fireworks)window.fireworks();sound('win')}
+const _bar=bar;bar=function(){_bar();if(M2&&M2.every(k=>cart[k]>0)){const left=M2e-T,t=Math.round(M2t-left),fr=left/M2t,n=fr>.5?3:fr>.25?2:1,lv=LV;M2=null;RUN.c++;RUN.t+=t;LV++;if(LV>BEST){BEST=LV;try{localStorage.setItem('lv221',BEST)}catch(e){}}sound('win');sheet('<h2>🎉 第 '+lv+' 關過關！</h2><p style="font-size:clamp(16px,4.4vw,22px)">用時 '+t+' 秒　'+'⭐'.repeat(n)+'</p><p class="note">下一關只有 '+lvSec(LV)+' 秒'+(lvN(LV)>lvN(lv)?'，而且要買 '+lvN(LV)+' 樣！':'，加油！')+'　（最高紀錄：第 '+(BEST-1)+' 關過關）</p><button class="done" data-mis="1">挑戰第 '+LV+' 關</button><button class="clr" data-x="1">先逛逛</button>')}};
 const _sv=stallView;stallView=function(s){if(!stp.has(s.id)){stp.add(s.id);try{localStorage.setItem('stp221',JSON.stringify([...stp]))}catch(e){}if(stp.size==ST.length)CELp=true}_sv(s)};
 $('#mb').addEventListener('click',startMis);$('#sh').addEventListener('click',e=>{if(e.target.closest('[data-mis]')){close();startMis()}});
+try{NICK=localStorage.getItem('nick221')||''}catch(e){}
+function esc(x){return String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function locLB(){try{return JSON.parse(localStorage.getItem('lb221')||'[]')}catch(e){return[]}}
+function addScore(r){const a=locLB();a.push(r);a.sort((x,y)=>y.c-x.c||x.t-y.t);try{localStorage.setItem('lb221',JSON.stringify(a.slice(0,20)))}catch(e){}if(LB_URL)try{fetch(LB_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(r)}).catch(()=>{})}catch(e){}}
+function lbHTML(a,title){return '<div class="grp">'+title+'</div>'+(a.length?a.slice(0,10).map((r,i)=>'<div class="row"><span>'+(['🥇','🥈','🥉'][i]||(i+1)+'.')+' '+esc(r.n)+'</span><b>過 '+(+r.c||0)+' 關・'+(+r.t||0)+' 秒</b></div>').join(''):'<p class="note">還沒有成績，快來挑戰！</p>')}
+function showLB(){sheet('<h2>🏆 闖關排行榜</h2><div id="lbg"><p class="note">讀取中⋯</p></div>'+lbHTML(locLB(),'📱 這支手機的紀錄')+'<button class="done" data-mis="1">🎯 我要闖關</button><button class="clr" data-x="1">關閉</button>');if(LB_URL)fetch(LB_URL).then(r=>r.json()).then(a=>{const g=$('#lbg');if(g)g.innerHTML=lbHTML(a,'🌍 全部玩家')}).catch(()=>{const g=$('#lbg');if(g)g.innerHTML='<p class="note">連不上排行榜，稍後再試</p>'});else $('#lbg').innerHTML='<p class="note">（全球排行榜尚未開通，目前只顯示這支手機的紀錄）</p>'}
+function endRun(){const c=RUN.c,tt=RUN.t;M2=null;sound('fail');sheet('<h2>⏰ 時間到！</h2><p style="font-size:22px">你闖過了 <b>'+c+'</b> 關'+(c?'，共用 '+tt+' 秒':'')+'</p>'+(c?'<p class="note">留下暱稱，登上排行榜：</p><input id="nick" maxlength="8" value="'+esc(NICK)+'" placeholder="你的暱稱（最多8字）" style="width:100%;box-sizing:border-box;font-size:20px;padding:10px;border-radius:12px;border:1px solid var(--line);margin-bottom:6px"><button class="done" data-sub="1">送出成績・看排行榜</button>':'<p class="note">第 1 關還沒過，再試一次吧！</p>')+'<button class="clr" data-mis="1">重新挑戰第 1 關</button><button class="clr" data-x="1">先逛逛</button>');PEND=c?{c,t:tt}:null;LV=1;RUN={c:0,t:0}}
+$('#sh').addEventListener('click',e=>{const b=e.target.closest('[data-sub]');if(b&&PEND){const el=$('#nick'),v=((el&&el.value)||'').trim().slice(0,8)||'無名氏';NICK=v;try{localStorage.setItem('nick221',v)}catch(x){}addScore({n:v,c:PEND.c,t:PEND.t});PEND=null;showLB()}});
+$('#lbb').addEventListener('click',showLB);
 let AC=null,SND=true,amb=null;try{SND=localStorage.getItem('snd221')!=='0'}catch(e){}
 function audioInit(){if(AC||!SND)return;try{AC=new(window.AudioContext||window.webkitAudioContext)();const mk=(br,sec)=>{const b=AC.createBuffer(1,AC.sampleRate*sec,AC.sampleRate),d=b.getChannelData(0);let l=0;for(let i=0;i<d.length;i++){const w=Math.random()*2-1;if(br){l=(l+.02*w)/1.02;d[i]=l*3.5}else d[i]=w}return b};
 const cs=AC.createBufferSource();cs.buffer=mk(1,4);cs.loop=true;const cf=AC.createBiquadFilter();cf.type='bandpass';cf.frequency.value=520;cf.Q.value=.6;const cg=AC.createGain();cg.gain.value=.4;cs.connect(cf);cf.connect(cg);cg.connect(AC.destination);
@@ -254,7 +263,7 @@ setInterval(()=>{if(!AC||!SND||!amb)return;const d=Math.abs(P.y-(OWN.y+60)),nr=O
 function sound(n){if(!AC||!SND)return;const t=AC.currentTime,tone=(f,d,ty,v,st)=>{const o=AC.createOscillator(),g=AC.createGain(),s0=t+(st||0);o.type=ty||'sine';o.frequency.value=f;g.gain.setValueAtTime(v||.15,s0);g.gain.exponentialRampToValueAtTime(.001,s0+d);o.connect(g);g.connect(AC.destination);o.start(s0);o.stop(s0+d+.02)};
 if(n=='tick')tone(900,.08,'square',.08);else if(n=='go'){tone(520,.12,'triangle',.18);tone(780,.18,'triangle',.18,.12)}else if(n=='win'){[523,659,784,1047].forEach((f,i)=>tone(f,.2,'triangle',.18,i*.1))}else if(n=='fail')tone(160,.5,'sawtooth',.12);else if(n=='honk'){tone(420,.35,'square',.07);tone(530,.35,'square',.06)}else if(n=='pop')tone(1200,.08,'sine',.1)}
 const unlock=()=>{if(window.speechSynthesis&&!SPK){SPK=1;try{const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u)}catch(e){}}audioInit();if(AC&&SND&&AC.state=='suspended')AC.resume()};['pointerdown','touchend','click'].forEach(t=>addEventListener(t,unlock));
-function snl(){$('#mu').textContent=SND?'🎵 音樂':'🔇 靜音';$('#vo').textContent=VOC?'🗣️ 語音':'🤐 無語音'}
+function snl(){$('#mu').textContent=SND?'🎵':'🔇';$('#vo').textContent=VOC?'🗣️':'🤐'}
 $('#mu').addEventListener('click',()=>{SND=!SND;try{localStorage.setItem('snd221',SND?'1':'0')}catch(e){}if(!SND&&AC)AC.suspend();else{audioInit();if(AC)AC.resume()}snl()});
 let mg=null,mStep=0,mNext=0;
 function musicInit(){mg=AC.createGain();mg.gain.value=.5;mg.connect(AC.destination);mNext=AC.currentTime+.2;setInterval(musicTick,100)}
@@ -270,7 +279,7 @@ function say(t,p){try{if(!VOC||!SPK||!window.speechSynthesis||speechSynthesis.sp
 const _bp=BUB.push.bind(BUB);BUB.push=function(b){const r=_bp(b);try{if(b&&b.s&&b.n&&Math.hypot(b.n.x-P.x,b.n.y-P.y)<170)say(b.s,b.n.h==50?1.6:.9+Math.random()*.4)}catch(e){}return r};
 $('#vo').addEventListener('click',()=>{VOC=!VOC;try{localStorage.setItem('voc221',VOC?'1':'0')}catch(e){}if(!VOC&&window.speechSynthesis)speechSynthesis.cancel();snl()});
 snl();
-setTimeout(()=>{sheet('<h2>🏮 歡迎來到 221巷美食天堂！</h2><p style="font-size:21px;line-height:1.7">逛街、看菜單、跟阿妞玩都可以。<br>想挑戰嗎？按 🎯 <b>今晚任務</b>，在時間內買齊指定的美食！<br>每過一關，時間就越來越短⋯⋯你能闖到第幾關？</p><button class="done" data-mis="1">🎯 開始闖關</button><button class="clr" data-x="1">先逛逛</button>')},600);
+setTimeout(()=>{sheet('<h2>🏮 歡迎來到 221巷美食天堂！</h2><p style="font-size:clamp(15px,4.2vw,21px);line-height:1.7">逛街、看菜單、跟阿妞玩都可以。<br>想挑戰嗎？按 🎯 <b>今晚任務</b>，在時間內買齊指定的美食！<br>每過一關，時間就越來越短⋯⋯你能闖到第幾關？</p><button class="done" data-mis="1">🎯 開始闖關</button><button class="clr" data-x="1">先逛逛</button>')},600);
 let VC=null;const tj0=Date.now();
 function cnt(){const sec=Math.floor((Date.now()-tj0)/1000),m=String(Math.floor(sec/60)).padStart(2,'0'),r=String(sec%60).padStart(2,'0');$('#cnt').textContent='⏱ '+m+':'+r+(VC!=null?'　👥 '+Number(VC).toLocaleString('zh-TW')+' 人逛過':'')}
 setInterval(cnt,1000);cnt();
