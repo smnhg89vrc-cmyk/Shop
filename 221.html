@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>221巷美食天堂｜沉浸式夜市探索</title>
+<title>221巷夜市探險｜走進手機裡的台灣夜市</title>
 <meta name="theme-color" content="#100d18">
-<meta name="description" content="走進手機裡的台灣夜市，探索 221 巷美食天堂！逛攤、看菜單、挑戰今晚任務。">
+<meta name="description" content="走進手機裡的台灣夜市，探索 221 巷美食天堂！逛攤、看菜單、收集印章、挑戰今晚任務。">
 <style>
 :root{--card:#2d1a10;--ink:#fff3d6;--line:#5a3a24;--red:#c8102e;--yel:#ffd23f;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html,body{margin:0}
@@ -72,9 +72,44 @@ header:before{left:18px}header:after{right:18px}
 @media(min-width:700px){#stage{border-left:1px solid #d5a65b33;border-right:1px solid #d5a65b33}header{padding-top:16px;padding-bottom:16px}}
 @media(prefers-reduced-motion:no-preference){.mast-title{animation:signGlow 4s ease-in-out infinite alternate}@keyframes signGlow{from{text-shadow:0 2px 0 #6d2436,0 0 10px #ffb94b22}to{text-shadow:0 2px 0 #6d2436,0 0 22px #ffb94b88}}}
 
+
+/* ===== NIGHT MARKET MASTER ART DIRECTION ===== */
+:root{--card:#191522;--ink:#fff6e8;--line:#72533d;--red:#8f1735;--yel:#ffd27a}
+body{background:radial-gradient(ellipse at 50% 0%,#38223d 0%,#171321 42%,#080810 100%);letter-spacing:.1px}
+header{min-height:76px;padding:13px 16px 14px;background:linear-gradient(120deg,#171321 0%,#57223a 48%,#171321 100%);border-bottom:1px solid #e9b96a88;box-shadow:0 8px 32px #000b, inset 0 -1px #fff2;}
+header:after{content:'✦  ✦  ✦';right:16px;top:12px;letter-spacing:8px;color:#ffd27a;opacity:.65}
+header:before{content:'✦  ✦  ✦';left:16px;top:12px;letter-spacing:8px;color:#ffd27a;opacity:.65}
+.mast-kicker{font-size:9px;letter-spacing:3.2px;color:#e7bd85;text-shadow:0 0 10px #ffcf7855}
+.mast-title{font-size:clamp(25px,7vw,34px);letter-spacing:3px;line-height:1.15;color:#fff1d4;text-shadow:0 2px 0 #65243c,0 0 14px #ffbd5d66}
+.mast-title em{color:#ffd27a;text-shadow:0 0 18px #ffbd5d88}
+.mast-sub{font-size:11px;letter-spacing:2px;color:#f1d7bd;margin-top:2px}
+#stage{max-width:680px;min-height:calc(100dvh - 122px);background:linear-gradient(180deg,#171321 0%,#0a0912 100%);box-shadow:0 0 70px #000b;}
+#stage:before{content:'221巷・夜市散策';position:absolute;z-index:2;top:12px;left:50%;transform:translateX(-50%);padding:5px 12px;border-radius:99px;border:1px solid #e7bd8566;background:#171321b8;color:#f5d8a8;font-size:10px;letter-spacing:2px;white-space:nowrap;backdrop-filter:blur(8px);pointer-events:none}
+#stage:after{background:linear-gradient(180deg,#100b1b66 0%,transparent 18%,transparent 72%,#090810bb 100%)}
+.hud{top:48px;right:10px;gap:8px;max-width:47%;}
+.hud button{min-height:39px;padding:8px 11px;border-radius:13px;background:linear-gradient(145deg,#34243bdf,#15121deF);border:1px solid #e5bd8066;color:#fff5e5;font-size:clamp(12px,3.4vw,15px);box-shadow:0 5px 16px #0008,inset 0 1px #fff2;backdrop-filter:blur(12px);}
+.hud button:active{transform:translateY(1px) scale(.96)}
+#mb{background:linear-gradient(135deg,#ffe49a,#e9a94c);color:#512438;border-color:#fff0c4;box-shadow:0 0 22px #ffc45b88,0 5px 16px #0009;}
+#share{background:linear-gradient(135deg,#71334c,#3b263f);}
+#mis{top:48px;left:10px;max-width:48%;padding:10px 12px;border:1px solid #e4b66f88;border-radius:15px;background:linear-gradient(145deg,#211a2be8,#100e18e8);box-shadow:0 8px 24px #0009,inset 0 1px #fff2;backdrop-filter:blur(12px);font-size:clamp(11px,3.2vw,14px);}
+#hint{top:132px;left:10px;max-width:calc(100% - 20px);border:1px solid #e5bb7b99;background:linear-gradient(135deg,#211a2df0,#100d18f0);box-shadow:0 10px 30px #000a;backdrop-filter:blur(12px);font-size:clamp(13px,3.6vw,16px);}
+#cnt{left:12px;bottom:14px;border:1px solid #e5bb7b66;background:#171321dd;color:#ffe6b7;box-shadow:0 6px 20px #0009;backdrop-filter:blur(12px);}
+#near{bottom:86px;border:1px solid #fff0c4;background:linear-gradient(135deg,#ffe49a,#f2a94d);color:#512438;box-shadow:0 0 26px #ffc45b99,0 8px 22px #0009;}
+#bar{max-width:640px;bottom:calc(12px + env(safe-area-inset-bottom,0px));padding:15px 22px;background:linear-gradient(105deg,#771832,#c33d4c 50%,#771832);border:1px solid #f7d18caa;color:#fff1d1;box-shadow:0 10px 30px #000b,0 0 20px #e64b5a55;}
+#sh{max-width:680px;background:linear-gradient(180deg,#30243a,#17131f 72%);border:1px solid #d8ad7777;border-bottom:0;box-shadow:0 -18px 55px #000c;}
+#sh h2{color:#ffdc91;text-shadow:0 2px 14px #ffb94b33;}
+.row{border-bottom-color:#594453;}
+.st button,.done{background:linear-gradient(135deg,#ffe49a,#f2ad51);color:#512438;box-shadow:0 5px 14px #0005,inset 0 1px #fff8;}
+.clr{border-color:#9d7b8a;color:#fff0e2;}
+.game{border:1px solid #d4a76588;background:linear-gradient(120deg,#57334a66,#30243a66);color:#ffe6b7;}
+#bk{backdrop-filter:blur(5px);}
+@media(min-width:700px){body{align-items:center}header{width:100%;}#stage{min-height:calc(100dvh - 118px);border:1px solid #d5a65b44;border-top:0;border-bottom:0}}
+@media(max-width:390px){.hud{right:7px;top:45px;gap:6px}.hud button{padding:7px 8px;min-height:35px}#mis{left:7px;top:45px;padding:8px 9px}#hint{top:124px}}
+@media(prefers-reduced-motion:no-preference){.mast-title{animation:neonBreathe 3.6s ease-in-out infinite alternate}@keyframes neonBreathe{from{filter:drop-shadow(0 0 2px #ffcb7255)}to{filter:drop-shadow(0 0 9px #ffcb72aa)}}}
+
 </style></head>
 <body>
-<header><span class="mast-kicker">TAIWAN NIGHT MARKET · DIGITAL EXPERIENCE</span><span class="mast-title">🏮 221巷 <em>美食天堂</em></span><span class="mast-sub">今晚不回家，來巷仔內逛一圈</span></header>
+<header><span class="mast-kicker">TAIWAN · STREET FOOD ADVENTURE</span><span class="mast-title">🏮 221巷 <em>夜市探險</em></span><span class="mast-sub">一條巷子・百種人情味・今晚一起來逛</span></header>
 <div id="stage"><canvas id="c"></canvas>
 <div id="hint">👆 手指按住拖動就能走路<br>走到攤位前，點「看菜單」<br>🎯 想闖關？按右邊「今晚任務」</div>
 <div class="hud"><button id="tm">🌙 宵夜</button><button id="home">🍗 回攤位</button><button id="mb">🎯 任務</button><div style="display:flex;gap:8px"><button id="share" aria-label="分享夜市">↗ 分享</button><button id="lbb">🏆</button><button id="mu">🎵</button><button id="vo">🗣️</button></div></div><div id="mis"></div>
@@ -216,7 +251,7 @@ else if(id=='jx'){fit('吉祥滷味',w/2,h*.5,h*.5,w-120,'#ffe14a');g.font=F(h*.
 else if(id=='wk'){fit('台灣第一家',w/2,h*.2,h*.17,w-60,'#c8102e');fit('鹽酥雞',w/2,h*.5,h*.38,w-50,'#c8102e');fit('30年老店 ⭐',w/2,h*.82,h*.17,w-60,'#c8102e')}else{fit(lines[0],w/2,h/2,h*.46,w-70,fg);for(let i=0;i<14;i++){g.fillStyle='#fff0b0';g.beginPath();g.arc(30+i*(w-60)/13,h-10,3.5,0,6.3);g.fill()}}}
 
 if(window.THREE)try{(function(){const old=draw,KX=.62,wx=x=>(x-180)*KX,wz=y=>y-1215,stg=$('#stage');const R=new THREE.WebGLRenderer({antialias:true});R.shadowMap.enabled=true;R.shadowMap.type=THREE.PCFSoftShadowMap;const el=R.domElement;el.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none';stg.insertBefore(el,cv);
-const scn=new THREE.Scene(),cam=new THREE.PerspectiveCamera(42,.6,5,2500),hemi=new THREE.HemisphereLight(0xffffff,0x998877,1),sun=new THREE.DirectionalLight(0xffe3b3,1),own=new THREE.PointLight(0xffb347,1,150),shc=sun.shadow.camera;sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);shc.left=-150;shc.right=150;shc.top=150;shc.bottom=-150;shc.near=10;shc.far=700;scn.add(hemi,sun,sun.target,own);scn.fog=new THREE.Fog(0xa9cfe0,500,1100);
+const scn=new THREE.Scene(),cam=new THREE.PerspectiveCamera(42,.6,5,2500),hemi=new THREE.HemisphereLight(0xffffff,0x998877,1),sun=new THREE.DirectionalLight(0xffe3b3,1),own=new THREE.PointLight(0xffb347,1,150),shc=sun.shadow.camera;sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);shc.left=-150;shc.right=150;shc.top=150;shc.bottom=-150;shc.near=10;shc.far=700;scn.add(hemi,sun,sun.target,own);scn.fog=new THREE.Fog(0x171225,430,1050);
 const MC={},M=c=>MC[c]||(MC[c]=new THREE.MeshLambertMaterial({color:c})),du=new THREE.Object3D();
 const bx=(w,h,d,m,x,y,z,sh)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);if(sh){o.receiveShadow=true;o.castShadow=sh==1}scn.add(o);return o};
 function sign(lines,bg,fg,w,h,x,y,z,ph){const c=document.createElement('canvas');c.width=512;c.height=Math.round(512*h/w);const g=c.getContext('2d');drawSign(g,c.width,c.height,lines,bg,fg,ph);const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,3),[M(bg),M(bg),M(bg),M(bg),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c)}),M(bg)]);const g2=new THREE.Group(),fr=new THREE.Mesh(new THREE.BoxGeometry(w+3,h+3,2),M('#2a1a10'));g2.position.set(x,y,z);g2.rotation.x=-.6;fr.position.z=-1.2;g2.add(m,fr);scn.add(g2)}
@@ -225,6 +260,29 @@ const bc=['#e9d8c4','#d9e3d0','#e6cfcf','#d3dbe8','#efe5c8'],wd=[];for(let sd=0;
 const wi=new THREE.InstancedMesh(new THREE.PlaneGeometry(8,10),new THREE.MeshBasicMaterial({color:0xffffff}),wd.length);wd.forEach((w,i)=>{du.position.set(w[0],w[1],w[2]);du.rotation.set(0,w[3]*Math.PI/2,0);du.updateMatrix();wi.setMatrixAt(i,du.matrix);wi.setColorAt(i,new THREE.Color(Math.random()<.6?'#ffe08a':'#3a4256'))});wi.frustumCulled=false;scn.add(wi);
 const bl=new THREE.InstancedMesh(new THREE.SphereGeometry(1.6,6,5),new THREE.MeshBasicMaterial({color:0xffffff}),160),cc=['#ffcf5a','#ff6b4a','#ffe9a0','#7be0ff'];let bi=0;for(let y=60;y<WH;y+=150){const pts=[];for(let i=0;i<=16;i++){const t=i/16;pts.push(new THREE.Vector3(-48+96*t,72-32*t*(1-t),wz(y)))}scn.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color:0x222222})));for(let i=0;i<9;i++){const t=i/8;du.position.set(-48+96*t,72-32*t*(1-t),wz(y));du.rotation.set(0,0,0);du.updateMatrix();bl.setMatrixAt(bi,du.matrix);bl.setColorAt(bi++,new THREE.Color(cc[i%4]))}}bl.frustumCulled=false;scn.add(bl);
 ST.forEach(s=>{const d=s.side?-1:1,cx=wx(s.side?310:50)+(s.side?1:-1)*0,zc=wz(s.y+60),o=s.own,cx2=s.side?81:-81;if(s.shop){bx(56,34,64,M(s.c),cx2,17,zc,1);bx(1,18,50,new THREE.MeshBasicMaterial({color:0xfff0b0}),cx2+d*28.6,18,zc);bx(60,3,68,M('#3a3a3a'),cx2,35.5,zc,1);sign([s.e+' '+s.n],s.c,'#fff3d6',76,28,cx2,52,zc+36,s.id);return}bx(30,22,64,M('#b9bec4'),cx2+d*10,11,zc,1);bx(8,2,64,M('#dfe3e8'),cx2+d*28,23,zc,1);bx(1,13,56,M(o?'#c8102e':s.c),cx2+d*25.6,11,zc);for(let i=0;i<6;i++)bx(62,3,64/6+.2,M(i%2?(o?'#ffd23f':'#fff3d6'):(o?'#c8102e':s.c)),cx2,48,zc-32+(i+.5)*64/6,1);[-30,30].forEach(z=>bx(2,48,2,M('#8a8f96'),cx2+d*29,24,zc+z));for(let i=0;i<5;i++)bx(5,4,5,M(rnd(['#e8a33d','#c0392b','#f1c40f','#8d6e63','#7cb342'])),cx2+d*12,26,zc-24+i*12);const tk=new THREE.Mesh(new THREE.CylinderGeometry(4,4,14,8),M('#8a8f96'));tk.position.set(cx2-d*24,7,zc+24);scn.add(tk);for(let i=0;i<3;i++){const b=new THREE.Mesh(new THREE.SphereGeometry(1.6,5,4),new THREE.MeshBasicMaterial({color:0xfff0b0}));b.position.set(cx2+d*27,44,zc-20+i*20);scn.add(b)}const sw=o?100:76,shh=o?44:28;sign(o?['台灣第一家鹽酥雞','30年老店 ⭐']:[s.e+' '+s.n],o?'#ffd23f':s.c,o?'#c8102e':'#fff3d6',sw,shh,cx2,54+shh*.45,zc+36,s.id);if(o){own.position.set(cx2,40,zc);[-30,30].forEach(z=>{const l=new THREE.Mesh(new THREE.SphereGeometry(3,6,5),new THREE.MeshBasicMaterial({color:0xff3b30}));l.position.set(cx2+d*30,40,zc+z);scn.add(l)})}});
+
+// 221巷夜間美術：燈籠、攤位暖光、地面導引線與復古燈串
+const lanternMat=new THREE.MeshBasicMaterial({color:0xffb84d});
+const lanternCore=new THREE.MeshBasicMaterial({color:0xffe6a0});
+const lanternGeo=new THREE.SphereGeometry(5.2,10,8);
+const lanterns=[];
+for(let zi=-1180;zi<1180;zi+=150){
+  [-1,1].forEach((side,si)=>{
+    const x=side*91,z=zi+((si%2)*28);
+    const g=new THREE.Group();
+    const body=new THREE.Mesh(lanternGeo,lanternMat);body.scale.set(.82,1.18,.82);g.add(body);
+    const cap=new THREE.Mesh(new THREE.CylinderGeometry(2.2,2.2,2,8),new THREE.MeshBasicMaterial({color:0x6d2436}));cap.position.y=6.2;g.add(cap);
+    const tassel=new THREE.Mesh(new THREE.CylinderGeometry(.35,.7,5,6),lanternCore);tassel.position.y=-8;g.add(tassel);
+    g.position.set(x,79,z);scn.add(g);lanterns.push({g,phase:zi*.01+si});
+  });
+}
+// 少量動態暖光，避免手機負擔過重
+const glowLights=[];
+for(let i=0;i<4;i++){const l=new THREE.PointLight(0xffa94d,1.05,190,2);l.position.set(i%2?82:-82,55,wz(120+i*390));scn.add(l);glowLights.push(l)}
+// 巷道中央的金色導引線與斷續路面標記
+const guideMat=new THREE.MeshBasicMaterial({color:0x9b7444,transparent:true,opacity:.42});
+for(let zz=-1200;zz<1200;zz+=42){const mark=new THREE.Mesh(new THREE.BoxGeometry(1.1,.12,15),guideMat);mark.position.set(0,.12,zz);scn.add(mark)}
+
 DECO.forEach(d=>{const x=d[0]?81:-81,z=wz(d[1]+27);bx(58,28,40,M('#d9cbb8'),x,14,z,1);sign([d[2]],d[3],d[4],64,18,x,40,z+22)});
 PK.forEach(p=>{bx(5,6,14,M(p.c),wx(p.x+4),5,wz(p.y+8),1);bx(4,2,6,M('#222'),wx(p.x+4),9,wz(p.y+10))});
 const gB=new THREE.CylinderGeometry(3.4,4,9,6),gH=new THREE.SphereGeometry(3.8,7,6),gL=new THREE.BoxGeometry(6.5,5,3),gE=new THREE.SphereGeometry(.55,4,3),gS=new THREE.CircleGeometry(5,10),mS=new THREE.MeshBasicMaterial({color:0,transparent:true,opacity:.28});gS.rotateX(-Math.PI/2);
@@ -262,10 +320,11 @@ ctx.textAlign='center';ctx.textBaseline='middle';for(let i=RNP.length-1;i>=0;i--
 let tapN=0,tapT=0;cv.addEventListener('pointerdown',e=>{const r=cv.getBoundingClientRect(),px=e.clientX-r.left,py=e.clientY-r.top,v=new THREE.Vector3(wx(OWN.side?310:50),75,wz(OWN.y+96)).project(cam),sx=(v.x*.5+.5)*W,sy=(-v.y*.5+.5)*H;if(v.z<1&&Math.hypot(px-sx,py-sy)<75){if(T-tapT>1.5)tapN=0;tapT=T;tapN++;sound('pop');if(tapN>=10){tapN=0;window.chickenRain()}}});
 const ring=new THREE.Mesh(new THREE.RingGeometry(9,11.5,24),new THREE.MeshBasicMaterial({color:0xffd23f,side:THREE.DoubleSide})),arr=new THREE.Mesh(new THREE.ConeGeometry(3.5,7,5),new THREE.MeshBasicMaterial({color:0xffd23f}));ring.rotation.x=-Math.PI/2;ring.position.y=.5;arr.rotation.x=Math.PI;scn.add(ring,arr);
 const smm=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.4}),sm=[];for(let i=0;i<6;i++){const m=new THREE.Mesh(new THREE.SphereGeometry(3,6,5),smm);scn.add(m);sm.push(m)}
-late=false;$('#tm').textContent='🌆 晚餐';let nf=0,lw=0,lh=0;const ct=new THREE.Vector3(wx(P.x),0,wz(P.y)),s0=new THREE.Color('#a9cfe0'),s1=new THREE.Color('#0e0b20'),tc=new THREE.Color();
+late=true;$('#tm').textContent='🌙 宵夜';let nf=0,lw=0,lh=0;const ct=new THREE.Vector3(wx(P.x),0,wz(P.y)),s0=new THREE.Color('#392b49'),s1=new THREE.Color('#090914'),tc=new THREE.Color();
 function bub(){ctx.textAlign='center';ctx.textBaseline='middle';BUB.forEach(b=>{const a=T-b.t0,l=b.u-b.t0;if(a<0||T>b.u)return;const v=new THREE.Vector3(wx(b.n.x),b.n.h||36,wz(b.n.y)).project(cam);if(v.z>1)return;const x=(v.x*.5+.5)*W,y=(-v.y*.5+.5)*H;if(x<20||x>W-20||y<90||y>H-60)return;ctx.globalAlpha=Math.max(0,Math.min(1,a*5,(l-a)*3));ctx.font='700 '+Math.round(Math.max(13,Math.min(18,W*.042)))+'px '+TF+','+EF;const w=ctx.measureText(b.s).width+26;ctx.fillStyle='#fff';ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x-w/2,y-40,w,36,15);else ctx.rect(x-w/2,y-40,w,36);ctx.fill();ctx.beginPath();ctx.moveTo(x-5,y-5);ctx.lineTo(x+5,y-5);ctx.lineTo(x,y+3);ctx.fill();ctx.fillStyle='#3a2216';ctx.fillText(b.s,x,y-22);ctx.globalAlpha=1})}
 function ov(){ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);fx();const v=new THREE.Vector3(wx(OWN.side?310:50),20,wz(OWN.y+60)).project(cam),sx=(v.x*.5+.5)*W,sy=(-v.y*.5+.5)*H;if(v.z>1||sy<30||sy>H-30){const up=v.z<=1&&sy<30,ay=up?30:H-30,ax=cl(sx,60,W-60),d=up?1:-1;ctx.fillStyle='#ffd23f';ctx.beginPath();ctx.moveTo(ax,ay-12*d);ctx.lineTo(ax-14,ay+8*d);ctx.lineTo(ax+14,ay+8*d);ctx.fill();ctx.fillStyle='#fff';ctx.textAlign='center';ctx.font='800 17px '+TF;ctx.fillText('🍗 鹽酥雞',ax,ay+26*d)}bub();dtag();if(J){ctx.strokeStyle='#fff8';ctx.lineWidth=2;ctx.beginPath();ctx.arc(J.x,J.y,50,0,6.3);ctx.stroke();ctx.fillStyle='#ffd23fcc';ctx.beginPath();ctx.arc(J.x+J.cx,J.y+J.cy,20,0,6.3);ctx.fill()}}
-function upd3(){updW();updC();updD();updE();ct.x+=(wx(180+(P.x-180)*.6)-ct.x)*.1;ct.z+=(wz(P.y)-ct.z)*.1;cam.position.set(ct.x,400,ct.z+340);cam.lookAt(ct.x,0,ct.z);nf+=((late?1:0)-nf)*.08;tc.copy(s0).lerp(s1,nf);scn.background=tc;scn.fog.color.copy(tc);hemi.intensity=.62-.45*nf;sun.intensity=.55-.45*nf;own.intensity=.5+1.1*nf+.15*Math.sin(T*9);const px=wx(P.x),pz=wz(P.y);sun.target.position.set(px,0,pz);sun.position.set(px+70,220,pz+110);
+function upd3(){updW();updC();updD();updE();ct.x+=(wx(180+(P.x-180)*.6)-ct.x)*.1;ct.z+=(wz(P.y)-ct.z)*.1;cam.position.set(ct.x,400,ct.z+340);cam.lookAt(ct.x,0,ct.z);nf+=((late?1:0)-nf)*.08;tc.copy(s0).lerp(s1,nf);scn.background=tc;scn.fog.color.copy(tc);hemi.intensity=.48-.16*nf;sun.intensity=.34-.20*nf;own.intensity=.75+1.35*nf+.18*Math.sin(T*9);const px=wx(P.x),pz=wz(P.y);sun.target.position.set(px,0,pz);sun.position.set(px+70,220,pz+110);
+lanterns.forEach(o=>{o.g.rotation.z=Math.sin(T*1.2+o.phase)*.035;o.g.position.y=79+Math.sin(T*1.8+o.phase)*1.2});glowLights.forEach((l,i)=>{l.position.z=wz(P.y+120+i*210);l.intensity=.8+nf*.8+.12*Math.sin(T*3+i)});
 NP.forEach((n,i)=>{const g=pm[i];g.position.set(wx(n.x),n.vy?Math.abs(Math.sin(T*9+n.p)):0,wz(n.y));g.rotation.y=n.vy?(n.vy>0?0:Math.PI):(n.x>180?Math.PI/2:-Math.PI/2)});
 const dx=jx+kx,dz=jy+ky;pg.position.set(px,P.mv?Math.abs(Math.sin(T*9)):0,pz);if(Math.hypot(dx,dz)>.1)pg.rotation.y=Math.atan2(dx,dz);ring.position.x=px;ring.position.z=pz;ring.scale.setScalar(1+.1*Math.sin(T*5));arr.position.set(px,48+Math.sin(T*4)*2,pz);
 SC.forEach((s,i)=>{sg[i].position.set(wx(s.x),0,wz(s.y));sg[i].rotation.y=s.vy>0?0:Math.PI});for(let i=0;i<6;i++){const ph=(T*.5+i/6)%1;sm[i].position.set(wx(OWN.side?310:50)+(OWN.side?-10:10)+Math.sin(T*2+i)*3,32+ph*40,wz(OWN.y+60)-24+i*9);sm[i].scale.setScalar(.6+ph)}}
@@ -324,5 +383,5 @@ setInterval(cnt,1000);cnt();
 (function(){const K='yansuji221_tw_visits_v1',today=new Date().toISOString().slice(0,10);let day='';try{day=localStorage.getItem('v221d')||''}catch(e){}const op=day==today?'get':'hit';fetch('https://countapi.mileshilliard.com/api/v1/'+op+'/'+K).then(r=>r.json()).then(d=>{if(d&&d.value!=null){VC=d.value;if(op=='hit')try{localStorage.setItem('v221d',today)}catch(e){}cnt()}}).catch(()=>{})})();
 
 // 分享入口：優先使用手機原生分享面板，否則複製網址
-(function(){const b=document.getElementById('share');if(!b)return;b.addEventListener('click',async()=>{const url=location.href;const payload={title:'🏮 221巷美食天堂',text:'今晚不回家，來巷仔內逛一圈！走進手機裡的台灣夜市，探索攤位、看菜單、挑戰今晚任務！',url};try{if(navigator.share){await navigator.share(payload)}else if(navigator.clipboard&&url.startsWith('http')){await navigator.clipboard.writeText(url);hintMsg('已複製遊戲網址，快分享給朋友！')}else{hintMsg('請複製網址分享給朋友：'+url)}}catch(e){if(e&&e.name!=='AbortError')hintMsg('分享沒有成功，請稍後再試')}})})();
+(function(){const b=document.getElementById('share');if(!b)return;b.addEventListener('click',async()=>{const url=location.href;const payload={title:'🏮 221巷美食天堂',text:'一條巷子・百種人情味・今晚一起來逛！走進手機裡的台灣夜市，探索攤位、看菜單、挑戰今晚任務！',url};try{if(navigator.share){await navigator.share(payload)}else if(navigator.clipboard&&url.startsWith('http')){await navigator.clipboard.writeText(url);hintMsg('已複製遊戲網址，快分享給朋友！')}else{hintMsg('請複製網址分享給朋友：'+url)}}catch(e){if(e&&e.name!=='AbortError')hintMsg('分享沒有成功，請稍後再試')}})})();
 </script></body></html>
