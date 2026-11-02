@@ -107,12 +107,21 @@ header:before{content:'✦  ✦  ✦';left:16px;top:12px;letter-spacing:8px;colo
 @media(max-width:390px){.hud{right:7px;top:45px;gap:6px}.hud button{padding:7px 8px;min-height:35px}#mis{left:7px;top:45px;padding:8px 9px}#hint{top:124px}}
 @media(prefers-reduced-motion:no-preference){.mast-title{animation:neonBreathe 3.6s ease-in-out infinite alternate}@keyframes neonBreathe{from{filter:drop-shadow(0 0 2px #ffcb7255)}to{filter:drop-shadow(0 0 9px #ffcb72aa)}}}
 
+
+
+/* ===== 手機畫面瘦身：分享／排行榜／音效／語音改成角落小工具列 ===== */
+.hud-tools{position:absolute;z-index:5;right:10px;bottom:12px;display:flex;align-items:center;gap:5px;padding:5px;border:1px solid #e5bd8066;border-radius:999px;background:#17121dcc;box-shadow:0 4px 14px #0008;backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}
+.hud-tools button{width:34px;height:34px;min-height:34px;padding:0;display:grid;place-items:center;border:1px solid #d8b77b55;border-radius:50%;background:linear-gradient(145deg,#34243b,#15121d);color:#fff5e5;font-size:15px;line-height:1;box-shadow:inset 0 1px #fff2}
+.hud-tools button:active{transform:scale(.92)}
+.hud-tools #share{font-size:17px;padding:0;background:linear-gradient(135deg,#71334c,#3b263f)}
+@media(max-width:390px){.hud-tools{right:7px;bottom:9px;gap:3px;padding:4px}.hud-tools button{width:30px;height:30px;min-height:30px;font-size:13px}}
+
 </style></head>
 <body>
 <header><span class="mast-kicker">TAIWAN · STREET FOOD ADVENTURE</span><span class="mast-title">🏮 221巷 <em>夜市探險</em></span><span class="mast-sub">一條巷子・百種人情味・今晚一起來逛</span></header>
 <div id="stage"><canvas id="c"></canvas>
 <div id="hint">👆 手指按住拖動就能走路<br>走到攤位前，點「看菜單」<br>🎯 想闖關？按右邊「今晚任務」</div>
-<div class="hud"><button id="tm">🌙 宵夜</button><button id="home">🍗 回攤位</button><button id="mb">🎯 任務</button><div style="display:flex;gap:8px"><button id="share" aria-label="分享夜市">↗ 分享</button><button id="lbb">🏆</button><button id="mu">🎵</button><button id="vo">🗣️</button></div></div><div id="mis"></div>
+<div class="hud"><button id="tm">🌙 宵夜</button><button id="home">🍗 回攤位</button><button id="mb">🎯 任務</button></div><div class="hud-tools" aria-label="其他功能"><button id="share" aria-label="分享夜市" title="分享">↗</button><button id="lbb" aria-label="排行榜" title="排行榜">🏆</button><button id="mu" aria-label="音效" title="音效">🎵</button><button id="vo" aria-label="語音" title="語音">🗣️</button></div><div id="mis"></div>
 <button id="near"></button><div id="cnt"></div></div>
 <div id="bar"><span>🛒 <span id="bn">0</span> 樣</span><span>看購物車 ›</span></div>
 <div id="bk"></div><div id="sh"></div>
