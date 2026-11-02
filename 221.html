@@ -1,7 +1,9 @@
 <!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>221巷夜市</title>
+<title>221巷美食天堂｜沉浸式夜市探索</title>
+<meta name="theme-color" content="#100d18">
+<meta name="description" content="走進手機裡的台灣夜市，探索 221 巷美食天堂！逛攤、看菜單、挑戰今晚任務。">
 <style>
 :root{--card:#2d1a10;--ink:#fff3d6;--line:#5a3a24;--red:#c8102e;--yel:#ffd23f;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html,body{margin:0}
@@ -36,12 +38,46 @@ canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
 .done,.clr{display:block;width:100%;border:0;border-radius:999px;padding:15px;font-size:clamp(17px,4.6vw,23px);font-weight:800;margin-top:10px}
 .done{background:var(--yel);color:#7a1b0c}
 .clr{background:transparent;color:var(--ink);border:1px solid var(--line)}
+
+/* ===== 221巷視覺升級：霓虹夜市・復古招牌・玻璃介面 ===== */
+:root{--card:#211a27;--ink:#fff7e8;--line:#594354;--red:#a51e38;--yel:#ffd66b}
+html,body{background:#100d18}
+body{background:radial-gradient(ellipse at 50% -12%,#49304a 0%,#171321 42%,#0c0a12 100%);color:#fff7e8}
+header{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:3px;padding:12px 12px 13px;background:linear-gradient(115deg,#241729,#481d36 52%,#211729);color:#fff0cb;border-bottom:1px solid #d9a85a66;box-shadow:0 8px 28px #0008;overflow:hidden}
+header:before,header:after{content:"✦";position:absolute;color:#ffd66b;opacity:.65;font-size:18px;top:18px}
+header:before{left:18px}header:after{right:18px}
+.mast-kicker{font-size:9px;letter-spacing:3px;color:#e5b878;font-weight:800}
+.mast-title{font-size:clamp(23px,6vw,31px);font-weight:1000;letter-spacing:2px;text-shadow:0 2px 0 #6d2436,0 0 18px #ffb94b55}
+.mast-title em{font-style:normal;color:#ffd66b}
+.mast-sub{font-size:11px;letter-spacing:3px;color:#e8c9b2}
+#stage{max-width:600px;min-height:560px;isolation:isolate;background:linear-gradient(180deg,#25203822,#100d1800 25%);box-shadow:0 0 55px #0008}
+#stage:after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;background:linear-gradient(180deg,#120d1d55 0%,transparent 20%,transparent 78%,#100d1888 100%)}
+.hud{z-index:3;top:12px;right:10px;gap:9px}
+.hud button{background:linear-gradient(145deg,#34253bdf,#17131eeF);color:#fff4dc;border:1px solid #e9bd7966;border-radius:14px;padding:9px 12px;box-shadow:0 5px 16px #0007,inset 0 1px #ffffff20;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);text-shadow:0 1px 2px #000;font-weight:800}
+.hud button:active{transform:scale(.96);filter:brightness(1.2)}
+#mb{background:linear-gradient(135deg,#ffd66b,#e99b3b);color:#4c2030;border:1px solid #fff0b2;text-shadow:none;box-shadow:0 0 18px #ffc45b66,0 5px 14px #0008}
+#share{font-size:12px;padding-inline:10px;background:#49263d}
+#mis{z-index:3;background:linear-gradient(135deg,#241b2ddd,#17111ddd);border:1px solid #d6a65c88;box-shadow:0 8px 22px #0008;backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);border-radius:14px;color:#fff4dd}
+#hint{z-index:3;background:linear-gradient(135deg,#271d2deF,#15111deF);border:1px solid #e3b76d88;box-shadow:0 8px 24px #0009;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:14px;color:#fff4dd}
+#cnt{z-index:3;left:12px;bottom:13px;background:#17121dcc;border:1px solid #d5a65b77;color:#ffe7b6;box-shadow:0 5px 18px #0008;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+#near{z-index:4;background:linear-gradient(135deg,#ffe18a,#ffb74d);color:#552338;border:1px solid #fff3c5;box-shadow:0 0 24px #ffc85d99,0 8px 22px #0008}
+#bar{background:linear-gradient(105deg,#8f1838,#c13a43 55%,#8f1838);border:1px solid #f4cb7b99;color:#fff0c6;box-shadow:0 10px 30px #0009,0 0 18px #e64b5a44}
+#sh{background:linear-gradient(180deg,#30243a,#1b1522 70%);border:1px solid #c69a6a66;border-bottom:0;box-shadow:0 -15px 50px #0009}
+.grab{background:#b88d72}
+#sh h2{color:#ffdc8b;text-shadow:0 2px 12px #ffb94b22}
+.row{border-bottom-color:#5b4554}
+.st button,.done{background:linear-gradient(135deg,#ffe18a,#ffb84e);color:#552338;box-shadow:0 4px 12px #0004}
+.clr{border-color:#8e6a7d;color:#f6e8df}
+.game{background:#ffd66b12;border:1px dashed #d9ae6a;color:#ffe6b3}
+@media(min-width:700px){#stage{border-left:1px solid #d5a65b33;border-right:1px solid #d5a65b33}header{padding-top:16px;padding-bottom:16px}}
+@media(prefers-reduced-motion:no-preference){.mast-title{animation:signGlow 4s ease-in-out infinite alternate}@keyframes signGlow{from{text-shadow:0 2px 0 #6d2436,0 0 10px #ffb94b22}to{text-shadow:0 2px 0 #6d2436,0 0 22px #ffb94b88}}}
+
 </style></head>
 <body>
-<header>今天吃什麼！221巷美食天堂</header>
+<header><span class="mast-kicker">TAIWAN NIGHT MARKET · DIGITAL EXPERIENCE</span><span class="mast-title">🏮 221巷 <em>美食天堂</em></span><span class="mast-sub">今晚不回家，來巷仔內逛一圈</span></header>
 <div id="stage"><canvas id="c"></canvas>
 <div id="hint">👆 手指按住拖動就能走路<br>走到攤位前，點「看菜單」<br>🎯 想闖關？按右邊「今晚任務」</div>
-<div class="hud"><button id="tm">🌙 宵夜</button><button id="home">🍗 回攤位</button><button id="mb">🎯 任務</button><div style="display:flex;gap:8px"><button id="lbb">🏆</button><button id="mu">🎵</button><button id="vo">🗣️</button></div></div><div id="mis"></div>
+<div class="hud"><button id="tm">🌙 宵夜</button><button id="home">🍗 回攤位</button><button id="mb">🎯 任務</button><div style="display:flex;gap:8px"><button id="share" aria-label="分享夜市">↗ 分享</button><button id="lbb">🏆</button><button id="mu">🎵</button><button id="vo">🗣️</button></div></div><div id="mis"></div>
 <button id="near"></button><div id="cnt"></div></div>
 <div id="bar"><span>🛒 <span id="bn">0</span> 樣</span><span>看購物車 ›</span></div>
 <div id="bk"></div><div id="sh"></div>
@@ -286,4 +322,7 @@ let VC=null;const tj0=Date.now();
 function cnt(){const sec=Math.floor((Date.now()-tj0)/1000),m=String(Math.floor(sec/60)).padStart(2,'0'),r=String(sec%60).padStart(2,'0');$('#cnt').textContent='⏱ '+m+':'+r+(VC!=null?'　👥 '+Number(VC).toLocaleString('zh-TW')+' 人逛過':'')}
 setInterval(cnt,1000);cnt();
 (function(){const K='yansuji221_tw_visits_v1',today=new Date().toISOString().slice(0,10);let day='';try{day=localStorage.getItem('v221d')||''}catch(e){}const op=day==today?'get':'hit';fetch('https://countapi.mileshilliard.com/api/v1/'+op+'/'+K).then(r=>r.json()).then(d=>{if(d&&d.value!=null){VC=d.value;if(op=='hit')try{localStorage.setItem('v221d',today)}catch(e){}cnt()}}).catch(()=>{})})();
+
+// 分享入口：優先使用手機原生分享面板，否則複製網址
+(function(){const b=document.getElementById('share');if(!b)return;b.addEventListener('click',async()=>{const url=location.href;const payload={title:'🏮 221巷美食天堂',text:'今晚不回家，來巷仔內逛一圈！走進手機裡的台灣夜市，探索攤位、看菜單、挑戰今晚任務！',url};try{if(navigator.share){await navigator.share(payload)}else if(navigator.clipboard&&url.startsWith('http')){await navigator.clipboard.writeText(url);hintMsg('已複製遊戲網址，快分享給朋友！')}else{hintMsg('請複製網址分享給朋友：'+url)}}catch(e){if(e&&e.name!=='AbortError')hintMsg('分享沒有成功，請稍後再試')}})})();
 </script></body></html>
