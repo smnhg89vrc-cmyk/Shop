@@ -36,7 +36,7 @@ html{background:var(--hero);scroll-padding-top:env(safe-area-inset-top,0px);scro
 body{
   margin:0;background:var(--bg);color:var(--ink);
   font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
-  font-size:17px;line-height:1.5;padding-bottom:240px;
+  font-size:17px;line-height:1.5;padding-bottom:280px;
 }
 .wrap{max-width:520px;margin:0 auto;padding:0 16px}
 .serif{font-family:"Noto Serif TC","Songti TC","PMingLiU",serif;font-weight:900}
@@ -51,24 +51,23 @@ body{
   border-radius:4px;transform:rotate(-2deg);
 }
 .lead{margin:16px 0 0;font-size:17px;max-width:22em}
-.hero .wrap{position:relative}
 .calc-disclaimer{
-  position:absolute;right:0;top:142px;width:142px;padding:9px 10px;
-  border:2px solid var(--gold);border-radius:12px;background:rgba(33,26,22,.24);
-  color:#fff4d6;font-size:14px;font-weight:900;line-height:1.45;text-align:center;
-  box-shadow:0 3px 10px rgba(0,0,0,.16)
+  display:inline-flex;align-items:center;gap:6px;margin:12px 0 0;padding:6px 12px;
+  max-width:100%;border:1.5px solid var(--gold);border-radius:999px;
+  background:rgba(33,26,22,.22);color:#fff4d6;font-size:13px;font-weight:900;
+  line-height:1.35;letter-spacing:.02em;box-shadow:0 2px 8px rgba(0,0,0,.12)
 }
 .game-card{
-  display:block;margin:26px 0 0;padding:18px 16px;text-align:center;text-decoration:none;
-  color:#211A16;background:linear-gradient(135deg,#FFD45A,#F4A900);
-  border:2px solid #D58A00;border-radius:16px;box-shadow:0 5px 0 rgba(130,75,0,.16)
+  display:block;position:relative;overflow:hidden;margin:26px 0 0;padding:19px 16px 18px;text-align:center;text-decoration:none;
+  color:#FFF4D6;background:linear-gradient(135deg,#8F1D16,#B3241A 58%,#6F1712);
+  border:3px solid var(--gold);border-radius:17px;box-shadow:0 5px 0 rgba(80,20,10,.2),inset 0 0 0 1px rgba(255,255,255,.12)
 }
-.game-card .game-kicker{display:block;font-size:13px;font-weight:900;letter-spacing:.12em;opacity:.8}
-.game-card .game-title{display:block;margin:4px 0;font-size:21px;font-weight:900}
-.game-card .game-desc{display:block;font-size:14px;font-weight:700;line-height:1.5}
-.game-card .game-cta{display:inline-block;margin-top:12px;padding:8px 18px;background:#211A16;color:#FFD45A;border-radius:999px;font-weight:900}
+.game-card .game-kicker{display:block;color:#FFD45A;font-size:13px;font-weight:900;letter-spacing:.12em}
+.game-card .game-title{display:block;margin:5px 0;font-size:22px;font-weight:900;text-shadow:0 2px 3px rgba(0,0,0,.25)}
+.game-card .game-desc{display:block;color:#FFE9D0;font-size:14px;font-weight:700;line-height:1.55}
+.game-card .game-cta{display:inline-block;margin-top:13px;padding:9px 20px;background:#FFD45A;color:#3A160F;border-radius:999px;font-weight:900;box-shadow:0 3px 0 rgba(0,0,0,.22)}
 .game-card:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
-@media(max-width:380px){.calc-disclaimer{position:static;display:block;width:max-content;max-width:100%;margin:10px 0 0 auto}}
+.game-card:active{transform:translateY(2px)}
 
 /* budget card */
 .budget{
@@ -169,6 +168,12 @@ h2{margin:28px 0 4px;font-size:23px;letter-spacing:.04em;padding-bottom:6px;bord
 #status{margin:0;font-size:16px;font-weight:700}
 #status.ok{color:var(--ok)}
 #status.over{color:var(--over)}
+@media(max-width:520px){
+  .bar-top{display:flex;flex-direction:column;align-items:stretch;gap:9px}
+  .bar #total{font-size:29px}
+  .bar-btns{display:grid;grid-template-columns:.85fr 1.15fr 1fr;gap:7px;width:100%}
+  .bar button,.bar .btn{justify-content:center;min-width:0;min-height:43px;padding:0 7px;font-size:16px;white-space:nowrap}
+}
 .row.soldout{opacity:.5}
 .row.soldout .name{text-decoration:line-through}
 
@@ -206,7 +211,7 @@ h2{margin:28px 0 4px;font-size:23px;letter-spacing:.04em;padding-bottom:6px;bord
     <h1 class="serif">台灣第一家鹽酥雞</h1>
     <div class="stamp serif">30年老店</div>
     <div class="calc-name serif">餐點計算機</div>
-    <div class="calc-disclaimer">謹供計算金額<br>非線上點餐</div>
+    <div class="calc-disclaimer">🔔 謹供計算金額・非線上點餐</div>
     <p class="lead">自己點，自己算。選好份數，馬上知道這一餐要花多少。</p>
     <p class="hours">🕕 營業時間 18:00–23:00</p>
   </div>
@@ -248,9 +253,9 @@ h2{margin:28px 0 4px;font-size:23px;letter-spacing:.04em;padding-bottom:6px;bord
     <div class="payc" id="payPanel" hidden></div>
   </section>
   <a class="game-card" href="https://smnhg89vrc-cmyk.github.io/Shop/221.html" target="_blank" rel="noopener noreferrer" aria-label="前往虛擬夜市遊戲">
-    <span class="game-kicker">鹽酥雞吃飽了？換你當夜市大亨！</span>
-    <span class="game-title">🎮 虛擬夜市開張啦！</span>
-    <span class="game-desc">擺攤、闖關、打造你的夜市人生<br>點進來玩，看看你能不能成為夜市傳奇！</span>
+    <span class="game-kicker">✦ ✦ ✦ 夜市開張・歡迎入場 ✦ ✦ ✦</span>
+    <span class="game-title">🎮 換你當夜市大亨！</span>
+    <span class="game-desc">擺攤、闖關、打造你的夜市人生<br>來挑戰，看看誰才是真正的夜市傳奇！</span>
     <span class="game-cta">立即進入夜市 →</span>
   </a>
   <section class="social" aria-label="營業資訊與社群">
