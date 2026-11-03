@@ -816,7 +816,7 @@ function publishStock(force){
   if(!force&&sig===lastStockSig)return;
   lastStockSig=sig;
   try{
-    fetch("https://ntfy.sh/",{method:"POST",headers:{"Content-Type":"text/plain;charset=UTF-8"},
+    fetch("https://ntfy.sh/",{method:"POST",headers:{"Content-Type":"application/json"},
       body:JSON.stringify({topic:STOCK_TOPIC,title:"品項狀態",message:JSON.stringify({out:out,blocked:sm.s,paused:sm.p,date:today,g:gl,m:m,t:Date.now()}),priority:1})}).catch(()=>{});
   }catch(e){}
 }
