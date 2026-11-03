@@ -267,6 +267,30 @@ h2{margin:28px 0 4px;font-size:23px;letter-spacing:.04em;padding-bottom:6px;bord
 .tp-slot.taken{text-decoration:line-through;color:var(--muted);opacity:.5;cursor:not-allowed;background:transparent}
 .tp-note,.tp-closed{margin:8px 0 0;color:var(--muted);font-size:14px}
 .tp-closed{font-weight:800;color:var(--accent);font-size:16px}
+
+/* ===== 視覺識別：線上點餐（熱鬧夜市點餐風）===== */
+:root{
+  --hero:#9F2419; --bg:#FFF7ED; --card:#FFFFFF; --ink:#302019; --muted:#80685B; --line:#F0DCCB;
+  --accent:#D94B27; --btn:#D94B27; --tint:rgba(217,75,39,.12); --gold:#FFC247; --bar-ink:#32170F;
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#211713;--card:#30211B;--ink:#FFF2E6;--muted:#D0B5A2;--line:#594033;
+  --accent:#FF9A70;--btn:#C94A2B;--tint:rgba(255,154,112,.14);--gold:#F4B843;--bar-ink:#32170F;
+}}
+:root[data-theme="dark"]{--bg:#211713;--card:#30211B;--ink:#FFF2E6;--muted:#D0B5A2;--line:#594033;--accent:#FF9A70;--btn:#C94A2B;--tint:rgba(255,154,112,.14);--gold:#F4B843;--bar-ink:#32170F}
+html{background:#9F2419}
+.hero{background:radial-gradient(circle at 90% 8%,rgba(255,194,71,.25),transparent 34%),linear-gradient(145deg,#74180F 0%,#B52D1D 55%,#E45A2D 100%);border-bottom:6px solid #FFC247}
+.hero .calc-name{display:inline-block;margin-top:15px;padding:8px 15px;border:2px solid #FFC247;border-radius:999px;background:#FFC247;color:#451B10;letter-spacing:.12em;box-shadow:0 4px 0 rgba(60,15,5,.22)}
+.budget{box-shadow:0 8px 24px rgba(115,43,20,.10);border:1px solid #F0DCCB}
+.budget::before{content:"🛒  開始選餐｜挑喜歡的品項，直接加入點餐單";display:block;margin:-2px 0 10px;color:#C74725;font-size:14px;font-weight:900;letter-spacing:.03em}
+.row{transition:background .16s ease,transform .16s ease}
+.row.on{box-shadow:inset 4px 0 #D94B27}
+.step .plus{box-shadow:0 3px 0 rgba(110,35,15,.20)}
+.summary{box-shadow:0 8px 24px rgba(115,43,20,.09);border-top:4px solid #D94B27}
+.finish-big{background:linear-gradient(100deg,#D94B27,#F07832);box-shadow:0 4px 0 rgba(120,35,15,.18)}
+.bar{background:linear-gradient(100deg,#FFC247,#FF9D3C);color:#32170F;box-shadow:0 -4px 18px rgba(100,35,15,.18)}
+.bar .btn{background:#8F2117;color:#FFF4E8;border-color:#8F2117}
+
 </style>
 </head>
 <body>
@@ -438,7 +462,8 @@ var MENU = [
     { id: "i10", name: "豬血糕", price: 20, unit: "份" },
     { id: "i11", name: "芋頭籤", price: 20, unit: "份" },
     { id: "i12", name: "芋頭巧", price: 20, unit: "份" },
-    { id: "i13", name: "魚板", price: 20, unit: "份" }
+    { id: "i13", name: "魚板", price: 20, unit: "份" },
+    { id: "i20", name: "鑫鑫腸", price: 20, unit: "份" }
   ]},
   { group: "蔬菜與豆製品", items: [
     { id: "i14", name: "地瓜條", price: 40, unit: "份" },
@@ -446,8 +471,7 @@ var MENU = [
     { id: "i16", name: "玉米", price: 45, unit: "份" },
     { id: "i17", name: "豆乾", price: 20, unit: "份" },
     { id: "i18", name: "百頁豆腐", price: 20, unit: "份" },
-    { id: "i19", name: "豆包", price: 20, unit: "份" },
-    { id: "i20", name: "鑫鑫腸", price: 20, unit: "份" }
+    { id: "i19", name: "豆包", price: 20, unit: "份" }
   ]}
 ];
 var MAX_QTY = 20;
