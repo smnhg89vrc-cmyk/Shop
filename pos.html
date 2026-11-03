@@ -306,12 +306,20 @@ var MENU = [
     { id: "i16", name: "玉米", price: 45, unit: "份" },
     { id: "i17", name: "豆乾", price: 20, unit: "份" },
     { id: "i18", name: "百頁豆腐", price: 20, unit: "份" },
-    { id: "i19", name: "豆包", price: 20, unit: "份" }
+    { id: "i19", name: "豆包", price: 20, unit: "份" },
+    { id: "i20", name: "鑫鑫腸", price: 20, unit: "份" }
   ]}
 ];
 const SEED=[];MENU.forEach(g=>g.items.forEach(i=>SEED.push({id:i.id,name:i.name,price:i.price,group:g.group,out:false})));
 function load(k,d){try{const v=JSON.parse(localStorage.getItem(k));return Array.isArray(v)?v:d}catch(e){return d}}
 let items=load("pos2_items",SEED);
+let xinxin=items.find(i=>i.name==="鑫鑫腸"||i.id==="i20");
+if(xinxin){xinxin.id="i20";xinxin.name="鑫鑫腸";xinxin.price=20;xinxin.group="蔬菜與豆製品";}
+else{xinxin={id:"i20",name:"鑫鑫腸",price:20,group:"蔬菜與豆製品",out:false};items.push(xinxin);}
+items=items.filter(i=>i!==xinxin);
+const beanIndex=items.findIndex(i=>i.name==="豆包");
+items.splice(beanIndex>=0?beanIndex+1:items.length,0,xinxin);
+try{localStorage.setItem("pos2_items",JSON.stringify(items))}catch(e){}
 let tx=load("pos2_tx",[]);
 const REN={"百葉豆腐":"百頁豆腐"};
 items.forEach(i=>{if(REN[i.name])i.name=REN[i.name]});
