@@ -298,7 +298,8 @@ var MENU = [
     { id: "i10", name: "豬血糕", price: 20, unit: "份" },
     { id: "i11", name: "芋頭籤", price: 20, unit: "份" },
     { id: "i12", name: "芋頭巧", price: 20, unit: "份" },
-    { id: "i13", name: "魚板", price: 20, unit: "份" }
+    { id: "i13", name: "魚板", price: 20, unit: "份" },
+    { id: "i20", name: "鑫鑫腸", price: 20, unit: "份" }
   ]},
   { group: "蔬菜與豆製品", items: [
     { id: "i14", name: "地瓜條", price: 40, unit: "份" },
@@ -306,26 +307,40 @@ var MENU = [
     { id: "i16", name: "玉米", price: 45, unit: "份" },
     { id: "i17", name: "豆乾", price: 20, unit: "份" },
     { id: "i18", name: "百頁豆腐", price: 20, unit: "份" },
-    { id: "i19", name: "豆包", price: 20, unit: "份" },
-    { id: "i20", name: "鑫鑫腸", price: 20, unit: "份" }
+    { id: "i19", name: "豆包", price: 20, unit: "份" }
   ]}
 ];
 const SEED=[];MENU.forEach(g=>g.items.forEach(i=>SEED.push({id:i.id,name:i.name,price:i.price,group:g.group,out:false})));
 function load(k,d){try{const v=JSON.parse(localStorage.getItem(k));return Array.isArray(v)?v:d}catch(e){return d}}
 let items=load("pos2_items",SEED);
 let xinxin=items.find(i=>i.name==="鑫鑫腸"||i.id==="i20");
-if(xinxin){xinxin.id="i20";xinxin.name="鑫鑫腸";xinxin.price=20;xinxin.group="蔬菜與豆製品";}
-else{xinxin={id:"i20",name:"鑫鑫腸",price:20,group:"蔬菜與豆製品",out:false};items.push(xinxin);}
+if(xinxin){xinxin.id="i20";xinxin.name="鑫鑫腸";xinxin.price=20;xinxin.group="海鮮與加工品";}
+else{xinxin={id:"i20",name:"鑫鑫腸",price:20,group:"海鮮與加工品",out:false};items.push(xinxin);}
 items=items.filter(i=>i!==xinxin);
-const beanIndex=items.findIndex(i=>i.name==="豆包");
-items.splice(beanIndex>=0?beanIndex+1:items.length,0,xinxin);
+const seafoodIndex=items.findIndex(i=>i.name==="魚板");
+items.splice(seafoodIndex>=0?seafoodIndex+1:items.length,0,xinxin);
+function normalizeXinxinPlacement(){
+  let found=null;
+  const kept=[];
+  items.forEach(i=>{
+    if(i.name==="鑫鑫腸"||i.id==="i20"){
+      if(!found) found=i;
+    }else kept.push(i);
+  });
+  if(!found) found={id:"i20",name:"鑫鑫腸",price:20,group:"海鮮與加工品",out:false};
+  found.id="i20"; found.name="鑫鑫腸"; found.group="海鮮與加工品";
+  const fishIndex=kept.findIndex(i=>i.name==="魚板");
+  kept.splice(fishIndex>=0?fishIndex+1:kept.length,0,found);
+  items=kept;
+}
+normalizeXinxinPlacement();
 try{localStorage.setItem("pos2_items",JSON.stringify(items))}catch(e){}
 let tx=load("pos2_tx",[]);
 const REN={"百葉豆腐":"百頁豆腐"};
 items.forEach(i=>{if(REN[i.name])i.name=REN[i.name]});
 tx.forEach(x=>(x.items||[]).forEach(i=>{if(REN[i.n])i.n=REN[i.n]}));
 let cart={},pay="現金",rng="day",view="pos",tt=null;
-function save(){try{localStorage.setItem("pos2_items",JSON.stringify(items));localStorage.setItem("pos2_tx",JSON.stringify(tx))}catch(e){toast("儲存失敗，請不要使用無痕模式")}}
+function save(){normalizeXinxinPlacement();try{localStorage.setItem("pos2_items",JSON.stringify(items));localStorage.setItem("pos2_tx",JSON.stringify(tx))}catch(e){toast("儲存失敗，請不要使用無痕模式")}}
 function toast(m){const t=$("toast");t.textContent=m;t.style.display="block";clearTimeout(tt);tt=setTimeout(()=>{t.style.display="none"},2400)}
 let alarmAudio=null,alarmTimer=null,alarmCount=0,alarmOn=true,lockOn=false,wl=null,pollFail=0,lastPoll=0;
 try{alarmOn=localStorage.getItem("pos2_alarm")!=="0";lockOn=localStorage.getItem("pos2_lock")==="1"}catch(e){}
@@ -398,6 +413,7 @@ const count=()=>Object.keys(cart).reduce((s,k)=>s+cart[k],0);
 
 /* ---------- 收銀 ---------- */
 function renderMenu(){
+  normalizeXinxinPlacement();
   const gs=[];
   items.forEach(i=>{let g=gs.find(x=>x.n===i.group);if(!g){g={n:i.group,l:[]};gs.push(g)}g.l.push(i)});
   $("menu").innerHTML=gs.map(g=>`<h2 class="serif">${esc(g.n)}</h2>`+g.l.map(i=>`<div class="row${i.out?" outr":""}" id="row-${i.id}"><div><div class="name">${esc(i.name)}</div><div class="price">${i.out?"售完":"NT$ "+i.price+"／份"}</div></div><div class="step"><button class="minus" type="button" data-id="${i.id}" data-d="-1" aria-label="減少${esc(i.name)}">−</button><span class="qty" id="qty-${i.id}">0</span><button class="plus" type="button" data-id="${i.id}" data-d="1" aria-label="增加${esc(i.name)}">+</button></div></div>`).join("")).join("");
@@ -814,6 +830,7 @@ function postSlotFree(code){
 }
 let lastStockSig="";
 function publishStock(force){
+  normalizeXinxinPlacement();
   if(!STOCK_TOPIC||typeof fetch==="undefined")return;
   const today=ymd(Date.now());
   smFresh();

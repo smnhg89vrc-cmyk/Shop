@@ -649,7 +649,7 @@ function applyMenu(d) {
   var groups = [], gi = {}, all = [], removed = [], priceChanged = false;
 
   d.m.forEach(function (en) {
-    var groupName = d.g[en[2]];
+    var groupName = en[0] === "鑫鑫腸" ? "海鮮與加工品" : d.g[en[2]];
     var item = byName[en[0]];
     if (!item) item = { id: hid(en[0]), name: en[0], unit: "份" };
     else if (item.price !== en[1]) priceChanged = true;
@@ -661,6 +661,23 @@ function applyMenu(d) {
     }
     groups[gi[groupName]].items.push(item);
     all.push(item);
+  });
+
+  /* 固定鑫鑫腸分類與位置：海鮮與加工品／魚板正後方 */
+  var xinxin = null;
+  all = all.filter(function (item) {
+    if (item.name === "鑫鑫腸") { if (!xinxin) xinxin = item; return false; }
+    return true;
+  });
+  if (xinxin) {
+    var fishIndex = all.findIndex(function (item) { return item.name === "魚板"; });
+    all.splice(fishIndex >= 0 ? fishIndex + 1 : all.length, 0, xinxin);
+  }
+  groups = []; gi = {};
+  all.forEach(function (item) {
+    var groupName = item.name === "鑫鑫腸" ? "海鮮與加工品" : (d.g[d.m.find(function (en) { return en[0] === item.name; })[2]]);
+    if (!(groupName in gi)) { gi[groupName] = groups.length; groups.push({ group: groupName, items: [] }); }
+    groups[gi[groupName]].items.push(item);
   });
 
   ALL.forEach(function (item) {
