@@ -1,0 +1,33 @@
+{
+  "id": "./app.html",
+  "name": "台灣第一家鹽酥雞",
+  "short_name": "台灣第一家",
+  "description": "30年老店專屬 APP：餐點計算機與 221 巷虛擬夜市",
+  "lang": "zh-TW",
+  "start_url": "./app.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#17110d",
+  "theme_color": "#25170f",
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

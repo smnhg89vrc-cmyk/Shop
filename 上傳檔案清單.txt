@@ -1,0 +1,1 @@
+上傳到 GitHub 專案 Shop/：app.html、manifest.webmanifest、service-worker.js、icons/。不要覆蓋原本 menu.html、221.html、pos.html、Pos1.html。測試網址：https://smnhg89vrc-cmyk.github.io/Shop/app.html
