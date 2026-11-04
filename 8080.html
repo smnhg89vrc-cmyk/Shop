@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>221巷夜市｜街坊開逛</title>
+<style>
+:root{--gold:#ffd66b;--red:#d92738;--ink:#fff7e8}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#171a24;color:var(--ink);font-family:system-ui,"Noto Sans TC",sans-serif;touch-action:none}
+#game{position:fixed;inset:0}canvas{display:block;width:100%;height:100%}
+#top{position:fixed;top:env(safe-area-inset-top,8px);left:10px;right:10px;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none;gap:8px}
+.pill{background:#10131ddd;border:1px solid #ffffff2b;border-radius:14px;padding:8px 12px;box-shadow:0 5px 20px #0006;font-weight:800;text-shadow:0 2px 4px #000}
+#brand{color:var(--gold);font-size:16px}#stats{font-size:12px;text-align:right;line-height:1.55}
+#tip{position:fixed;top:76px;left:50%;transform:translateX(-50%);background:#10131ddd;border:1px solid #ffffff35;border-radius:99px;padding:8px 14px;font-size:13px;white-space:nowrap;pointer-events:none;max-width:94vw;overflow:hidden;text-overflow:ellipsis}
+#joy{position:fixed;left:22px;bottom:calc(28px + env(safe-area-inset-bottom));width:128px;height:128px;border-radius:50%;background:#10131d77;border:2px solid #ffffff55;box-shadow:inset 0 0 22px #fff2;touch-action:none}
+#nub{position:absolute;width:54px;height:54px;left:35px;top:35px;border-radius:50%;background:linear-gradient(145deg,#ffe7a0,#e9a93c);border:2px solid #fff9;box-shadow:0 5px 15px #0008}
+#actions{position:fixed;right:18px;bottom:calc(30px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px;align-items:center}
+.act{border:1px solid #fff8;border-radius:50%;width:66px;height:66px;background:linear-gradient(145deg,#e84a4d,#9d142a);color:white;font-size:13px;font-weight:900;box-shadow:0 6px 18px #0008}
+.act.secondary{background:linear-gradient(145deg,#ffc85a,#bd711d);color:#3b1b0a}
+#near{position:fixed;left:50%;bottom:calc(35px + env(safe-area-inset-bottom));transform:translateX(-50%);display:none;border:0;border-radius:99px;padding:14px 23px;background:linear-gradient(135deg,#ffe9a5,#f4a63a);color:#4b1d08;font-size:17px;font-weight:1000;box-shadow:0 8px 28px #0009;white-space:nowrap}
+#panelbg{position:fixed;inset:0;background:#0009;display:none;align-items:flex-end;justify-content:center}
+#panel{width:min(680px,100%);max-height:82vh;background:linear-gradient(160deg,#29212a,#171922);border:1px solid #ffffff35;border-bottom:0;border-radius:24px 24px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));overflow:auto;box-shadow:0 -10px 40px #0009}
+#panel h2{margin:0 0 8px;color:var(--gold);font-size:23px}#panel p{line-height:1.65;color:#f4e8d6;margin:6px 0 12px}
+#close{float:right;border:0;background:#ffffff1c;color:white;border-radius:50%;width:36px;height:36px;font-size:20px}
+.items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.item{background:#ffffff0c;border:1px solid #ffffff20;border-radius:12px;padding:10px;display:flex;justify-content:space-between;gap:6px;align-items:center}
+.item button,.wide{border:0;border-radius:9px;padding:8px 11px;background:#f3bd58;color:#381d0a;font-weight:900}
+#total{margin-top:12px;padding:10px;border-radius:12px;background:#0005;font-weight:900;color:var(--gold)}
+#toast{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:#14151dee;border:1px solid #ffd66b88;border-radius:18px;padding:18px 22px;display:none;text-align:center;max-width:85vw;box-shadow:0 12px 40px #000a}
+@media(min-width:800px){#joy{width:145px;height:145px}#nub{left:42px;top:42px}.act{width:74px;height:74px}}
+</style>
+</head>
+<body>
+<div id="game"></div>
+<div id="top"><div class="pill" id="brand">🏮 221巷夜市</div><div class="pill" id="stats">🪙 夜市點數 0<br>📍 巷口集合</div></div>
+<div id="tip">拖曳左下搖桿移動｜靠近店家按「互動」</div>
+<div id="joy"><div id="nub"></div></div>
+<div id="actions"><button class="act" id="interact">互動<br>GO</button><button class="act secondary" id="mapbtn">街區<br>地圖</button></div>
+<button id="near">逛逛這間店</button>
+<div id="panelbg"><div id="panel"><button id="close">×</button><h2 id="ptitle">店家</h2><p id="pdesc"></p><div id="pcontent"></div></div></div>
+<div id="toast"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(()=>{
+const root=document.querySelector('#game'),scene=new THREE.Scene();scene.background=new THREE.Color(0x171d31);scene.fog=new THREE.Fog(0x171d31,28,85);
+const camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.1,140);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.8));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;root.appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xb9d5ff,0x493326,1.25));
+const moon=new THREE.DirectionalLight(0xffd6a1,1.25);moon.position.set(-12,24,10);moon.castShadow=true;scene.add(moon);
+const mat=(c,rough=0.85,em=0)=>new THREE.MeshStandardMaterial({color:c,roughness:rough,emissive:em,emissiveIntensity:em?0.8:0});
+function box(w,h,d,x,y,z,c,group=scene){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c));m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;group.add(m);return m}
+function cyl(rt,rb,h,x,y,z,c,group=scene){const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,16),mat(c));m.position.set(x,y,z);m.castShadow=true;group.add(m);return m}
+function ball(r,x,y,z,c,group=scene){const m=new THREE.Mesh(new THREE.SphereGeometry(r,16,12),mat(c));m.position.set(x,y,z);m.castShadow=true;group.add(m);return m}
+function textPlane(txt,w,h,x,y,z,bg,fg='#fff',size=72){
+ const c=document.createElement('canvas');c.width=1024;c.height=256;const g=c.getContext('2d');g.fillStyle=bg;g.fillRect(0,0,1024,256);g.strokeStyle='#ffe4a0';g.lineWidth=12;g.strokeRect(8,8,1008,240);g.fillStyle=fg;g.textAlign='center';g.textBaseline='middle';g.font=`900 ${size}px "Noto Sans TC",sans-serif`;g.shadowColor='#000';g.shadowBlur=8;g.fillText(txt,512,128,960);
+ const tex=new THREE.CanvasTexture(c);const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:tex}));m.position.set(x,y,z);scene.add(m);return m;
+}
+// road / sidewalks
+box(16,.18,94,0,-.12,0,0x333943);box(5,.24,94,-10.5,-.02,0,0x827b70);box(5,.24,94,10.5,-.02,0,0x827b70);
+for(let z=-43;z<46;z+=7){box(.13,.02,2,0,.0,z,0xf5d66e)}
+// side buildings and shutters
+for(let side of [-1,1])for(let i=0;i<7;i++){
+ let z=-39+i*13, x=side*13.2, col=[0x66524c,0x4e5962,0x695b48,0x51505c][i%4];
+ box(8,8,12,x,4,z,col);box(8.2,.45,12,x,8.25,z,0x292d37);
+ box(.25,5,10,x-side*4.05,2.5,z,0x34363a);
+ box(7.6,3.4,.18,x,2.0,z+6.08,0x25272b);
+ // upper window
+ box(4.8,1.7,.12,x,5.5,z+6.12,0x273b4a);
+}
+// storefronts
+const shops=[
+ {name:'台灣第一家鹽酥雞',sub:'30年老店・香酥現炸',side:-1,z:-30,color:'#c51e2e',kind:'food'},
+ {name:'阿嬤古早味',sub:'傳統甜湯・手作點心',side:1,z:-30,color:'#a34b25',kind:'food'},
+ {name:'巷口彈珠台',sub:'彈珠挑戰・贏點數',side:-1,z:-15,color:'#235c91',kind:'game'},
+ {name:'夜市套圈圈',sub:'瞄準！套中有獎',side:1,z:-15,color:'#8c315d',kind:'game'},
+ {name:'炭烤香腸',sub:'現烤香氣・熱騰騰',side:-1,z:0,color:'#a52b20',kind:'food'},
+ {name:'飲料研究所',sub:'沁涼飲品・今日限定',side:1,z:0,color:'#287c70',kind:'food'},
+ {name:'射氣球大賽',sub:'連中三球挑戰',side:-1,z:15,color:'#7346a1',kind:'game'},
+ {name:'古早味遊戲攤',sub:'夜市童玩・集章',side:1,z:15,color:'#b16a22',kind:'game'},
+ {name:'夜市服務台',sub:'集章・活動資訊',side:-1,z:30,color:'#b48a27',kind:'info'},
+ {name:'招商中',sub:'下一個人氣店家就是你',side:1,z:30,color:'#c52839',kind:'info'}
+];
+const interactables=[];
+shops.forEach((s,i)=>{
+ const x=s.side*8.3,z=s.z,faceZ=z+2.15;
+ // stall base and canopy
+ box(6.6,2.8,.45,x,1.45,z,0x4a3b34);
+ box(7,.22,4.4,x,3.05,z-0.2,0x30343b);
+ box(7,.35,4.45,x,3.35,z-0.2,new THREE.Color(s.color).getHex());
+ for(let dx of [-3.25,3.25])box(.16,3.3,.16,x+dx,1.65,z,0xe5d6bb);
+ box(6.9,.16,.2,x,2.65,z+2.28,0xd7c5a5);
+ // awning stripes
+ for(let k=0;k<7;k++)box(.92,.42,.18,x-2.95+k*.99,2.82,z+2.28,k%2?0xf4e3c4:new THREE.Color(s.color).getHex());
+ textPlane(s.name,5.8,1.05,x,4.0,z+2.35,s.color,'#fff',s.name.length>8?58:76);
+ // sign subtitle strip
+ textPlane(s.sub,5.8,.42,x,3.25,z+2.39,'#211c22','#ffe5a4',38);
+ // counter / display
+ box(5.8,.75,1.0,x,0.72,z+1.1,0xb7b5ae);
+ box(5.9,.1,1.08,x,1.12,z+1.1,0x49372b);
+ for(let k=0;k<4;k++){let item=ball(.22,x-1.8+k*1.2,1.38,z+1.0,[0xf2b94c,0xb54b2d,0x83a65a,0xd9d0b8][k]);}
+ // lamps
+ for(let dx of [-2.4,2.4]){cyl(.06,.06,.45,x+dx,3.9,z+1.4,0x453c32);ball(.18,x+dx,3.65,z+1.4,0xffcf73);}
+ interactables.push({x,z:z+3.5,shop:s});
+});
+// lantern strings
+for(let z=-37;z<38;z+=8){for(let x of [-5.2,5.2]){cyl(.09,.09,.55,x,6.3,z,0x45352b);ball(.34,x,5.95,z,0xe94c43);ball(.08,x,5.55,z,0xffd36c)}}
+// side clutter: crates, plants, stools, signboards
+for(let z=-40;z<42;z+=5){
+ box(.65,.65,.65,-5.9,.32,z,0x765139);box(.55,.4,.55,5.9,.2,z+2,0x9c5a35);
+ cyl(.5,.42,.7,-12.1,.4,z,0x554d3f);ball(.48,-12.1,1,z,0x3c7650);
+}
+// player cartoon character
+const player=new THREE.Group();scene.add(player);
+cyl(.25,.28,.65,0,.65,0,0x315c9a,player);ball(.29,0,1.25,0,0xf0c49a,player);
+ball(.12,-.11,1.28,.24,0x20212a,player);ball(.12,.11,1.28,.24,0x20212a,player);
+cyl(.32,.3,.12,0,1.55,0,0xd52b35,player);box(.52,.08,.1,0,1.5,0,0xd52b35,player);
+for(let x of [-.13,.13])box(.16,.42,.2,x,.2,0,0x292a34,player);
+player.position.set(0,0,40);
+// NPCs
+const npcs=[];for(let i=0;i<10;i++){const g=new THREE.Group();scene.add(g);cyl(.22,.24,.6,0,.6,0,[0x4e79a7,0xd17c4b,0x6e9a68,0x9b6aa5][i%4],g);ball(.23,0,1.05,0,0xe7b995,g);g.position.set((i%2?1:-1)*5.3,0,-34+i*7.5);npcs.push(g)}
+let score=0,near=null,joy={x:0,y:0},activePointer=null,toastTimer;
+const $=s=>document.querySelector(s);
+function toast(t){const el=$('#toast');el.innerHTML=t;el.style.display='block';clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.style.display='none',2300)}
+function updateStats(){$('#stats').innerHTML=`🪙 夜市點數 ${score}<br>📍 221巷・夜市街區`}
+function openPanel(title,desc,html){$('#ptitle').textContent=title;$('#pdesc').textContent=desc;$('#pcontent').innerHTML=html;$('#panelbg').style.display='flex';}
+function closePanel(){$('#panelbg').style.display='none'}
+$('#close').onclick=closePanel;$('#panelbg').addEventListener('click',e=>{if(e.target.id==='panelbg')closePanel()});
+const menu=[['鹽酥雞',60],['炸地瓜',40],['炸雞皮',40],['花枝丸',30],['豬血糕',20],['百頁豆腐',20],['四季豆',40],['甜不辣',25],['豆乾',20],['玉米',45]];
+function shopPanel(s){
+ if(s.kind==='food'&&s.name==='台灣第一家鹽酥雞'){
+  openPanel('🍗 '+s.name,'30年老店｜這裡是試玩菜單，非線上送單。點選品項可以試算金額。',`<div class="items">${menu.map((m,i)=>`<div class="item"><span>${m[0]}　$${m[1]}</span><button data-i="${i}">＋</button></div>`).join('')}</div><div id="total">目前試算：$0</div><p>實際點餐請到店面告訴店員。</p>`);
+  let total=0;$('#pcontent').querySelectorAll('button').forEach(b=>b.onclick=()=>{let m=menu[+b.dataset.i];total+=m[1];$('#total').textContent='目前試算：$'+total;toast('加入 '+m[0]+'　+$'+m[1])});
+ }else if(s.kind==='game'){
+  let desc=s.name.includes('彈珠')?'連續挑戰彈珠台，看看今天手氣！':s.name.includes('套圈')?'瞄準目標，把圈圈套進去！':s.name.includes('氣球')?'三次機會，挑戰射中目標！':'完成夜市小任務，收集你的街區印章！';
+  openPanel('🎯 '+s.name,desc,`<div style="background:#ffffff10;padding:16px;border-radius:14px;text-align:center"><div style="font-size:42px">🎮</div><b>夜市小遊戲體驗</b><p>按下開始，完成挑戰即可獲得夜市點數。</p><button class="wide" id="play">開始挑戰</button></div>`);
+  $('#play').onclick=()=>{let win=Math.random()>.38;let gain=win?Math.floor(10+Math.random()*21):2;score+=gain;updateStats();closePanel();toast(win?`🎉 挑戰成功！獲得 ${gain} 點`:`再接再厲！參與獎 ${gain} 點`)};
+ }else{
+  openPanel('🏮 '+s.name,s.name==='招商中'?'這裡預留給下一家進駐的店家。':'夜市服務台：逛店、玩遊戲、累積夜市點數。',`<div style="padding:16px;background:#ffffff10;border-radius:14px"><h3 style="margin-top:0;color:#ffd66b">221巷夜市</h3><p>目前開放試玩街區。未來可以加入店家介紹、集章活動與更多遊戲。</p><button class="wide" id="stamp">領取街區紀念章</button></div>`);
+  $('#stamp').onclick=()=>{score+=5;updateStats();closePanel();toast('🏮 獲得街區紀念章 +5 點')};
+ }
+}
+function nearest(){let best=999,found=null;for(const it of interactables){let d=Math.hypot(player.position.x-it.x,player.position.z-it.z);if(d<best){best=d;found=it}}return best<5?found:null}
+function interact(){if(near)shopPanel(near.shop);else toast('再靠近一點店家，就能開始互動！')}
+$('#interact').onclick=interact;$('#near').onclick=interact;
+$('#mapbtn').onclick=()=>openPanel('🗺️ 221巷夜市街區地圖','沿著夜市主街自由探索，兩側都有店家與遊戲攤位。',`<div class="items">${shops.map((s,i)=>`<div class="item"><span>${s.name}</span><button data-z="${s.z}">前往</button></div>`).join('')}</div>`);
+$('#pcontent').addEventListener('click',e=>{let b=e.target.closest('[data-z]');if(b){player.position.z=+b.dataset.z+7;player.position.x=0;closePanel();toast('已移動到附近街區')}}); 
+// joystick
+const joyEl=$('#joy'),nub=$('#nub');
+function setJoy(e){const r=joyEl.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let dx=e.clientX-cx,dy=e.clientY-cy,l=Math.hypot(dx,dy),max=42;if(l>max){dx=dx/l*max;dy=dy/l*max}joy.x=dx/max;joy.y=dy/max;nub.style.transform=`translate(${dx}px,${dy}px)`}
+joyEl.addEventListener('pointerdown',e=>{activePointer=e.pointerId;joyEl.setPointerCapture(e.pointerId);setJoy(e)});
+joyEl.addEventListener('pointermove',e=>{if(e.pointerId===activePointer)setJoy(e)});
+function release(e){if(e.pointerId===activePointer){activePointer=null;joy.x=joy.y=0;nub.style.transform='translate(0,0)'}}
+joyEl.addEventListener('pointerup',release);joyEl.addEventListener('pointercancel',release);
+// camera and movement
+const clock=new THREE.Clock();let walk=0;
+function animate(){requestAnimationFrame(animate);let dt=Math.min(clock.getDelta(),.05);if($('#panelbg').style.display!=='flex'){
+ let vx=joy.x, vz=joy.y;let len=Math.hypot(vx,vz);if(len>.08){vx/=Math.max(1,len);vz/=Math.max(1,len);player.position.x+=vx*7*dt;player.position.z+=vz*10*dt;player.position.x=Math.max(-6.5,Math.min(6.5,player.position.x));player.position.z=Math.max(-44,Math.min(44,player.position.z));player.rotation.y=Math.atan2(vx,vz);walk+=dt*12;player.position.y=Math.abs(Math.sin(walk))*.06}else player.position.y=0;
+ }
+ camera.position.lerp(new THREE.Vector3(player.position.x,5.2,player.position.z+8.5),1-Math.pow(.001,dt));camera.lookAt(player.position.x,1.2,player.position.z-3.5);
+ near=nearest();$('#near').style.display=near&&$('#panelbg').style.display!=='flex'?'block':'none';if(near)$('#near').textContent='逛逛｜'+near.shop.name;
+ npcs.forEach((n,i)=>{n.position.x+=(Math.sin(Date.now()*.0004+i)*.35)*dt;n.rotation.y=Math.sin(Date.now()*.0005+i)*.15});
+ renderer.render(scene,camera);
+}
+animate();addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+updateStats();
+})();
+</script>
+</body></html>
