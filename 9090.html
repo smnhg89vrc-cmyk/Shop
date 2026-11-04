@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>張記黃牛肉｜走進店裡逛逛</title>
+<title>張記黃牛肉｜沉浸式店內體驗</title>
 <style>
 :root{color-scheme:dark;--bg:#14120f;--card:#221d18;--ink:#fff3e0;--line:#4a3d30;--red:#c8102e;--gold:#ffd66b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,"Noto Sans TC","PingFang TC",sans-serif;user-select:none;-webkit-user-select:none}
@@ -35,7 +35,7 @@ h3{margin:14px 0 2px;color:var(--gold);font-size:20px;border-bottom:2px solid va
 <div id="st"><canvas id="cv"></canvas>
 <div class="t" id="ttl">🐮 張記黃牛肉</div>
 <a class="t" id="tel" href="tel:0930767637">📞 電話</a>
-<div class="t" id="hint">👆 拖曳畫面走路，走進店裡到櫃檯看菜單</div>
+<div class="t" id="hint">左下搖桿移動｜走到櫃檯看菜單・點餐</div>
 <button id="near">🐮 看菜單・點餐</button></div>
 <div id="bk"></div>
 <div id="sh"><h2><span>🐮 張記黃牛肉 菜單</span><button id="x">✕</button></h2><div id="tabs"></div><div id="ls"></div>
@@ -65,140 +65,126 @@ let open=false;
 function sheet(v){open=v;$('#bk').style.display=v?'block':'none';$('#sh').style.transform=v?'translateY(0)':'translateY(110%)';if(v)$('#near').style.display='none'}
 $('#near').onclick=()=>sheet(true);$('#x').onclick=$('#bk').onclick=()=>sheet(false);
 
-/* ===== 3D ===== */
-const R=new THREE.WebGLRenderer({canvas:$('#cv'),antialias:true,powerPreference:'high-performance'});R.setPixelRatio(Math.min(devicePixelRatio,1.75));R.outputEncoding=THREE.sRGBEncoding;R.toneMapping=THREE.ACESFilmicToneMapping;R.toneMappingExposure=1.12;
-const S=new THREE.Scene();S.background=new THREE.Color(0x282a2d);S.fog=new THREE.Fog(0x282a2d,27,58);
-const C=new THREE.PerspectiveCamera(50,1,.1,80);
-function rs(){const e=$('#st');R.setSize(e.clientWidth,e.clientHeight,false);C.aspect=e.clientWidth/e.clientHeight;C.updateProjectionMatrix()}
-addEventListener('resize',rs);rs();
-S.add(new THREE.HemisphereLight(0xfff4df,0x62584d,1.05));
-[[-3,3.2,-3,1],[3,3.2,-3,.8],[-2,3.2,-8,.8],[0,4,5,.6]].forEach(l=>{const p=new THREE.PointLight(0xffe2b0,l[3],14);p.position.set(l[0],l[1],l[2]);S.add(p)});
-const mt=c=>c instanceof THREE.Material?c:new THREE.MeshLambertMaterial({color:c});
-function box(w,h,d,x,y,z,m,g){const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mt(m));b.position.set(x,y,z);(g||S).add(b);return b}
-function cyl(r,h,x,y,z,m,g){const b=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,16),mt(m));b.position.set(x,y,z);(g||S).add(b);return b}
-function tex(w,h,f,rx,ry){const c=document.createElement('canvas');c.width=w;c.height=h;f(c.getContext('2d'));const t=new THREE.CanvasTexture(c);if(rx){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rx,ry)}return new THREE.MeshLambertMaterial({map:t})}
-function pl(w,h,x,y,z,m,rx,ry,g){const p=new THREE.Mesh(new THREE.PlaneGeometry(w,h),m);p.position.set(x,y,z);p.rotation.set(rx||0,ry||0,0);(g||S).add(p);return p}
-const steel=0xb8bcc2,wood=0x6b3a22;
-const tile=tex(64,64,c=>{c.fillStyle='#e4e0d6';c.fillRect(0,0,64,64);c.strokeStyle='#b9b4a8';c.lineWidth=3;c.strokeRect(0,0,64,64)},10,8);
-const brick=n=>tex(128,64,c=>{c.fillStyle='#c9b79c';c.fillRect(0,0,128,64);for(let r=0;r<4;r++)for(let i=-1;i<4;i++){c.fillStyle=['#9c5a3e','#a8654a','#8f5038'][(i+r)%3];c.fillRect(i*32+(r%2)*16+2,r*16+2,28,12)}},n,1);
-/* 街道 */
-pl(70,70,0,-.02,0,mt(0x27252b),-Math.PI/2);
-pl(30,2.6,0,.01,1.3,mt(0x6f6a66),-Math.PI/2);
-for(let i=-3;i<=3;i++)box(1.6,.02,.2,i*4,.02,9,0xe8e0b0);
-box(8,4.6,10,-10.4,2.3,-5,0x35323d);box(8,4.6,10,10.4,2.3,-5,0x35323d);
-cyl(.08,4.2,8,2.1,3,0x555555);{const b=new THREE.Mesh(new THREE.SphereGeometry(.25,12,8),new THREE.MeshBasicMaterial({color:0xffe8b0}));b.position.set(8,4.3,3);S.add(b);const p=new THREE.PointLight(0xffd9a0,1,18);p.position.set(8,4,3);S.add(p)}
-/* 店內 */
-pl(12,10,0,0,-5,tile,-Math.PI/2);
-pl(12,10,0,3.6,-5,mt(0xf2ece0),Math.PI/2);
-[-3.5,0,3.5].forEach(x=>box(2.4,.05,.4,x,3.55,-5,new THREE.MeshBasicMaterial({color:0xffffee})));
-const cream=0xe1c99f;
-box(12.4,3.6,.2,0,1.8,-10.1,cream);box(.2,3.6,10.2,-6.1,1.8,-5,cream);box(.2,3.6,10.2,6.1,1.8,-5,cream);
-pl(12,1.2,0,.6,-9.99,brick(10),0,0);pl(10,1.2,-5.99,.6,-5,brick(8),0,Math.PI/2);pl(10,1.2,5.99,.6,-5,brick(8),0,-Math.PI/2);
-/* 店內天花板：暖色格板與日光燈，依實景影片 */
-box(12,.18,10,0,3.72,-5,0x8d6848);
-for(let x=-5.5;x<=5.5;x+=1.1)box(.025,.012,9.7,x,3.82,-5,0x5e4939);
-for(let z=-9.3;z<=-.7;z+=1.2)box(11.8,.012,.025,0,3.82,z,0x5e4939);
-[-4,0,4].forEach(x=>{box(2.1,.07,.22,x,3.66,-4.7,0xf4e9ca);const l=new THREE.PointLight(0xffedc9,.42,9);l.position.set(x,3.45,-4.7);S.add(l)});
-
-/* 牆上黑底白字菜單牌：依影片中的兩排長條菜單配置 */
-function menuSign(label,price,w=0.72,h=1.05){
- const c=document.createElement('canvas');c.width=180;c.height=280;const x=c.getContext('2d');
- x.fillStyle='#111214';x.fillRect(0,0,180,280);x.strokeStyle='#4a4741';x.lineWidth=5;x.strokeRect(3,3,174,274);
- x.textAlign='center';x.fillStyle='#fff';x.font='bold 48px sans-serif';
- const chars=[...label];chars.slice(0,4).forEach((ch,i)=>x.fillText(ch,90,58+i*52));
- x.fillStyle='#ffd66b';x.font='bold 34px sans-serif';x.fillText(price,90,258);
- const t=new THREE.CanvasTexture(c);const m=new THREE.MeshBasicMaterial({map:t});
- const q=new THREE.Mesh(new THREE.PlaneGeometry(w,h),m);return q;
+/* ===== 張記黃牛肉：依實景影片重新搭建 ===== */
+const cv=$('#cv');
+const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:false});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.7));
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.outputEncoding=THREE.sRGBEncoding;
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x25252b);scene.fog=new THREE.Fog(0x25252b,23,43);
+const camera=new THREE.PerspectiveCamera(53,1,.1,100);
+const hemi=new THREE.HemisphereLight(0xfff2df,0x51463d,1.15);scene.add(hemi);
+const key=new THREE.DirectionalLight(0xffe5c2,1.15);key.position.set(-5,11,7);key.castShadow=true;key.shadow.mapSize.set(1024,1024);scene.add(key);
+const warm=(x,y,z,p=1)=>{const l=new THREE.PointLight(0xffd7a0,p,12);l.position.set(x,y,z);scene.add(l);return l};
+[-7,-2,3].forEach(z=>warm(0,3.15,z,.8));warm(-5,2.5,-5,.55);
+const mat=(color,rough=.8,metal=0)=>new THREE.MeshStandardMaterial({color,roughness:rough,metalness:metal});
+const MATS={cream:mat(0xe6d8bd),brick:mat(0x98634b),dark:mat(0x262326),wood:mat(0x60351f),wood2:mat(0x80502f),steel:mat(0xaeb7bd,.32,.72),steelDark:mat(0x69757b,.42,.6),glass:new THREE.MeshPhysicalMaterial({color:0xdcebf0,transparent:true,opacity:.2,roughness:.08,metalness:.05}),red:mat(0xb51f2e),black:mat(0x171719),tile:mat(0xe9e5dc,.3),gold:mat(0xd4a94f,.45,.3),white:mat(0xf4f0e8)};
+function addBox(w,h,d,x,y,z,m,parent=scene){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o}
+function addCyl(r1,r2,h,x,y,z,m,parent=scene,n=20){const o=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,n),m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o}
+function addSphere(r,x,y,z,m,parent=scene){const o=new THREE.Mesh(new THREE.SphereGeometry(r,18,14),m);o.position.set(x,y,z);o.castShadow=true;parent.add(o);return o}
+function canvasMat(w,h,draw,opts={}){const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');draw(g,w,h);const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=renderer.capabilities.getMaxAnisotropy();return new THREE.MeshStandardMaterial({map:t,roughness:opts.roughness??.75,metalness:opts.metalness??0,side:opts.side||THREE.FrontSide})}
+function plane(w,h,x,y,z,material,rx=-Math.PI/2,parent=scene){const o=new THREE.Mesh(new THREE.PlaneGeometry(w,h),material);o.position.set(x,y,z);o.rotation.x=rx;o.receiveShadow=true;parent.add(o);return o}
+// 地面與白色磁磚：每片磁磚都有深色縫線
+const floorMat=canvasMat(256,256,(g)=>{g.fillStyle='#eeeae1';g.fillRect(0,0,256,256);g.strokeStyle='#bcb8b0';g.lineWidth=5;g.strokeRect(2,2,252,252);g.fillStyle='#ffffff';g.fillRect(10,10,110,5);});
+floorMat.map.wrapS=floorMat.map.wrapT=THREE.RepeatWrapping;floorMat.map.repeat.set(6,8);
+plane(12,16,0,0,-5,floorMat);
+// 店面空間：入口在前、後方是冰箱與神桌，中央保留走道
+addBox(12,.22,16,0,-.13,-5,MATS.dark);
+// 左右牆與後牆
+addBox(.22,3.55,16,-6,1.78,-5,MATS.cream);addBox(.22,3.55,16,6,1.78,-5,MATS.cream);addBox(12,3.55,.22,0,1.78,-13,MATS.cream);
+// 仿磚腰牆，深色收邊
+const brickTex=canvasMat(512,256,(g)=>{g.fillStyle='#9a624b';g.fillRect(0,0,512,256);for(let y=0;y<256;y+=42){for(let x=-40;x<560;x+=82){g.fillStyle=['#8c533e','#a66e53','#955b44','#a16a50'][(Math.floor(x/82)+Math.floor(y/42))%4];g.fillRect(x+(y/42%2)*41+3,y+3,76,35);g.strokeStyle='#d0b09a';g.lineWidth=2;g.strokeRect(x+(y/42%2)*41+3,y+3,76,35)}}});
+function wallBand(w,d,x,z,rot=0){const p=new THREE.Mesh(new THREE.PlaneGeometry(w,1.12),brickTex);p.position.set(x,.61,z);p.rotation.y=rot;p.receiveShadow=true;scene.add(p)}
+wallBand(11.6,0,0,-12.87);wallBand(15.5,0,-5.87,-5,Math.PI/2);wallBand(15.5,0,5.87,-5,-Math.PI/2);
+addBox(12.05,.08,.12,0,1.2,-12.84,MATS.wood);addBox(.12,.08,15.8,-5.84,1.2,-5,MATS.wood);addBox(.12,.08,15.8,5.84,1.2,-5,MATS.wood);
+// 天花板與紅棕色方格天花板
+addBox(12,.18,16,0,3.65,-5,mat(0x5b3931));
+for(let x=-5.5;x<=5.5;x+=1.1)addBox(.035,.035,15.8,x,3.55,-5,mat(0x79564a));
+for(let z=-12.5;z<=2.5;z+=1.1)addBox(11.8,.035,.035,0,3.55,z,mat(0x79564a));
+// 菜單牆：兩排獨立窄黑牌，不是整片黑板
+const menuItems=[];M.forEach(cat=>cat[1].forEach(row=>menuItems.push({name:row[0],price:row.slice(1).join(' / ')})));
+const logoPlaque=canvasMat(512,150,(g)=>{g.fillStyle='#e8ddc7';g.fillRect(0,0,512,150);g.strokeStyle='#9e8767';g.lineWidth=8;g.strokeRect(8,8,496,134);g.fillStyle='#282323';g.font='bold 82px serif';g.textAlign='center';g.fillText('張記黃牛肉',256,103)});
+const logo=new THREE.Mesh(new THREE.PlaneGeometry(3.2,.82),logoPlaque);logo.position.set(5.84,3.0,-7.7);logo.rotation.y=-Math.PI/2;scene.add(logo);
+for(let row=0;row<2;row++)for(let i=0;i<14;i++){
+ const item=menuItems[(row*14+i)%menuItems.length];
+ const plaque=canvasMat(128,256,(g)=>{g.fillStyle='#171719';g.fillRect(0,0,128,256);g.strokeStyle='#d6c8aa';g.lineWidth=5;g.strokeRect(4,4,120,248);g.textAlign='center';g.fillStyle='#fff7e9';g.font='bold 30px sans-serif';[...item.name].slice(0,5).forEach((ch,k)=>g.fillText(ch,64,43+k*39));g.fillStyle='#f3c66b';g.font='bold 25px sans-serif';g.fillText(item.price.replaceAll('大','大').replaceAll('小','小'),64,235)});
+ const p=new THREE.Mesh(new THREE.PlaneGeometry(.34,.92),plaque);p.position.set(5.835,2.27-row*1.02,-2.1-i*.54);p.rotation.y=-Math.PI/2;scene.add(p);
+ addBox(.37,.96,.045,5.79,2.27-row*1.02,-2.1-i*.54,mat(0x302d2b));
 }
-const flat=[];M.forEach(c=>c[1].forEach(r=>{if(r.length>=2)flat.push([r[0],r.slice(1).filter(v=>/\\d/.test(v)).join('/')||'時價'])}));
-for(let row=0;row<2;row++)for(let i=0;i<13;i++){
- const it=flat[(row*13+i)%flat.length],q=menuSign(it[0],it[1],.68,1.02);
- q.position.set(-5.15+i*.86, row===0?2.65:1.52, -9.91);S.add(q);
+// 店內桌椅：紅褐木桌、玻璃桌面、圓凳與瓦斯爐
+function stove(x,z){addCyl(.25,.25,.09,x,.91,z,MATS.steelDark);addCyl(.19,.19,.035,x,.97,z,MATS.black);addCyl(.14,.14,.025,x,1.0,z,MATS.steel);addCyl(.07,.07,.025,x,1.02,z,MATS.red)}
+function stool(x,z){addCyl(.22,.25,.13,x,.55,z,MATS.wood);addCyl(.055,.07,.48,x,.29,z,MATS.black);for(let a=0;a<4;a++){let q=a*Math.PI/2;const leg=addBox(.045,.45,.045,x+Math.cos(q)*.14,.27,z+Math.sin(q)*.14,MATS.black);leg.rotation.z=Math.cos(q)*-.12;}}
+function table(x,z){addBox(1.55,.12,1.05,x,.83,z,MATS.wood);addBox(1.48,.025,.98,x,.9,z,mat(0x9b795d,.18,.18));addBox(.13,.68,.13,x,.43,z,MATS.wood);stove(x,z);stool(x-1.02,z);stool(x+1.02,z);stool(x,z+0.82)}
+[[-3.8,-3.2],[-3.8,-6.2],[-3.8,-9.3],[0,-6.0],[2.4,-9.2]].forEach(p=>table(...p));
+// 前方店招：黑底白色手繪牛頭與白字，垂直鮮肉火鍋
+const fascia=canvasMat(1200,250,(g)=>{g.fillStyle='#171719';g.fillRect(0,0,1200,250);g.strokeStyle='#f4f0e8';g.lineWidth=11;g.lineCap='round';g.beginPath();g.moveTo(65,95);g.quadraticCurveTo(35,5,120,35);g.quadraticCurveTo(180,-2,205,65);g.lineTo(225,120);g.quadraticCurveTo(195,200,135,195);g.quadraticCurveTo(65,190,65,95);g.moveTo(70,78);g.lineTo(28,28);g.moveTo(205,75);g.lineTo(250,25);g.stroke();g.fillStyle='#fff';g.font='bold 125px serif';g.fillText('張記黃牛肉',290,165);g.font='bold 54px sans-serif';g.fillText('鮮肉火鍋',930,225)});
+addBox(12.4,.32,.38,0,3.42,1.0,MATS.black);const fasciaMesh=new THREE.Mesh(new THREE.PlaneGeometry(11.9,1.18),fascia);fasciaMesh.position.set(0,3.42,1.205);scene.add(fasciaMesh);
+// 騎樓棚架與入口兩側立柱
+addBox(12,.12,1.25,0,3.02,1.7,MATS.steelDark);for(let x of [-5.7,5.7])addBox(.16,3.1,.18,x,1.52,1.2,MATS.steelDark);
+// 入口展示推車：紅色頂牌、玻璃展示、下方不鏽鋼櫃體
+addBox(3.5,.82,1.25,-3.65,.48,2.65,MATS.steel);addBox(3.55,.1,1.3,-3.65,.94,2.65,MATS.steelDark);
+addBox(3.45,.14,1.25,-3.65,1.76,2.65,MATS.red);
+const cartSign=canvasMat(600,100,(g)=>{g.fillStyle='#b91f2d';g.fillRect(0,0,600,100);g.fillStyle='#fff4df';g.font='bold 66px serif';g.textAlign='center';g.fillText('張記黃牛肉',300,72)});
+const cartSignMesh=new THREE.Mesh(new THREE.PlaneGeometry(3.25,.48),cartSign);cartSignMesh.position.set(-3.65,1.77,3.31);scene.add(cartSignMesh);
+for(let x of [-5.25,-4.1,-2.95,-1.95]){addBox(.035,.68,.035,x,1.31,2.65,MATS.steelDark);}
+for(let x of [-5.25,-4.1,-2.95])addBox(1.05,.035,.8,x+.35,1.26,2.64,MATS.glass);
+// 展示盤、肉品與大湯鍋
+for(let i=0;i<4;i++){addBox(.68,.045,.48,-4.95+i*.86,1.06,2.55,mat(0xd9d4c9));for(let j=0;j<5;j++)addSphere(.075,-5.18+i*.86+(j%3)*.15,1.17,2.43+Math.floor(j/3)*.18,mat(i%2?0xa64c45:0x9c3d37,.5));}
+addCyl(.38,.42,.38,-2.25,1.26,2.62,MATS.steel);addCyl(.4,.4,.07,-2.25,1.48,2.62,MATS.steelDark);addCyl(.08,.08,.08,-2.25,1.55,2.62,MATS.black);
+// 旁邊獨立玻璃冷藏展示櫃
+function fridge(x,z,w=1.35,h=1.75){addBox(w,h,.78,x,h/2,z,MATS.steel);addBox(w-.12,h-.28,.04,x,h/2+.02,z+.405,MATS.glass);for(let y=.55;y<h-.2;y+=.42)addBox(w-.18,.035,.62,x,y,z,MATS.steelDark);addBox(w,.08,.84,x,h,z,MATS.steelDark);}
+fridge(-5.0,1.1,1.3,1.8);
+// 後廚：不鏽鋼工作檯、抽油煙罩、備料與鍋具
+addBox(3.8,.12,.85,-3.8,1.05,-10.5,MATS.steel);addBox(3.8,.12,.85,-3.8,2.3,-10.8,MATS.steelDark);addBox(3.8,.18,.85,-3.8,2.42,-10.8,MATS.steel);
+for(let x of [-5.4,-4.4,-3.2,-2.2])addBox(.07,1.05,.07,x,.55,-10.5,MATS.steelDark);
+addBox(3.7,.2,1.15,-3.8,2.85,-11.3,MATS.steelDark);addBox(3.35,.55,.82,-3.8,2.48,-11.3,MATS.steel);addBox(1.2,.08,.55,-3.8,2.16,-10.95,MATS.steel);
+for(let x of [-5,-4.1,-3.2]){addCyl(.22,.22,.28,x,1.27,-10.45,MATS.steel);addCyl(.24,.24,.045,x,1.43,-10.45,MATS.steelDark)}
+// 紅色備料籃
+for(let i=0;i<3;i++)addBox(.42,.22,.35,-5.05+i*.52,2.56,-10.25,MATS.red);
+// 後方冰箱、神桌、紅燈與冷風機
+fridge(4.55,-12.15,1.1,2.05);addBox(1.5,.12,.55,2.65,.95,-12.55,MATS.wood);addBox(.1,1.0,.1,2.0,1.45,-12.55,MATS.wood);addBox(.1,1.0,.1,3.3,1.45,-12.55,MATS.wood);
+const shrine=canvasMat(300,300,(g)=>{g.fillStyle='#6b201e';g.fillRect(0,0,300,300);g.strokeStyle='#e5bd65';g.lineWidth=10;g.strokeRect(12,12,276,276);g.fillStyle='#f4d18a';g.font='bold 65px serif';g.textAlign='center';g.fillText('福',150,190)});
+const sh=new THREE.Mesh(new THREE.PlaneGeometry(.9,.9),shrine);sh.position.set(2.65,1.72,-12.22);scene.add(sh);for(let x of [2.2,3.1]){const bulb=addSphere(.08,x,1.15,-12.35,mat(0xff3322));warm(x,1.2,-12.2,.18)}
+addBox(.85,1.25,.65,1.15,.63,-12.2,mat(0xe6e8e8));addBox(.68,.07,.05,1.15,.85,-11.86,mat(0x9ba3a8));
+// 吊扇與日光燈
+function fan(x,z){addCyl(.13,.13,.12,x,3.42,z,MATS.steelDark);addCyl(.055,.055,.4,x,3.18,z,MATS.steelDark);const hub=addCyl(.18,.18,.1,x,2.96,z,MATS.steel);for(let i=0;i<4;i++){const a=i*Math.PI/2;const blade=addBox(.95,.035,.22,x+Math.cos(a)*.48,2.96,z+Math.sin(a)*.48,mat(0x9d8a79));blade.rotation.y=-a;}return hub}
+const fans=[fan(-3.8,-4.3),fan(2.2,-8.2)];
+for(let z of [-10,-6,-2]){addBox(2.1,.06,.18,0,3.39,z,MATS.white);addBox(1.85,.025,.12,0,3.34,z,mat(0xfff4cf));warm(0,3.1,z,.22)}
+// 瓦斯桶與門口小物
+addCyl(.27,.3,.78,-5.55,.42,2.35,mat(0x3c9a61));addCyl(.07,.07,.16,-5.55,.88,2.35,MATS.steel);addBox(.38,.12,.3,-5.3,.1,1.95,MATS.dark);
+// 人物：有頭、身體、手腳關節，走路時會擺動
+function makePerson(shirt,pants,apron=false){const g=new THREE.Group();const torso=addBox(.42,.62,.25,0,1.12,0,mat(shirt),g);const hip=addBox(.34,.2,.23,0,.72,0,mat(pants),g);const head=addSphere(.22,0,1.62,0,mat(0xe9bd99),g);const hair=addSphere(.225,0,1.76,-.015,mat(0x33251f),g);hair.scale.set(1,.52,1);const arms=[];for(let s of [-1,1]){const a=new THREE.Group();a.position.set(s*.26,1.32,0);g.add(a);addBox(.13,.48,.14,0,-.2,0,mat(shirt),a);addSphere(.075,0,-.46,.02,mat(0xe9bd99),a);arms.push(a)}const legs=[];for(let s of [-1,1]){const l=new THREE.Group();l.position.set(s*.12,.66,0);g.add(l);addBox(.14,.48,.16,0,-.23,0,mat(pants),l);addBox(.19,.1,.28,0,-.48,.055,mat(0x29262a),l);legs.push(l)}if(apron){const ap=addBox(.34,.43,.035,0,1.02,.145,mat(0x3b3430),g)}g.userData={arms,legs};return g}
+const player=makePerson(0xc7a33f,0x292a30,true);player.position.set(0,0,4.7);scene.add(player);
+const cook=makePerson(0xf0eee8,0x333b43,true);cook.position.set(-3.5,0,-9.25);cook.rotation.y=Math.PI;scene.add(cook);
+const guest1=makePerson(0x52718c,0x33313a);guest1.position.set(-3.8,0,-4.0);guest1.rotation.y=.4;scene.add(guest1);
+const guest2=makePerson(0x9d5360,0x29272c);guest2.position.set(0,0,-6.8);guest2.rotation.y=Math.PI;scene.add(guest2);
+// 碰撞範圍：桌子與大型設備，保持中間走道通暢
+const obstacles=[[-3.8,-3.2,.95,.85],[-3.8,-6.2,.95,.85],[-3.8,-9.3,.95,.85],[0,-6,1,.75],[2.4,-9.2,.95,.8],[-3.65,2.65,1.9,.8],[-5,1.1,.8,.65],[4.55,-12.15,.75,.55]];
+function canMove(x,z){if(x<-5.45||x>5.45||z<-12.55||z>6.1)return false;for(const [ox,oz,rx,rz] of obstacles){if(Math.abs(x-ox)<rx&&Math.abs(z-oz)<rz)return false}return true}
+// 外部路面、騎樓地面延伸
+plane(28,20,0,-.18,7,mat(0x444247));for(let i=-4;i<=4;i++)addBox(.035,.01,5,i*2,-.165,7,mat(0x77716b));
+// 操作：左下虛擬搖桿 + 畫面拖曳，鍵盤也可用
+const pad=document.createElement('div');pad.id='joy';pad.innerHTML='<div id="joybase"><div id="joyknob"></div></div><div id="joylabel">移動</div>';$('#st').appendChild(pad);
+const style=document.createElement('style');style.textContent=`#joy{position:absolute;z-index:5;left:18px;bottom:22px;width:116px;height:116px;pointer-events:none;opacity:.86}#joybase{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,#ffffff22,#0008);border:2px solid #ffffff66;box-shadow:0 4px 18px #0008}#joyknob{position:absolute;width:48px;height:48px;left:32px;top:32px;border-radius:50%;background:linear-gradient(145deg,#fff2ce,#c99a55);border:2px solid #fff9;box-shadow:0 3px 10px #0008}#joylabel{position:absolute;bottom:-19px;width:100%;text-align:center;font-size:12px;color:#fff;text-shadow:0 1px 4px #000}#near{bottom:26px;left:50%;padding:14px 22px;font-size:18px}#hint{font-size:14px;background:#100e0dd9}`;document.head.appendChild(style);
+let joy={x:0,y:0,active:false,id:null};const base=$('#joybase'),knob=$('#joyknob');
+function joySet(e){const r=base.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let dx=e.clientX-cx,dy=e.clientY-cy;const len=Math.hypot(dx,dy),max=34;if(len>max){dx=dx/len*max;dy=dy/len*max}joy.x=dx/max;joy.y=dy/max;knob.style.transform=`translate(${dx}px,${dy}px)`}
+base.addEventListener('pointerdown',e=>{e.preventDefault();joy.active=true;joy.id=e.pointerId;base.setPointerCapture(e.pointerId);joySet(e)});base.addEventListener('pointermove',e=>{if(joy.active&&e.pointerId===joy.id)joySet(e)});function joyEnd(){joy.active=false;joy.x=joy.y=0;knob.style.transform='translate(0,0)'}base.addEventListener('pointerup',joyEnd);base.addEventListener('pointercancel',joyEnd);
+let drag=null;cv.addEventListener('pointerdown',e=>{if(e.clientX<155&&e.clientY>window.innerHeight-165)return;drag={x:e.clientX,y:e.clientY,dx:0,dy:0};try{cv.setPointerCapture(e.pointerId)}catch(_){}});cv.addEventListener('pointermove',e=>{if(!drag)return;drag.dx=Math.max(-1,Math.min(1,(e.clientX-drag.x)/38));drag.dy=Math.max(-1,Math.min(1,(e.clientY-drag.y)/38))});const endDrag=()=>drag=null;cv.addEventListener('pointerup',endDrag);cv.addEventListener('pointercancel',endDrag);
+const keys={};addEventListener('keydown',e=>keys[e.key.toLowerCase()]=true);addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+let hintTimer;function say(t,ms=5200){$('#hint').textContent=t;$('#hint').style.display='block';clearTimeout(hintTimer);hintTimer=setTimeout(()=>$('#hint').style.display='none',ms)}
+say('歡迎來到張記黃牛肉！左下搖桿移動，走到櫃檯按「看菜單」',8500);
+let last=performance.now(),elapsed=0,camX=0,camZ=11.5,near=false,entered=false;
+function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last)/1000,.045);last=now;elapsed+=dt;
+ let dx=joy.x,dz=joy.y;if(drag){dx=drag.dx;dz=drag.dy}if(keys.a||keys.arrowleft)dx-=1;if(keys.d||keys.arrowright)dx+=1;if(keys.w||keys.arrowup)dz-=1;if(keys.s||keys.arrowdown)dz+=1;
+ let moving=false;if(!open){const len=Math.hypot(dx,dz);if(len>.12){dx/=Math.max(1,len);dz/=Math.max(1,len);const nx=player.position.x+dx*3.15*dt,nz=player.position.z+dz*3.15*dt;if(canMove(nx,player.position.z))player.position.x=nx;if(canMove(player.position.x,nz))player.position.z=nz;player.rotation.y=Math.atan2(dx,dz);moving=true}}
+ player.userData.legs.forEach((l,i)=>{l.rotation.x=moving?Math.sin(elapsed*10+i*Math.PI)*.55:Math.sin(elapsed*1.8+i)*.025});player.userData.arms.forEach((a,i)=>{a.rotation.x=moving?Math.sin(elapsed*10+i*Math.PI+Math.PI)*.35:Math.sin(elapsed*1.6+i)*.025});
+ fans.forEach((f,i)=>{f.rotation.y=elapsed*(i?1.5:2.1)});
+ const inside=player.position.z<1.0;if(inside&&!entered){entered=true;say('老闆：歡迎光臨！菜單就在右手邊，櫃檯也可以點餐。',6500)}
+ const d=Math.hypot(player.position.x-3.8,player.position.z+2.0);near=d<3.0&&!open;$('#near').style.display=near?'block':'none';
+ const targetX=player.position.x*.65,targetZ=player.position.z+6.8;const k=1-Math.exp(-dt*3.8);camX+=(targetX-camX)*k;camZ+=(targetZ-camZ)*k;
+ camera.position.set(camX,5.2,camZ);camera.lookAt(player.position.x,.95,player.position.z-2.1);
+ renderer.render(scene,camera);
 }
-/* 招牌 + 門面（走進店裡會自動隱藏） */
-const F=new THREE.Group();S.add(F);
-box(12.4,1.4,.4,0,3.7,0,0x3b3b3f,F);box(.3,3.6,.4,-6.1,1.8,0,0x3b3b3f,F);box(.3,3.6,.4,6.1,1.8,0,0x3b3b3f,F);
-const sign=tex(1024,166,c=>{c.fillStyle='#3b3b3f';c.fillRect(0,0,1024,166);c.fillStyle='#fff';c.strokeStyle='#fff';c.lineWidth=9;c.lineCap='round';
-c.beginPath();c.ellipse(150,100,50,38,0,0,7);c.fill();c.beginPath();c.ellipse(92,74,22,11,-.5,0,7);c.fill();c.beginPath();c.ellipse(208,74,22,11,.5,0,7);c.fill();
-c.beginPath();c.moveTo(120,66);c.quadraticCurveTo(98,22,128,18);c.moveTo(180,66);c.quadraticCurveTo(202,22,172,18);c.stroke();
-c.fillStyle='#3b3b3f';c.beginPath();c.ellipse(150,116,24,13,0,0,7);c.fill();c.beginPath();c.arc(130,94,5,0,7);c.arc(170,94,5,0,7);c.fill();
-c.fillStyle='#c8102e';c.fillRect(48,24,46,46);c.fillStyle='#fff';c.font='bold 20px sans-serif';c.textAlign='center';c.fillText('張記',71,53);
-c.font='bold 104px "Noto Serif TC","Songti TC",serif';c.fillText('黃牛肉',470,128);c.fillStyle='#ff6a6a';c.font='bold 46px sans-serif';c.fillText('鮮肉火鍋',830,100)});
-pl(8.6,1.4,0,3.7,.22,sign,0,0,F);
-/* 紅頂不鏽鋼爐台 */
-box(3,.9,1.6,-4,.45,-1.5,steel);box(3.1,.08,1.7,-4,.94,-1.5,0xd5d8dd);
-[[-5.5,-2.3],[-2.5,-2.3],[-5.5,-.7],[-2.5,-.7]].forEach(p=>cyl(.05,1.7,p[0],1.8,p[1],steel));
-box(3.2,.5,1.8,-4,2.75,-1.5,0xc8283a);cyl(.5,.35,-4,1.15,-1.5,0xcfd3d8);cyl(.06,.1,-4,1.38,-1.5,0x333333);
-[-5.1,-2.9].forEach(x=>cyl(.2,.4,x,1.18,-1.2,0xffffff));
-/* 點菜櫃檯 + 後廚 */
-box(4.2,1.05,.9,3.6,.52,-4.1,0xa9aeb5);box(4.4,.08,1.1,3.6,1.07,-4.1,0x7a4a2a);
-pl(2.6,.65,3.6,2.3,-3.7,tex(512,128,c=>{c.fillStyle='#c8102e';c.fillRect(0,0,512,128);c.fillStyle='#ffd66b';c.font='bold 68px sans-serif';c.textAlign='center';c.fillText('點菜櫃檯',256,90)}));
-box(4,.9,.8,3.6,.45,-9.5,steel);cyl(.5,.5,3,1.15,-9.5,0xcfd3d8);box(1,2,.9,5.3,1,-7.6,0xdfe5ea);
-/* 實景重點：紅色頂框、玻璃展示冷藏櫃與不鏽鋼底座 */
-box(2.15,1.55,.9,-4.55,1.55,-3.2,0xbfc4c8);
-box(2.2,.18,1,-4.55,2.42,-3.2,0xc8102e);
-box(2.05,.08,.92,-4.55,.78,-3.2,0x8c969d);
-[-5.48,-3.62].forEach(x=>box(.055,1.42,.06,x,1.62,-2.72,0x7b858b));
-box(1.9,.055,.05,-4.55,1.55,-2.72,0x9da8ad);
-box(1.9,.055,.05,-4.55,2.08,-2.72,0x9da8ad);
-const glass=new THREE.Mesh(new THREE.BoxGeometry(1.9,1.35,.035),new THREE.MeshPhongMaterial({color:0xd9f1f4,transparent:true,opacity:.18,shininess:100}));
-glass.position.set(-4.55,1.68,-2.72);S.add(glass);
-[-5.15,-4.55,-3.95].forEach(x=>{const meat=box(.42,.16,.48,x,1.15,-3.05,0x9c4540);meat.rotation.z=.08});
-box(2.2,.08,.95,-4.55,2.53,-3.2,0xc8102e);
+function resize(){const el=$('#st');renderer.setSize(el.clientWidth,el.clientHeight,false);camera.aspect=el.clientWidth/el.clientHeight;camera.updateProjectionMatrix()}addEventListener('resize',resize);resize();requestAnimationFrame(animate);
 
-/* 桌椅 */
-const A=[[-5.7,-2.3,-2.6,-.4],[1.4,5.7,-4.7,-3.55],[1.4,5.7,-9.7,-4.7]];
-function table(x,z){
- box(1.5,.09,1,x,.78,z,wood);box(.12,.78,.12,x,.39,z,wood);
- [[-.62,-.42],[.62,-.42],[-.62,.42],[.62,.42]].forEach(([a,b])=>box(.09,.72,.09,x+a,.36,z+b,wood));
- /* 桌上卡式爐與圓鍋 */
- box(.62,.08,.52,x,.9,z,0x9da4a8);cyl(.25,.12,x,.99,z,0x34383b);
- cyl(.31,.1,x,1.08,z,0xb8bec2);cyl(.27,.04,x,1.15,z,0x777e83);
- [-.88,.88].forEach(d=>{cyl(.2,.46,x,.23,z+d,0x783d28);cyl(.12,.05,x,.48,z+d,0xa96b43)});
- A.push([x-.95,x+.95,z-1.3,z+1.3])
-}
-table(-3.8,-5.2);table(-3.8,-8.2);table(-.6,-6.5);
-/* 人物 */
-function fig(c,hat,sit){
- const g=new THREE.Group(),limbs=[];
- const torso=cyl(.27,.62,0,.72,0,c,g);torso.scale.x=1.05;
- const head=new THREE.Mesh(new THREE.SphereGeometry(.23,18,14),mt(0xf2c9a0));head.position.y=1.28;g.add(head);
- box(.05,.05,.04,-.08,1.3,.21,0x111111,g);box(.05,.05,.04,.08,1.3,.21,0x111111,g);
- if(hat){cyl(.25,.14,0,1.52,0,hat,g);cyl(.28,.035,0,1.45,0,hat,g)}
- const armL=box(.13,.48,.14,-.34,.75,0,c,g),armR=box(.13,.48,.14,.34,.75,0,c,g);
- armL.rotation.z=-.2;armR.rotation.z=.2;
- const legL=box(.16,.42,.18,-.13,.19,0,0x34343a,g),legR=box(.16,.42,.18,.13,.19,0,0x34343a,g);
- limbs.push(armL,armR,legL,legR);g.userData.limbs=limbs;
- if(sit){g.position.y=-.25;legL.rotation.x=-.9;legR.rotation.x=-.9}
- S.add(g);return g
-}
-fig(0xf4f4f0,0xffffff).position.set(3.6,0,-5.3);
-fig(0x4a6a9a,0,1).position.set(-3.8,-.25,-6.05);
-const c2=fig(0x9a4a5a,0,1);c2.position.set(-.6,-.25,-5.65);c2.rotation.y=Math.PI;
-const P=fig(0xffd23f,0xc8102e);P.position.set(0,0,7);
-
-/* ===== 操作 ===== */
-const cv=$('#cv');let J=null;const K={};
-cv.addEventListener('pointerdown',e=>{J={x:e.clientX,y:e.clientY,dx:0,dy:0};try{cv.setPointerCapture(e.pointerId)}catch(x){}});
-cv.addEventListener('pointermove',e=>{if(!J)return;const a=e.clientX-J.x,b=e.clientY-J.y,l=Math.hypot(a,b),m=Math.min(l,60);J.dx=l<8?0:a/l*m/60;J.dy=l<8?0:b/l*m/60});
-const up=()=>{J=null};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
-addEventListener('keydown',e=>K[e.key.toLowerCase()]=1);addEventListener('keyup',e=>K[e.key.toLowerCase()]=0);
-function ok(x,z){if(z>.5)return Math.abs(x)<14&&z<12;if(Math.abs(x)>5.5||z<-9.4)return false;return !A.some(a=>x>a[0]&&x<a[1]&&z>a[2]&&z<a[3])}
-let ht,greeted=false;
-function say(t,ms){const e=$('#hint');e.textContent=t;e.style.display='block';clearTimeout(ht);ht=setTimeout(()=>e.style.display='none',ms||7000)}
-say('👆 手指拖曳畫面即可移動｜走近櫃檯可開啟菜單',9000);
-let last=performance.now(),tt=0,cx=0,cz=13;
-function loop(now){requestAnimationFrame(loop);const dt=Math.min((now-last)/1000,.05);last=now;tt+=dt;let mv=false;
-if(!open){let dx=0,dz=0;if(J){dx=J.dx;dz=J.dy}if(K.a||K.arrowleft)dx-=1;if(K.d||K.arrowright)dx+=1;if(K.w||K.arrowup)dz-=1;if(K.s||K.arrowdown)dz+=1;
-const l=Math.hypot(dx,dz);if(l>.05){if(l>1){dx/=l;dz/=l}mv=true;const nx=P.position.x+dx*4.2*dt,nz=P.position.z+dz*4.2*dt;if(ok(nx,P.position.z))P.position.x=nx;if(ok(P.position.x,nz))P.position.z=nz;P.rotation.y=Math.atan2(dx,dz)}}
-P.position.y=mv?Math.abs(Math.sin(tt*10))*.07:0;
-const pl=P.userData.limbs||[];if(pl.length){pl[0].rotation.z=mv?Math.sin(tt*10)*.55:-.12;pl[1].rotation.z=mv?-Math.sin(tt*10)*.55:.12;pl[2].rotation.x=mv?Math.sin(tt*10)*.5:0;pl[3].rotation.x=mv?-Math.sin(tt*10)*.5:0}
-
-F.visible=P.position.z>-1.2;
-if(P.position.z<-1.5&&!greeted){greeted=true;say('🐮 老闆：歡迎光臨張記！想吃什麼可以先看看菜單喔！',7000)}
-if(!open)$('#near').style.display=Math.hypot(P.position.x-3.6,P.position.z+3)<2.6?'block':'none';
-const k=1-Math.exp(-dt*6);cx+=(P.position.x*.8-cx)*k;cz+=(P.position.z+6.2-cz)*k;
-C.position.set(cx,6.2,cz);C.lookAt(cx,.8,cz-6.7);
-R.render(S,C)}
-requestAnimationFrame(loop);
 </script></body></html>
