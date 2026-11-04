@@ -66,12 +66,12 @@ function sheet(v){open=v;$('#bk').style.display=v?'block':'none';$('#sh').style.
 $('#near').onclick=()=>sheet(true);$('#x').onclick=$('#bk').onclick=()=>sheet(false);
 
 /* ===== 3D ===== */
-const R=new THREE.WebGLRenderer({canvas:$('#cv'),antialias:true});R.setPixelRatio(Math.min(devicePixelRatio,2));
-const S=new THREE.Scene();S.background=new THREE.Color(0x2a2036);S.fog=new THREE.Fog(0x2a2036,24,52);
+const R=new THREE.WebGLRenderer({canvas:$('#cv'),antialias:true,powerPreference:'high-performance'});R.setPixelRatio(Math.min(devicePixelRatio,1.75));R.outputEncoding=THREE.sRGBEncoding;R.toneMapping=THREE.ACESFilmicToneMapping;R.toneMappingExposure=1.12;
+const S=new THREE.Scene();S.background=new THREE.Color(0x282a2d);S.fog=new THREE.Fog(0x282a2d,27,58);
 const C=new THREE.PerspectiveCamera(50,1,.1,80);
 function rs(){const e=$('#st');R.setSize(e.clientWidth,e.clientHeight,false);C.aspect=e.clientWidth/e.clientHeight;C.updateProjectionMatrix()}
 addEventListener('resize',rs);rs();
-S.add(new THREE.HemisphereLight(0xfff1dc,0x504058,.9));
+S.add(new THREE.HemisphereLight(0xfff4df,0x62584d,1.05));
 [[-3,3.2,-3,1],[3,3.2,-3,.8],[-2,3.2,-8,.8],[0,4,5,.6]].forEach(l=>{const p=new THREE.PointLight(0xffe2b0,l[3],14);p.position.set(l[0],l[1],l[2]);S.add(p)});
 const mt=c=>c instanceof THREE.Material?c:new THREE.MeshLambertMaterial({color:c});
 function box(w,h,d,x,y,z,m,g){const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mt(m));b.position.set(x,y,z);(g||S).add(b);return b}
@@ -91,15 +91,30 @@ cyl(.08,4.2,8,2.1,3,0x555555);{const b=new THREE.Mesh(new THREE.SphereGeometry(.
 pl(12,10,0,0,-5,tile,-Math.PI/2);
 pl(12,10,0,3.6,-5,mt(0xf2ece0),Math.PI/2);
 [-3.5,0,3.5].forEach(x=>box(2.4,.05,.4,x,3.55,-5,new THREE.MeshBasicMaterial({color:0xffffee})));
-const cream=0xd8b98a;
+const cream=0xe1c99f;
 box(12.4,3.6,.2,0,1.8,-10.1,cream);box(.2,3.6,10.2,-6.1,1.8,-5,cream);box(.2,3.6,10.2,6.1,1.8,-5,cream);
 pl(12,1.2,0,.6,-9.99,brick(10),0,0);pl(10,1.2,-5.99,.6,-5,brick(8),0,Math.PI/2);pl(10,1.2,5.99,.6,-5,brick(8),0,-Math.PI/2);
-/* 牆上黑底菜單牌 */
-const flat=[];M.forEach(c=>c[1].forEach(r=>{if(r.length==2&&r[0].length<=4&&pr(r[1]))flat.push([r[0],r[1]])}));
-const board=tex(1024,330,c=>{c.fillStyle='#d8b98a';c.fillRect(0,0,1024,330);c.textAlign='center';c.font='bold 21px sans-serif';
-for(let r=0;r<2;r++)for(let i=0;i<18;i++){const x=i*56+4,y=r*165+8,it=flat[(r*18+i)%flat.length];c.fillStyle='#16161a';c.fillRect(x,y,52,150);
-[...it[0]].forEach((ch,k)=>{c.fillStyle='#fff';c.fillText(ch,x+26,y+24+k*21)});[...it[1]].forEach((ch,k)=>{c.fillStyle='#ffb03b';c.fillText(ch,x+26,y+24+(it[0].length+k)*21)})}});
-pl(6,1.93,-2.4,2.2,-9.97,board);
+/* 店內天花板：暖色格板與日光燈，依實景影片 */
+box(12,.18,10,0,3.72,-5,0x8d6848);
+for(let x=-5.5;x<=5.5;x+=1.1)box(.025,.012,9.7,x,3.82,-5,0x5e4939);
+for(let z=-9.3;z<=-.7;z+=1.2)box(11.8,.012,.025,0,3.82,z,0x5e4939);
+[-4,0,4].forEach(x=>{box(2.1,.07,.22,x,3.66,-4.7,0xf4e9ca);const l=new THREE.PointLight(0xffedc9,.42,9);l.position.set(x,3.45,-4.7);S.add(l)});
+
+/* 牆上黑底白字菜單牌：依影片中的兩排長條菜單配置 */
+function menuSign(label,price,w=0.72,h=1.05){
+ const c=document.createElement('canvas');c.width=180;c.height=280;const x=c.getContext('2d');
+ x.fillStyle='#111214';x.fillRect(0,0,180,280);x.strokeStyle='#4a4741';x.lineWidth=5;x.strokeRect(3,3,174,274);
+ x.textAlign='center';x.fillStyle='#fff';x.font='bold 48px sans-serif';
+ const chars=[...label];chars.slice(0,4).forEach((ch,i)=>x.fillText(ch,90,58+i*52));
+ x.fillStyle='#ffd66b';x.font='bold 34px sans-serif';x.fillText(price,90,258);
+ const t=new THREE.CanvasTexture(c);const m=new THREE.MeshBasicMaterial({map:t});
+ const q=new THREE.Mesh(new THREE.PlaneGeometry(w,h),m);return q;
+}
+const flat=[];M.forEach(c=>c[1].forEach(r=>{if(r.length>=2)flat.push([r[0],r.slice(1).filter(v=>/\\d/.test(v)).join('/')||'時價'])}));
+for(let row=0;row<2;row++)for(let i=0;i<13;i++){
+ const it=flat[(row*13+i)%flat.length],q=menuSign(it[0],it[1],.68,1.02);
+ q.position.set(-5.15+i*.86, row===0?2.65:1.52, -9.91);S.add(q);
+}
 /* 招牌 + 門面（走進店裡會自動隱藏） */
 const F=new THREE.Group();S.add(F);
 box(12.4,1.4,.4,0,3.7,0,0x3b3b3f,F);box(.3,3.6,.4,-6.1,1.8,0,0x3b3b3f,F);box(.3,3.6,.4,6.1,1.8,0,0x3b3b3f,F);
@@ -119,14 +134,44 @@ box(3.2,.5,1.8,-4,2.75,-1.5,0xc8283a);cyl(.5,.35,-4,1.15,-1.5,0xcfd3d8);cyl(.06,
 box(4.2,1.05,.9,3.6,.52,-4.1,0xa9aeb5);box(4.4,.08,1.1,3.6,1.07,-4.1,0x7a4a2a);
 pl(2.6,.65,3.6,2.3,-3.7,tex(512,128,c=>{c.fillStyle='#c8102e';c.fillRect(0,0,512,128);c.fillStyle='#ffd66b';c.font='bold 68px sans-serif';c.textAlign='center';c.fillText('點菜櫃檯',256,90)}));
 box(4,.9,.8,3.6,.45,-9.5,steel);cyl(.5,.5,3,1.15,-9.5,0xcfd3d8);box(1,2,.9,5.3,1,-7.6,0xdfe5ea);
+/* 實景重點：紅色頂框、玻璃展示冷藏櫃與不鏽鋼底座 */
+box(2.15,1.55,.9,-4.55,1.55,-3.2,0xbfc4c8);
+box(2.2,.18,1,-4.55,2.42,-3.2,0xc8102e);
+box(2.05,.08,.92,-4.55,.78,-3.2,0x8c969d);
+[-5.48,-3.62].forEach(x=>box(.055,1.42,.06,x,1.62,-2.72,0x7b858b));
+box(1.9,.055,.05,-4.55,1.55,-2.72,0x9da8ad);
+box(1.9,.055,.05,-4.55,2.08,-2.72,0x9da8ad);
+const glass=new THREE.Mesh(new THREE.BoxGeometry(1.9,1.35,.035),new THREE.MeshPhongMaterial({color:0xd9f1f4,transparent:true,opacity:.18,shininess:100}));
+glass.position.set(-4.55,1.68,-2.72);S.add(glass);
+[-5.15,-4.55,-3.95].forEach(x=>{const meat=box(.42,.16,.48,x,1.15,-3.05,0x9c4540);meat.rotation.z=.08});
+box(2.2,.08,.95,-4.55,2.53,-3.2,0xc8102e);
+
 /* 桌椅 */
 const A=[[-5.7,-2.3,-2.6,-.4],[1.4,5.7,-4.7,-3.55],[1.4,5.7,-9.7,-4.7]];
-function table(x,z){box(1.5,.08,1,x,.78,z,wood);box(.12,.78,.12,x,.39,z,wood);cyl(.2,.12,x,.88,z,0xcfd3d8);[-.85,.85].forEach(d=>cyl(.22,.5,x,.25,z+d,0x7a2a1a));A.push([x-.95,x+.95,z-1.3,z+1.3])}
+function table(x,z){
+ box(1.5,.09,1,x,.78,z,wood);box(.12,.78,.12,x,.39,z,wood);
+ [[-.62,-.42],[.62,-.42],[-.62,.42],[.62,.42]].forEach(([a,b])=>box(.09,.72,.09,x+a,.36,z+b,wood));
+ /* 桌上卡式爐與圓鍋 */
+ box(.62,.08,.52,x,.9,z,0x9da4a8);cyl(.25,.12,x,.99,z,0x34383b);
+ cyl(.31,.1,x,1.08,z,0xb8bec2);cyl(.27,.04,x,1.15,z,0x777e83);
+ [-.88,.88].forEach(d=>{cyl(.2,.46,x,.23,z+d,0x783d28);cyl(.12,.05,x,.48,z+d,0xa96b43)});
+ A.push([x-.95,x+.95,z-1.3,z+1.3])
+}
 table(-3.8,-5.2);table(-3.8,-8.2);table(-.6,-6.5);
 /* 人物 */
-function fig(c,hat,sit){const g=new THREE.Group();cyl(.2,.45,0,.22,0,0x333a4a,g);cyl(.27,.62,0,.72,0,c,g);
-const hd=new THREE.Mesh(new THREE.SphereGeometry(.23,16,12),mt(0xf2c9a0));hd.position.y=1.28;g.add(hd);
-box(.05,.05,.04,-.08,1.3,.21,0x111111,g);box(.05,.05,.04,.08,1.3,.21,0x111111,g);if(hat)cyl(.25,.14,0,1.52,0,hat,g);if(sit)g.position.y=-.25;S.add(g);return g}
+function fig(c,hat,sit){
+ const g=new THREE.Group(),limbs=[];
+ const torso=cyl(.27,.62,0,.72,0,c,g);torso.scale.x=1.05;
+ const head=new THREE.Mesh(new THREE.SphereGeometry(.23,18,14),mt(0xf2c9a0));head.position.y=1.28;g.add(head);
+ box(.05,.05,.04,-.08,1.3,.21,0x111111,g);box(.05,.05,.04,.08,1.3,.21,0x111111,g);
+ if(hat){cyl(.25,.14,0,1.52,0,hat,g);cyl(.28,.035,0,1.45,0,hat,g)}
+ const armL=box(.13,.48,.14,-.34,.75,0,c,g),armR=box(.13,.48,.14,.34,.75,0,c,g);
+ armL.rotation.z=-.2;armR.rotation.z=.2;
+ const legL=box(.16,.42,.18,-.13,.19,0,0x34343a,g),legR=box(.16,.42,.18,.13,.19,0,0x34343a,g);
+ limbs.push(armL,armR,legL,legR);g.userData.limbs=limbs;
+ if(sit){g.position.y=-.25;legL.rotation.x=-.9;legR.rotation.x=-.9}
+ S.add(g);return g
+}
 fig(0xf4f4f0,0xffffff).position.set(3.6,0,-5.3);
 fig(0x4a6a9a,0,1).position.set(-3.8,-.25,-6.05);
 const c2=fig(0x9a4a5a,0,1);c2.position.set(-.6,-.25,-5.65);c2.rotation.y=Math.PI;
@@ -141,14 +186,16 @@ addEventListener('keydown',e=>K[e.key.toLowerCase()]=1);addEventListener('keyup'
 function ok(x,z){if(z>.5)return Math.abs(x)<14&&z<12;if(Math.abs(x)>5.5||z<-9.4)return false;return !A.some(a=>x>a[0]&&x<a[1]&&z>a[2]&&z<a[3])}
 let ht,greeted=false;
 function say(t,ms){const e=$('#hint');e.textContent=t;e.style.display='block';clearTimeout(ht);ht=setTimeout(()=>e.style.display='none',ms||7000)}
-say('👆 拖曳畫面走路，走進店裡到櫃檯看菜單',9000);
+say('👆 手指拖曳畫面即可移動｜走近櫃檯可開啟菜單',9000);
 let last=performance.now(),tt=0,cx=0,cz=13;
 function loop(now){requestAnimationFrame(loop);const dt=Math.min((now-last)/1000,.05);last=now;tt+=dt;let mv=false;
 if(!open){let dx=0,dz=0;if(J){dx=J.dx;dz=J.dy}if(K.a||K.arrowleft)dx-=1;if(K.d||K.arrowright)dx+=1;if(K.w||K.arrowup)dz-=1;if(K.s||K.arrowdown)dz+=1;
 const l=Math.hypot(dx,dz);if(l>.05){if(l>1){dx/=l;dz/=l}mv=true;const nx=P.position.x+dx*4.2*dt,nz=P.position.z+dz*4.2*dt;if(ok(nx,P.position.z))P.position.x=nx;if(ok(P.position.x,nz))P.position.z=nz;P.rotation.y=Math.atan2(dx,dz)}}
 P.position.y=mv?Math.abs(Math.sin(tt*10))*.07:0;
+const pl=P.userData.limbs||[];if(pl.length){pl[0].rotation.z=mv?Math.sin(tt*10)*.55:-.12;pl[1].rotation.z=mv?-Math.sin(tt*10)*.55:.12;pl[2].rotation.x=mv?Math.sin(tt*10)*.5:0;pl[3].rotation.x=mv?-Math.sin(tt*10)*.5:0}
+
 F.visible=P.position.z>-1.2;
-if(P.position.z<-1.5&&!greeted){greeted=true;say('🐮 老闆：歡迎光臨！走到櫃檯就能看菜單',7000)}
+if(P.position.z<-1.5&&!greeted){greeted=true;say('🐮 老闆：歡迎光臨張記！想吃什麼可以先看看菜單喔！',7000)}
 if(!open)$('#near').style.display=Math.hypot(P.position.x-3.6,P.position.z+3)<2.6?'block':'none';
 const k=1-Math.exp(-dt*6);cx+=(P.position.x*.8-cx)*k;cz+=(P.position.z+6.2-cz)*k;
 C.position.set(cx,6.2,cz);C.lookAt(cx,.8,cz-6.7);
