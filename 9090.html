@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>張記黃牛肉｜走進店裡逛逛</title>
+<style>
+:root{color-scheme:dark;--bg:#14120f;--card:#221d18;--ink:#fff3e0;--line:#4a3d30;--red:#c8102e;--gold:#ffd66b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,"Noto Sans TC","PingFang TC",sans-serif;user-select:none;-webkit-user-select:none}
+#st{position:relative;height:100%;max-width:680px;margin:0 auto;overflow:hidden}
+canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block}
+.t{position:absolute;z-index:3;background:#000b;border:1px solid #ffffff22;border-radius:14px;padding:9px 13px;font-size:16px;line-height:1.5}
+#ttl{top:8px;left:8px;font-weight:800;color:var(--gold)}
+#tel{top:8px;right:8px;color:var(--ink);text-decoration:none;background:var(--red);font-weight:800}
+#hint{top:58px;left:8px;right:8px;text-align:center}
+#near{position:absolute;z-index:4;left:50%;bottom:30px;transform:translateX(-50%);display:none;background:linear-gradient(135deg,#ffe49a,#f2a94d);color:#4a1010;border:0;border-radius:999px;padding:16px 28px;font-size:20px;font-weight:800;box-shadow:0 0 24px #ffc45b99,0 8px 22px #0009;white-space:nowrap}
+#bk{position:fixed;inset:0;background:#0008;display:none;z-index:19}
+#sh{position:fixed;left:0;right:0;bottom:0;max-width:680px;margin:0 auto;height:84vh;display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-bottom:0;border-radius:20px 20px 0 0;transform:translateY(110%);transition:transform .25s;z-index:20;padding-bottom:env(safe-area-inset-bottom,0px)}
+#sh h2{margin:0;padding:14px 16px 6px;font-size:23px;color:var(--gold);display:flex;justify-content:space-between;align-items:center}
+#x{background:none;border:0;color:var(--ink);font-size:26px;padding:0 4px}
+#tabs{display:flex;gap:8px;overflow-x:auto;padding:6px 12px 10px}
+#tabs button{flex:none;border:1px solid var(--line);background:#2e261f;color:var(--ink);border-radius:999px;padding:8px 14px;font-size:16px;font-weight:700}
+#ls{flex:1;overflow-y:auto;padding:0 14px 10px}
+.info{background:#c8102e33;border:1px dashed var(--red);border-radius:12px;padding:10px 12px;font-size:16px;line-height:1.7;margin-bottom:6px}
+.info a{color:var(--gold);font-weight:800}
+h3{margin:14px 0 2px;color:var(--gold);font-size:20px;border-bottom:2px solid var(--red);padding-bottom:4px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 2px;border-bottom:1px solid var(--line);font-size:18px}
+.row span:last-child{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.o{min-height:42px;border:1px solid var(--gold);background:transparent;color:var(--gold);border-radius:999px;padding:6px 13px;font-size:17px;font-weight:700}
+.o.on{background:var(--gold);color:#4a1010}
+#ft{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:10px 14px;border-top:1px solid var(--line);background:#1a1511}
+#sum{font-size:19px;font-weight:800}
+#ft button,#ft a{border-radius:999px;padding:11px 16px;font-size:16px;font-weight:800;text-decoration:none;border:1px solid var(--line);background:transparent;color:var(--ink)}
+#ft a{background:var(--red);border-color:var(--red)}
+#ft small{width:100%;opacity:.7;font-size:13px}
+</style></head><body>
+<div id="st"><canvas id="cv"></canvas>
+<div class="t" id="ttl">🐮 張記黃牛肉</div>
+<a class="t" id="tel" href="tel:0930767637">📞 電話</a>
+<div class="t" id="hint">👆 拖曳畫面走路，走進店裡到櫃檯看菜單</div>
+<button id="near">🐮 看菜單・點餐</button></div>
+<div id="bk"></div>
+<div id="sh"><h2><span>🐮 張記黃牛肉 菜單</span><button id="x">✕</button></h2><div id="tabs"></div><div id="ls"></div>
+<div id="ft"><span id="sum"></span><button id="clr">清除</button><a href="tel:0930767637">📞 電話訂位</a><small>點價格可試算金額，實際點餐請告訴店員</small></div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+const M=[
+['🍲 火鍋',[['牛肉鮮肉鍋','大520','小420'],['牛雜鍋','大520','小420'],['清燉肉角鍋','大750','小570'],['花肉鍋','大570','小520'],['牛尾鍋','大670']]],
+['🥩 火鍋單點',[['花肉片','320'],['鮮牛肉','220'],['牛雜','220'],['肉角','320'],['鮮牛舌','320'],['牛尾','450'],['牛肉貢丸','100'],['凍豆腐','60'],['玉米','60'],['高麗菜','60'],['南瓜','60'],['花椰菜','60'],['金針菇','60'],['秀珍菇','60'],['鴻喜菇','60']]],
+['🔪 切類',[['牛心','130'],['牛肝','130'],['牛筋','130'],['牛腱','130'],['牛肚','130'],['牛舌','160'],['肉腸','160'],['牛腳蹄','200'],['和風牛肉','130']]],
+['🔥 炒類',[['炒青菜','60'],['炒牛肉時蔬','180'],['炒牛雜','180'],['椒鹽牛肉','180'],['咖哩牛肉','180'],['炒骨仔肉','180'],['蔥爆牛肉','180'],['牛肉香腸','180'],['薑絲炒牛雜','180'],['叉燒肉角','480'],['三杯牛尾','580'],['牛肉壽喜燒','480'],['黑胡椒牛柳','380']]],
+['🥣 湯類',[['牛雜湯','100'],['牛肉清湯','100'],['花肉湯','130'],['清燉肉角湯','130'],['骨仔肉湯','100']]],
+['🍚 飯麵',[['招牌肉筋飯','70'],['白飯','10'],['牛肉炒麵','110']]],
+['📅 預約',[['牛鞭牛尾燉烏骨雞（10人份）','4500'],['滴牛肉精力湯','時價'],['手工辣椒醬（盒裝）','大350','小190'],['自製牛肉香腸（冷凍）','1斤480']]]];
+const pr=s=>+(s.match(/\d+$/)||[0])[0], shown=s=>s.replace(/(\d+)$/,(m,d)=>' $'+d).trim();
+let h='<div class="info">🕙 10:30–14:00　🕓 16:00–19:30（售完即休）<br>無固定公休<br>📍 雲林崙背鄉南光路1-2號　<a href="tel:0930767637">0930-767-637</a></div>';
+M.forEach((c,i)=>{h+='<h3 id="c'+i+'">'+c[0]+'</h3>';c[1].forEach((r,j)=>{h+='<div class="row"><span>'+r[0]+'</span><span>'+r.slice(1).map((s,k)=>'<button class="o" data-p="'+pr(s)+'">'+shown(s)+'</button>').join('')+'</span></div>'})});
+$('#ls').innerHTML=h;
+$('#tabs').innerHTML=M.map((c,i)=>'<button data-c="'+i+'">'+c[0]+'</button>').join('');
+function sum(){const o=[...document.querySelectorAll('.o.on')];$('#sum').textContent='已選 '+o.length+' 樣・$'+o.reduce((a,b)=>a+ +b.dataset.p,0)}
+sum();
+$('#ls').addEventListener('click',e=>{const b=e.target.closest('.o');if(b){b.classList.toggle('on');sum()}});
+$('#tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b)$('#c'+b.dataset.c).scrollIntoView({behavior:'smooth',block:'start'})});
+$('#clr').onclick=()=>{document.querySelectorAll('.o.on').forEach(b=>b.classList.remove('on'));sum()};
+let open=false;
+function sheet(v){open=v;$('#bk').style.display=v?'block':'none';$('#sh').style.transform=v?'translateY(0)':'translateY(110%)';if(v)$('#near').style.display='none'}
+$('#near').onclick=()=>sheet(true);$('#x').onclick=$('#bk').onclick=()=>sheet(false);
+
+/* ===== 3D ===== */
+const R=new THREE.WebGLRenderer({canvas:$('#cv'),antialias:true});R.setPixelRatio(Math.min(devicePixelRatio,2));
+const S=new THREE.Scene();S.background=new THREE.Color(0x2a2036);S.fog=new THREE.Fog(0x2a2036,24,52);
+const C=new THREE.PerspectiveCamera(50,1,.1,80);
+function rs(){const e=$('#st');R.setSize(e.clientWidth,e.clientHeight,false);C.aspect=e.clientWidth/e.clientHeight;C.updateProjectionMatrix()}
+addEventListener('resize',rs);rs();
+S.add(new THREE.HemisphereLight(0xfff1dc,0x504058,.9));
+[[-3,3.2,-3,1],[3,3.2,-3,.8],[-2,3.2,-8,.8],[0,4,5,.6]].forEach(l=>{const p=new THREE.PointLight(0xffe2b0,l[3],14);p.position.set(l[0],l[1],l[2]);S.add(p)});
+const mt=c=>c instanceof THREE.Material?c:new THREE.MeshLambertMaterial({color:c});
+function box(w,h,d,x,y,z,m,g){const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mt(m));b.position.set(x,y,z);(g||S).add(b);return b}
+function cyl(r,h,x,y,z,m,g){const b=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,16),mt(m));b.position.set(x,y,z);(g||S).add(b);return b}
+function tex(w,h,f,rx,ry){const c=document.createElement('canvas');c.width=w;c.height=h;f(c.getContext('2d'));const t=new THREE.CanvasTexture(c);if(rx){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rx,ry)}return new THREE.MeshLambertMaterial({map:t})}
+function pl(w,h,x,y,z,m,rx,ry,g){const p=new THREE.Mesh(new THREE.PlaneGeometry(w,h),m);p.position.set(x,y,z);p.rotation.set(rx||0,ry||0,0);(g||S).add(p);return p}
+const steel=0xb8bcc2,wood=0x6b3a22;
+const tile=tex(64,64,c=>{c.fillStyle='#e4e0d6';c.fillRect(0,0,64,64);c.strokeStyle='#b9b4a8';c.lineWidth=3;c.strokeRect(0,0,64,64)},10,8);
+const brick=n=>tex(128,64,c=>{c.fillStyle='#c9b79c';c.fillRect(0,0,128,64);for(let r=0;r<4;r++)for(let i=-1;i<4;i++){c.fillStyle=['#9c5a3e','#a8654a','#8f5038'][(i+r)%3];c.fillRect(i*32+(r%2)*16+2,r*16+2,28,12)}},n,1);
+/* 街道 */
+pl(70,70,0,-.02,0,mt(0x27252b),-Math.PI/2);
+pl(30,2.6,0,.01,1.3,mt(0x6f6a66),-Math.PI/2);
+for(let i=-3;i<=3;i++)box(1.6,.02,.2,i*4,.02,9,0xe8e0b0);
+box(8,4.6,10,-10.4,2.3,-5,0x35323d);box(8,4.6,10,10.4,2.3,-5,0x35323d);
+cyl(.08,4.2,8,2.1,3,0x555555);{const b=new THREE.Mesh(new THREE.SphereGeometry(.25,12,8),new THREE.MeshBasicMaterial({color:0xffe8b0}));b.position.set(8,4.3,3);S.add(b);const p=new THREE.PointLight(0xffd9a0,1,18);p.position.set(8,4,3);S.add(p)}
+/* 店內 */
+pl(12,10,0,0,-5,tile,-Math.PI/2);
+pl(12,10,0,3.6,-5,mt(0xf2ece0),Math.PI/2);
+[-3.5,0,3.5].forEach(x=>box(2.4,.05,.4,x,3.55,-5,new THREE.MeshBasicMaterial({color:0xffffee})));
+const cream=0xd8b98a;
+box(12.4,3.6,.2,0,1.8,-10.1,cream);box(.2,3.6,10.2,-6.1,1.8,-5,cream);box(.2,3.6,10.2,6.1,1.8,-5,cream);
+pl(12,1.2,0,.6,-9.99,brick(10),0,0);pl(10,1.2,-5.99,.6,-5,brick(8),0,Math.PI/2);pl(10,1.2,5.99,.6,-5,brick(8),0,-Math.PI/2);
+/* 牆上黑底菜單牌 */
+const flat=[];M.forEach(c=>c[1].forEach(r=>{if(r.length==2&&r[0].length<=4&&pr(r[1]))flat.push([r[0],r[1]])}));
+const board=tex(1024,330,c=>{c.fillStyle='#d8b98a';c.fillRect(0,0,1024,330);c.textAlign='center';c.font='bold 21px sans-serif';
+for(let r=0;r<2;r++)for(let i=0;i<18;i++){const x=i*56+4,y=r*165+8,it=flat[(r*18+i)%flat.length];c.fillStyle='#16161a';c.fillRect(x,y,52,150);
+[...it[0]].forEach((ch,k)=>{c.fillStyle='#fff';c.fillText(ch,x+26,y+24+k*21)});[...it[1]].forEach((ch,k)=>{c.fillStyle='#ffb03b';c.fillText(ch,x+26,y+24+(it[0].length+k)*21)})}});
+pl(6,1.93,-2.4,2.2,-9.97,board);
+/* 招牌 + 門面（走進店裡會自動隱藏） */
+const F=new THREE.Group();S.add(F);
+box(12.4,1.4,.4,0,3.7,0,0x3b3b3f,F);box(.3,3.6,.4,-6.1,1.8,0,0x3b3b3f,F);box(.3,3.6,.4,6.1,1.8,0,0x3b3b3f,F);
+const sign=tex(1024,166,c=>{c.fillStyle='#3b3b3f';c.fillRect(0,0,1024,166);c.fillStyle='#fff';c.strokeStyle='#fff';c.lineWidth=9;c.lineCap='round';
+c.beginPath();c.ellipse(150,100,50,38,0,0,7);c.fill();c.beginPath();c.ellipse(92,74,22,11,-.5,0,7);c.fill();c.beginPath();c.ellipse(208,74,22,11,.5,0,7);c.fill();
+c.beginPath();c.moveTo(120,66);c.quadraticCurveTo(98,22,128,18);c.moveTo(180,66);c.quadraticCurveTo(202,22,172,18);c.stroke();
+c.fillStyle='#3b3b3f';c.beginPath();c.ellipse(150,116,24,13,0,0,7);c.fill();c.beginPath();c.arc(130,94,5,0,7);c.arc(170,94,5,0,7);c.fill();
+c.fillStyle='#c8102e';c.fillRect(48,24,46,46);c.fillStyle='#fff';c.font='bold 20px sans-serif';c.textAlign='center';c.fillText('張記',71,53);
+c.font='bold 104px "Noto Serif TC","Songti TC",serif';c.fillText('黃牛肉',470,128);c.fillStyle='#ff6a6a';c.font='bold 46px sans-serif';c.fillText('鮮肉火鍋',830,100)});
+pl(8.6,1.4,0,3.7,.22,sign,0,0,F);
+/* 紅頂不鏽鋼爐台 */
+box(3,.9,1.6,-4,.45,-1.5,steel);box(3.1,.08,1.7,-4,.94,-1.5,0xd5d8dd);
+[[-5.5,-2.3],[-2.5,-2.3],[-5.5,-.7],[-2.5,-.7]].forEach(p=>cyl(.05,1.7,p[0],1.8,p[1],steel));
+box(3.2,.5,1.8,-4,2.75,-1.5,0xc8283a);cyl(.5,.35,-4,1.15,-1.5,0xcfd3d8);cyl(.06,.1,-4,1.38,-1.5,0x333333);
+[-5.1,-2.9].forEach(x=>cyl(.2,.4,x,1.18,-1.2,0xffffff));
+/* 點菜櫃檯 + 後廚 */
+box(4.2,1.05,.9,3.6,.52,-4.1,0xa9aeb5);box(4.4,.08,1.1,3.6,1.07,-4.1,0x7a4a2a);
+pl(2.6,.65,3.6,2.3,-3.7,tex(512,128,c=>{c.fillStyle='#c8102e';c.fillRect(0,0,512,128);c.fillStyle='#ffd66b';c.font='bold 68px sans-serif';c.textAlign='center';c.fillText('點菜櫃檯',256,90)}));
+box(4,.9,.8,3.6,.45,-9.5,steel);cyl(.5,.5,3,1.15,-9.5,0xcfd3d8);box(1,2,.9,5.3,1,-7.6,0xdfe5ea);
+/* 桌椅 */
+const A=[[-5.7,-2.3,-2.6,-.4],[1.4,5.7,-4.7,-3.55],[1.4,5.7,-9.7,-4.7]];
+function table(x,z){box(1.5,.08,1,x,.78,z,wood);box(.12,.78,.12,x,.39,z,wood);cyl(.2,.12,x,.88,z,0xcfd3d8);[-.85,.85].forEach(d=>cyl(.22,.5,x,.25,z+d,0x7a2a1a));A.push([x-.95,x+.95,z-1.3,z+1.3])}
+table(-3.8,-5.2);table(-3.8,-8.2);table(-.6,-6.5);
+/* 人物 */
+function fig(c,hat,sit){const g=new THREE.Group();cyl(.2,.45,0,.22,0,0x333a4a,g);cyl(.27,.62,0,.72,0,c,g);
+const hd=new THREE.Mesh(new THREE.SphereGeometry(.23,16,12),mt(0xf2c9a0));hd.position.y=1.28;g.add(hd);
+box(.05,.05,.04,-.08,1.3,.21,0x111111,g);box(.05,.05,.04,.08,1.3,.21,0x111111,g);if(hat)cyl(.25,.14,0,1.52,0,hat,g);if(sit)g.position.y=-.25;S.add(g);return g}
+fig(0xf4f4f0,0xffffff).position.set(3.6,0,-5.3);
+fig(0x4a6a9a,0,1).position.set(-3.8,-.25,-6.05);
+const c2=fig(0x9a4a5a,0,1);c2.position.set(-.6,-.25,-5.65);c2.rotation.y=Math.PI;
+const P=fig(0xffd23f,0xc8102e);P.position.set(0,0,7);
+
+/* ===== 操作 ===== */
+const cv=$('#cv');let J=null;const K={};
+cv.addEventListener('pointerdown',e=>{J={x:e.clientX,y:e.clientY,dx:0,dy:0};try{cv.setPointerCapture(e.pointerId)}catch(x){}});
+cv.addEventListener('pointermove',e=>{if(!J)return;const a=e.clientX-J.x,b=e.clientY-J.y,l=Math.hypot(a,b),m=Math.min(l,60);J.dx=l<8?0:a/l*m/60;J.dy=l<8?0:b/l*m/60});
+const up=()=>{J=null};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+addEventListener('keydown',e=>K[e.key.toLowerCase()]=1);addEventListener('keyup',e=>K[e.key.toLowerCase()]=0);
+function ok(x,z){if(z>.5)return Math.abs(x)<14&&z<12;if(Math.abs(x)>5.5||z<-9.4)return false;return !A.some(a=>x>a[0]&&x<a[1]&&z>a[2]&&z<a[3])}
+let ht,greeted=false;
+function say(t,ms){const e=$('#hint');e.textContent=t;e.style.display='block';clearTimeout(ht);ht=setTimeout(()=>e.style.display='none',ms||7000)}
+say('👆 拖曳畫面走路，走進店裡到櫃檯看菜單',9000);
+let last=performance.now(),tt=0,cx=0,cz=13;
+function loop(now){requestAnimationFrame(loop);const dt=Math.min((now-last)/1000,.05);last=now;tt+=dt;let mv=false;
+if(!open){let dx=0,dz=0;if(J){dx=J.dx;dz=J.dy}if(K.a||K.arrowleft)dx-=1;if(K.d||K.arrowright)dx+=1;if(K.w||K.arrowup)dz-=1;if(K.s||K.arrowdown)dz+=1;
+const l=Math.hypot(dx,dz);if(l>.05){if(l>1){dx/=l;dz/=l}mv=true;const nx=P.position.x+dx*4.2*dt,nz=P.position.z+dz*4.2*dt;if(ok(nx,P.position.z))P.position.x=nx;if(ok(P.position.x,nz))P.position.z=nz;P.rotation.y=Math.atan2(dx,dz)}}
+P.position.y=mv?Math.abs(Math.sin(tt*10))*.07:0;
+F.visible=P.position.z>-1.2;
+if(P.position.z<-1.5&&!greeted){greeted=true;say('🐮 老闆：歡迎光臨！走到櫃檯就能看菜單',7000)}
+if(!open)$('#near').style.display=Math.hypot(P.position.x-3.6,P.position.z+3)<2.6?'block':'none';
+const k=1-Math.exp(-dt*6);cx+=(P.position.x*.8-cx)*k;cz+=(P.position.z+6.2-cz)*k;
+C.position.set(cx,6.2,cz);C.lookAt(cx,.8,cz-6.7);
+R.render(S,C)}
+requestAnimationFrame(loop);
+</script></body></html>
