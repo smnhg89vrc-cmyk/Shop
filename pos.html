@@ -284,34 +284,30 @@ const p2=n=>("0"+n).slice(-2);
 const PAYS=["現金","LINE Pay","一卡通","街口","全支付","其他 TWQR"];
 const MAX=99;
 var MENU = [
-  { group: "雞肉類", items: [
+  { group: "菜單", items: [
     { id: "i1", name: "鹽酥雞", price: 60, unit: "份" },
-    { id: "i2", name: "雞皮", price: 40, unit: "份" },
-    { id: "i3", name: "雞屁股", price: 30, unit: "份" },
-    { id: "i4", name: "雞心", price: 30, unit: "份" },
-    { id: "i5", name: "雞胗", price: 30, unit: "份" },
-    { id: "i6", name: "雞脖子", price: 20, unit: "份" }
-  ]},
-  { group: "海鮮與加工品", items: [
     { id: "i7", name: "魷魚", price: 60, unit: "份" },
-    { id: "i8", name: "花枝丸", price: 30, unit: "份" },
-    { id: "i9", name: "甜不辣", price: 25, unit: "份" },
+    { id: "i14", name: "地瓜", price: 40, unit: "份" },
+    { id: "i2", name: "雞皮", price: 40, unit: "份" },
+    { id: "i3", name: "雞屁股", price: 30, unit: "串" },
+    { id: "i4", name: "雞心", price: 30, unit: "串" },
+    { id: "i5", name: "雞胗", price: 30, unit: "串" },
+    { id: "i8", name: "花枝丸", price: 30, unit: "串" },
+    { id: "i9", name: "甜不辣", price: 25, unit: "3個一份" },
+    { id: "i6", name: "雞脖子", price: 20, unit: "隻" },
     { id: "i10", name: "豬血糕", price: 20, unit: "份" },
-    { id: "i11", name: "芋頭籤", price: 20, unit: "份" },
-    { id: "i12", name: "芋頭巧", price: 20, unit: "份" },
-    { id: "i13", name: "魚板", price: 20, unit: "份" },
-    { id: "i20", name: "鑫鑫腸", price: 20, unit: "份" }
-  ]},
-  { group: "蔬菜與豆製品", items: [
-    { id: "i14", name: "地瓜條", price: 40, unit: "份" },
-    { id: "i15", name: "四季豆", price: 40, unit: "份" },
-    { id: "i16", name: "玉米", price: 45, unit: "份" },
-    { id: "i17", name: "豆乾", price: 20, unit: "份" },
     { id: "i18", name: "百頁豆腐", price: 20, unit: "份" },
-    { id: "i19", name: "豆包", price: 20, unit: "份" }
+    { id: "i13", name: "魚板", price: 20, unit: "份" },
+    { id: "i12", name: "芋頭巧", price: 20, unit: "份" },
+    { id: "i11", name: "芋頭籤", price: 20, unit: "份" },
+    { id: "i19", name: "豆包", price: 20, unit: "份" },
+    { id: "i17", name: "豆乾", price: 20, unit: "5個一份" },
+    { id: "i20", name: "鑫鑫腸", price: 20, unit: "5個一份" },
+    { id: "i15", name: "四季豆", price: 40, unit: "份" },
+    { id: "i16", name: "玉米", price: 45, unit: "支" }
   ]}
 ];
-const SEED=[];MENU.forEach(g=>g.items.forEach(i=>SEED.push({id:i.id,name:i.name,price:i.price,group:g.group,out:false})));
+const SEED=[];MENU.forEach(g=>g.items.forEach(i=>SEED.push({id:i.id,name:i.name,price:i.price,unit:i.unit,group:"菜單",out:false})));
 function load(k,d){try{const v=JSON.parse(localStorage.getItem(k));return Array.isArray(v)?v:d}catch(e){return d}}
 let items=load("pos2_items",SEED);
 let xinxin=items.find(i=>i.name==="鑫鑫腸"||i.id==="i20");
@@ -321,25 +317,27 @@ items=items.filter(i=>i!==xinxin);
 const seafoodIndex=items.findIndex(i=>i.name==="魚板");
 items.splice(seafoodIndex>=0?seafoodIndex+1:items.length,0,xinxin);
 function menuSortKey(name){
-  if(name==="玉米")return 2; if(name==="四季豆")return 3;
-  return ["鹽酥雞","魷魚","雞皮","雞屁股","雞心","雞胗","雞脖子"].indexOf(name)>=0?0:1;
+  const canonical=name==="地瓜條"?"地瓜":name;
+  const idx=MENU_ORDER.indexOf(canonical);
+  return idx<0?999:idx;
 }
 function sortMenuItems(list){
-  const order=["鹽酥雞","魷魚","雞皮","地瓜條","雞屁股","雞心","雞胗","花枝丸","甜不辣","雞脖子","豬血糕","芋頭籤","芋頭巧","魚板","鑫鑫腸","豆乾","百頁豆腐","豆包","玉米","四季豆"];
-  return list.sort((a,b)=>{const ka=menuSortKey(a.name),kb=menuSortKey(b.name);if(ka!==kb)return ka-kb;if(ka>=2)return ka-kb;if(b.price!==a.price)return b.price-a.price;return (order.indexOf(a.name)<0?999:order.indexOf(a.name))-(order.indexOf(b.name)<0?999:order.indexOf(b.name))});
+  return list.sort((a,b)=>menuSortKey(a.name)-menuSortKey(b.name));
 }
-function itemSpec(name){return name==="豆乾"?"一份五塊":name==="甜不辣"?"一份三片":name==="鑫鑫腸"?"一份五個":""}
+function itemSpec(name){return ""}
+const MENU_ORDER = ["鹽酥雞","魷魚","地瓜","雞皮","雞屁股","雞心","雞胗","花枝丸","甜不辣","雞脖子","豬血糕","百頁豆腐","魚板","芋頭巧","芋頭籤","豆包","豆乾","鑫鑫腸","四季豆","玉米"];
+const MENU_UNITS = {"鹽酥雞":"份","魷魚":"份","地瓜":"份","地瓜條":"份","雞皮":"份","雞屁股":"串","雞心":"串","雞胗":"串","花枝丸":"串","甜不辣":"3個一份","雞脖子":"隻","豬血糕":"份","百頁豆腐":"份","魚板":"份","芋頭巧":"份","芋頭籤":"份","豆包":"份","豆乾":"5個一份","鑫鑫腸":"5個一份","四季豆":"份","玉米":"支"};
 function normalizeXinxinPlacement(){
-  let found=null; const kept=[];
-  items.forEach(i=>{if(i.name==="鑫鑫腸"||i.id==="i20"){if(!found)found=i}else kept.push(i)});
-  if(!found)found={id:"i20",name:"鑫鑫腸",price:20,group:"海鮮與加工品",out:false};
-  found.id="i20";found.name="鑫鑫腸";found.group="海鮮與加工品";kept.push(found);
-  items=sortMenuItems(kept);
+  items.forEach(i=>{if(i.name==="地瓜條")i.name="地瓜";i.unit=MENU_UNITS[i.name]||i.unit||"份";i.group="菜單";});
+  const rank={};MENU_ORDER.forEach((n,i)=>rank[n]=i);
+  items.sort((a,b)=>(rank[a.name]??999)-(rank[b.name]??999));
+  if(!items.some(i=>i.id==="i20"||i.name==="鑫鑫腸"))items.push({id:"i20",name:"鑫鑫腸",price:20,unit:"5個一份",group:"菜單",out:false});
+  items.sort((a,b)=>(rank[a.name]??999)-(rank[b.name]??999));
 }
 normalizeXinxinPlacement();
 try{localStorage.setItem("pos2_items",JSON.stringify(items))}catch(e){}
 let tx=load("pos2_tx",[]);
-const REN={"百葉豆腐":"百頁豆腐"};
+const REN={"百葉豆腐":"百頁豆腐","地瓜條":"地瓜"};
 items.forEach(i=>{if(REN[i.name])i.name=REN[i.name]});
 tx.forEach(x=>(x.items||[]).forEach(i=>{if(REN[i.n])i.n=REN[i.n]}));
 let cart={},pay="現金",rng="day",view="pos",tt=null;
@@ -418,7 +416,7 @@ const count=()=>Object.keys(cart).reduce((s,k)=>s+cart[k],0);
 function renderMenu(){
   normalizeXinxinPlacement();
   const list=sortMenuItems(items.slice());
-  $("menu").innerHTML=list.map(i=>{const spec=itemSpec(i.name);return `<div class="row${i.out?" outr":""}" id="row-${i.id}"><div><div class="name">${esc(i.name)}</div>${spec?`<div class="item-spec">${spec}</div>`:""}<div class="price">${i.out?"售完":"NT$ "+i.price+"／份"}</div></div><div class="step"><button class="minus" type="button" data-id="${i.id}" data-d="-1" aria-label="減少${esc(i.name)}">−</button><span class="qty" id="qty-${i.id}">0</span><button class="plus" type="button" data-id="${i.id}" data-d="1" aria-label="增加${esc(i.name)}">+</button></div></div>`}).join("");
+  $("menu").innerHTML=list.map(i=>`<div class="row${i.out?" outr":""}" id="row-${i.id}"><div><div class="name">${esc(i.name)}</div><div class="price">${i.out?"售完":"NT$ "+i.price+"／"+(i.unit||"份")}</div></div><div class="step"><button class="minus" type="button" data-id="${i.id}" data-d="-1" aria-label="減少${esc(i.name)}">−</button><span class="qty" id="qty-${i.id}">0</span><button class="plus" type="button" data-id="${i.id}" data-d="1" aria-label="增加${esc(i.name)}">+</button></div></div>`).join("");
   updateRows();
 }
 function updateRows(){
