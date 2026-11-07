@@ -194,6 +194,7 @@ body.hasbanner .olbar{top:calc(env(safe-area-inset-top,0px) + 124px)}
 .sm-slot.booked{background:var(--tint);border-color:var(--gold)}
 .sm-slot.blocked{background:var(--line);color:var(--muted);text-decoration:line-through}
 .sm-slot.past{opacity:.35}
+.item-spec{font-size:12px;color:#8b7764;margin-top:2px;font-weight:600}
 </style>
 </head>
 <body>
@@ -319,19 +320,21 @@ else{xinxin={id:"i20",name:"鑫鑫腸",price:20,group:"海鮮與加工品",out:f
 items=items.filter(i=>i!==xinxin);
 const seafoodIndex=items.findIndex(i=>i.name==="魚板");
 items.splice(seafoodIndex>=0?seafoodIndex+1:items.length,0,xinxin);
+function menuSortKey(name){
+  if(name==="玉米")return 2; if(name==="四季豆")return 3;
+  return ["鹽酥雞","魷魚","雞皮","雞屁股","雞心","雞胗","雞脖子"].indexOf(name)>=0?0:1;
+}
+function sortMenuItems(list){
+  const order=["鹽酥雞","魷魚","雞皮","地瓜條","雞屁股","雞心","雞胗","花枝丸","甜不辣","雞脖子","豬血糕","芋頭籤","芋頭巧","魚板","鑫鑫腸","豆乾","百頁豆腐","豆包","玉米","四季豆"];
+  return list.sort((a,b)=>{const ka=menuSortKey(a.name),kb=menuSortKey(b.name);if(ka!==kb)return ka-kb;if(ka>=2)return ka-kb;if(b.price!==a.price)return b.price-a.price;return (order.indexOf(a.name)<0?999:order.indexOf(a.name))-(order.indexOf(b.name)<0?999:order.indexOf(b.name))});
+}
+function itemSpec(name){return name==="豆乾"?"一份五塊":name==="甜不辣"?"一份三片":name==="鑫鑫腸"?"一份五個":""}
 function normalizeXinxinPlacement(){
-  let found=null;
-  const kept=[];
-  items.forEach(i=>{
-    if(i.name==="鑫鑫腸"||i.id==="i20"){
-      if(!found) found=i;
-    }else kept.push(i);
-  });
-  if(!found) found={id:"i20",name:"鑫鑫腸",price:20,group:"海鮮與加工品",out:false};
-  found.id="i20"; found.name="鑫鑫腸"; found.group="海鮮與加工品";
-  const fishIndex=kept.findIndex(i=>i.name==="魚板");
-  kept.splice(fishIndex>=0?fishIndex+1:kept.length,0,found);
-  items=kept;
+  let found=null; const kept=[];
+  items.forEach(i=>{if(i.name==="鑫鑫腸"||i.id==="i20"){if(!found)found=i}else kept.push(i)});
+  if(!found)found={id:"i20",name:"鑫鑫腸",price:20,group:"海鮮與加工品",out:false};
+  found.id="i20";found.name="鑫鑫腸";found.group="海鮮與加工品";kept.push(found);
+  items=sortMenuItems(kept);
 }
 normalizeXinxinPlacement();
 try{localStorage.setItem("pos2_items",JSON.stringify(items))}catch(e){}
@@ -414,9 +417,8 @@ const count=()=>Object.keys(cart).reduce((s,k)=>s+cart[k],0);
 /* ---------- 收銀 ---------- */
 function renderMenu(){
   normalizeXinxinPlacement();
-  const gs=[];
-  items.forEach(i=>{let g=gs.find(x=>x.n===i.group);if(!g){g={n:i.group,l:[]};gs.push(g)}g.l.push(i)});
-  $("menu").innerHTML=gs.map(g=>`<h2 class="serif">${esc(g.n)}</h2>`+g.l.map(i=>`<div class="row${i.out?" outr":""}" id="row-${i.id}"><div><div class="name">${esc(i.name)}</div><div class="price">${i.out?"售完":"NT$ "+i.price+"／份"}</div></div><div class="step"><button class="minus" type="button" data-id="${i.id}" data-d="-1" aria-label="減少${esc(i.name)}">−</button><span class="qty" id="qty-${i.id}">0</span><button class="plus" type="button" data-id="${i.id}" data-d="1" aria-label="增加${esc(i.name)}">+</button></div></div>`).join("")).join("");
+  const list=sortMenuItems(items.slice());
+  $("menu").innerHTML=list.map(i=>{const spec=itemSpec(i.name);return `<div class="row${i.out?" outr":""}" id="row-${i.id}"><div><div class="name">${esc(i.name)}</div>${spec?`<div class="item-spec">${spec}</div>`:""}<div class="price">${i.out?"售完":"NT$ "+i.price+"／份"}</div></div><div class="step"><button class="minus" type="button" data-id="${i.id}" data-d="-1" aria-label="減少${esc(i.name)}">−</button><span class="qty" id="qty-${i.id}">0</span><button class="plus" type="button" data-id="${i.id}" data-d="1" aria-label="增加${esc(i.name)}">+</button></div></div>`}).join("");
   updateRows();
 }
 function updateRows(){
@@ -510,7 +512,7 @@ function renderDay(){
 
 /* ---------- 品項 ---------- */
 function renderItems(){
-  $("ilist").innerHTML=items.map(i=>`<div class="item${i.out?" o":""}"><span><b>${esc(i.name)}</b> $${i.price}${i.out?" ・售完":""}</span><div class="ops"><button class="q" data-i="${i.id}" data-a="out">${i.out?"恢復":"售完"}</button><button class="q" data-i="${i.id}" data-a="price">改價</button><button class="q x" data-i="${i.id}" data-a="del">刪除</button></div></div>`).join("");
+  $("ilist").innerHTML=sortMenuItems(items.slice()).map(i=>`<div class="item${i.out?" o":""}"><span><b>${esc(i.name)}</b> ${itemSpec(i.name)?`（${itemSpec(i.name)}）`:""} $${i.price}${i.out?" ・售完":""}</span><div class="ops"><button class="q" data-i="${i.id}" data-a="out">${i.out?"恢復":"售完"}</button><button class="q" data-i="${i.id}" data-a="price">改價</button><button class="q x" data-i="${i.id}" data-a="del">刪除</button></div></div>`).join("");
 }
 
 /* ---------- 切換頁面 ---------- */

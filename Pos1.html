@@ -291,6 +291,7 @@ html{background:#9F2419}
 .bar{background:linear-gradient(100deg,#FFC247,#FF9D3C);color:#32170F;box-shadow:0 -4px 18px rgba(100,35,15,.18)}
 .bar .btn{background:#8F2117;color:#FFF4E8;border-color:#8F2117}
 
+.item-spec{font-size:.82em;color:#8b7764;margin-top:2px;font-weight:600}
 </style>
 </head>
 <body>
@@ -509,6 +510,27 @@ var budget = 0;
 var ALL = [];
 MENU.forEach(function (g) { g.items.forEach(function (i) { ALL.push(i); }); });
 
+
+function menuSortKey(name) {
+  if (name === "玉米") return 2;
+  if (name === "四季豆") return 3;
+  return ["鹽酥雞","魷魚","雞皮","雞屁股","雞心","雞胗","雞脖子"].indexOf(name) >= 0 ? 0 : 1;
+}
+function sortMenuItems(list) {
+  var order = ["鹽酥雞","魷魚","雞皮","地瓜條","雞屁股","雞心","雞胗","花枝丸","甜不辣","雞脖子","豬血糕","芋頭籤","芋頭巧","魚板","鑫鑫腸","豆乾","百頁豆腐","豆包","玉米","四季豆"];
+  return list.sort(function(a,b) {
+    var ka=menuSortKey(a.name), kb=menuSortKey(b.name);
+    if (ka !== kb) return ka-kb;
+    if (ka >= 2) return ka-kb;
+    if (b.price !== a.price) return b.price-a.price;
+    var ia=order.indexOf(a.name), ib=order.indexOf(b.name);
+    return (ia<0?999:ia)-(ib<0?999:ib);
+  });
+}
+function itemSpec(name) {
+  return name === "豆乾" ? "一份五塊" : name === "甜不辣" ? "一份三片" : name === "鑫鑫腸" ? "一份五個" : "";
+}
+
 function money(n) { return "NT$ " + n.toLocaleString("zh-TW"); }
 function total() {
   return ALL.reduce(function (s, i) { return s + (qty[i.id] || 0) * i.price; }, 0);
@@ -516,20 +538,20 @@ function total() {
 
 function buildMenu() {
   var html = "";
-  MENU.forEach(function (g) {
-    html += '<h2 class="serif">' + g.group + "</h2>";
-    g.items.forEach(function (i) {
-      html +=
-        '<div class="row" id="row-' + i.id + '">' +
-          "<div><div class=\"name\">" + i.name + "</div>" +
-          '<div class="price">' + money(i.price) + "／" + i.unit + "</div></div>" +
-          '<div class="step">' +
-            '<button type="button" class="minus" data-id="' + i.id + '" data-d="-1" aria-label="減少一' + i.unit + i.name + '">−</button>' +
-            '<span class="qty" id="qty-' + i.id + '" aria-live="polite">0</span>' +
-            '<button type="button" class="plus" data-id="' + i.id + '" data-d="1" aria-label="增加一' + i.unit + i.name + '">+</button>' +
-          "</div>" +
-        "</div>";
-    });
+  var items = [];
+  MENU.forEach(function (g) { g.items.forEach(function (i) { items.push(i); }); });
+  sortMenuItems(items);
+  items.forEach(function (i) {
+    var spec = itemSpec(i.name);
+    html += '<div class="row" id="row-' + i.id + '">' +
+      '<div><div class="name">' + i.name + '</div>' +
+      (spec ? '<div class="item-spec">' + spec + '</div>' : '') +
+      '<div class="price">' + money(i.price) + '／' + i.unit + '</div></div>' +
+      '<div class="step">' +
+      '<button type="button" class="minus" data-id="' + i.id + '" data-d="-1" aria-label="減少一' + i.unit + i.name + '">−</button>' +
+      '<span class="qty" id="qty-' + i.id + '" aria-live="polite">0</span>' +
+      '<button type="button" class="plus" data-id="' + i.id + '" data-d="1" aria-label="增加一' + i.unit + i.name + '">+</button>' +
+      '</div></div>';
   });
   document.getElementById("menu").innerHTML = html;
 }
@@ -1254,16 +1276,7 @@ function applyMenu(d) {
     if (!(g in gi)) { gi[g] = groups.length; groups.push({ group: g, items: [] }); }
     groups[gi[g]].items.push(it); all.push(it);
   });
-  /* 固定鑫鑫腸分類與位置：海鮮與加工品／魚板正後方 */
-  var xinxin = null;
-  all = all.filter(function (item) {
-    if (item.name === "鑫鑫腸") { if (!xinxin) xinxin = item; return false; }
-    return true;
-  });
-  if (xinxin) {
-    var fishIndex = all.findIndex(function (item) { return item.name === "魚板"; });
-    all.splice(fishIndex >= 0 ? fishIndex + 1 : all.length, 0, xinxin);
-  }
+  sortMenuItems(all);
   groups = []; gi = {};
   all.forEach(function (item) {
     var entry = d.m.find(function (en) { return en[0] === item.name; });
