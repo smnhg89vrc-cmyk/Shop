@@ -198,6 +198,470 @@ body.hasbanner .olbar{top:calc(env(safe-area-inset-top,0px) + 124px)}
 .sm-slot.blocked{background:var(--line);color:var(--muted);text-decoration:line-through}
 .sm-slot.past{opacity:.35}
 .item-spec{font-size:12px;color:#8b7764;margin-top:2px;font-weight:600}
+
+/* ===== 2026 精品黑金 2.0：減法設計，保留全部點餐功能 ===== */
+:root{
+  color-scheme:dark;
+  --hero:#11110f;
+  --bg:#111210;
+  --card:#1b1c19;
+  --ink:#f3f0e8;
+  --muted:#aaa69a;
+  --line:#39372f;
+  --accent:#d7bd83;
+  --btn:#c7a96b;
+  --tint:rgba(215,189,131,.10);
+  --gold:#d7bd83;
+  --bar-ink:#171611;
+  --ok:#8bc9a0;
+  --over:#e79a87;
+}
+html{background:#111210!important}
+body{
+  background:
+    radial-gradient(ellipse at 50% -18%,rgba(215,189,131,.10),transparent 42%),
+    #111210!important;
+  color:var(--ink)!important;
+  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif!important;
+  padding-bottom:220px!important;
+}
+.wrap{max-width:560px!important;padding-left:20px!important;padding-right:20px!important}
+
+/* 品牌首屏：取消整張金色大圖，改用真實文字與留白 */
+.hero{
+  position:relative!important;
+  isolation:auto!important;
+  overflow:visible!important;
+  padding:34px 0 34px!important;
+  color:var(--ink)!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+.hero:before,.hero:after{display:none!important;content:none!important}
+.hero .wrap:before,.hero .wrap:after,.hero h1:before{display:none!important;content:none!important;background:none!important}
+.hero .wrap{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  text-align:center!important;
+  gap:0!important;
+  padding:0 20px!important;
+}
+.hero .wrap>*{
+  position:static!important;
+  display:block!important;
+  width:auto!important;height:auto!important;
+  overflow:visible!important;clip:auto!important;
+  margin-left:0!important;margin-right:0!important;
+  padding:0!important;border:0!important;
+  white-space:normal!important;
+}
+.hero h1{
+  order:1!important;
+  margin:0!important;
+  color:#f4efe3!important;
+  font-family:"Noto Sans TC","PingFang TC",sans-serif!important;
+  font-size:clamp(25px,7vw,34px)!important;
+  font-weight:700!important;
+  line-height:1.3!important;
+  letter-spacing:.075em!important;
+  text-shadow:none!important;
+}
+.hero .stamp{
+  order:2!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-width:0!important;min-height:0!important;
+  margin:12px 0 0!important;
+  padding:5px 15px!important;
+  transform:none!important;
+  border:1px solid rgba(215,189,131,.72)!important;
+  border-radius:999px!important;
+  background:rgba(215,189,131,.08)!important;
+  box-shadow:none!important;
+  color:#e4cd9d!important;
+  font-family:"Noto Sans TC",sans-serif!important;
+  font-size:14px!important;
+  font-weight:600!important;
+  letter-spacing:.18em!important;
+}
+.hero .stamp:after{content:none!important;display:none!important}
+.hero .calc-name{
+  order:3!important;
+  display:block!important;
+  margin:23px 0 0!important;
+  padding:0!important;
+  border:0!important;border-radius:0!important;
+  background:none!important;box-shadow:none!important;
+  color:#f4f0e7!important;
+  font-family:"Noto Sans TC",sans-serif!important;
+  font-size:clamp(23px,6.2vw,29px)!important;
+  font-weight:700!important;
+  letter-spacing:.10em!important;
+}
+.hero .lead{
+  order:4!important;
+  max-width:29em!important;
+  margin:10px auto 0!important;
+  color:#aaa69a!important;
+  font-size:14px!important;
+  line-height:1.8!important;
+  letter-spacing:.025em!important;
+}
+.hero .hours{
+  order:5!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  margin:18px 0 0!important;
+  padding:7px 15px!important;
+  border:1px solid #514832!important;
+  border-radius:999px!important;
+  background:rgba(255,255,255,.025)!important;
+  box-shadow:none!important;
+  color:#d8c69e!important;
+  font-size:13px!important;
+  font-weight:600!important;
+  letter-spacing:.04em!important;
+}
+.hero .hours:before,.hero .hours:after{content:none!important}
+
+/* 預算與內容卡片：深石墨底、柔和邊界，金色只作提示 */
+main.wrap{padding-left:18px!important;padding-right:18px!important}
+.budget,.summary,.social{
+  position:relative!important;
+  overflow:hidden!important;
+  margin-top:16px!important;
+  padding:19px!important;
+  border:1px solid #3d3a31!important;
+  border-radius:17px!important;
+  background:linear-gradient(145deg,#20211d,#191a17)!important;
+  box-shadow:0 8px 24px rgba(0,0,0,.18)!important;
+  -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+}
+.budget:after,.summary:after,.social:after{display:none!important}
+.budget:before{
+  display:block!important;
+  margin:-1px 0 16px!important;
+  padding:0 0 12px!important;
+  border-bottom:1px solid #39372f!important;
+  background:none!important;
+  color:#cdb783!important;
+  font-size:13px!important;
+  font-weight:600!important;
+  letter-spacing:.035em!important;
+  white-space:normal!important;
+}
+.budget label{
+  margin-bottom:10px!important;
+  color:#f0ede5!important;
+  font-size:19px!important;
+  font-weight:650!important;
+}
+.field{gap:10px!important}
+.field span{color:#d5c49e!important;font-size:18px!important}
+.field input{
+  height:54px!important;
+  border:1px solid #5b513c!important;
+  border-radius:12px!important;
+  background:#111210!important;
+  color:#f4f0e7!important;
+  font-size:22px!important;
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.28)!important;
+}
+.field input::placeholder{color:#77746b!important}
+.field input:focus-visible{outline:2px solid #c7ad75!important;outline-offset:2px!important}
+.chips{gap:8px!important}
+.chip{
+  min-height:42px!important;
+  border:1px solid #57503e!important;
+  border-radius:10px!important;
+  background:rgba(215,189,131,.045)!important;
+  color:#e4d5b4!important;
+  font-size:15px!important;
+  font-weight:600!important;
+}
+.chip:hover{border-color:#d1b77e!important;background:rgba(215,189,131,.10)!important}
+
+/* 菜單：讓品項清楚，按鈕有一致節奏 */
+h2{
+  margin:25px 0 8px!important;
+  padding-bottom:9px!important;
+  border-bottom:1px solid #454136!important;
+  color:#eeeae0!important;
+  font-family:"Noto Sans TC","PingFang TC",sans-serif!important;
+  font-size:20px!important;
+  font-weight:700!important;
+  letter-spacing:.035em!important;
+}
+.row{
+  min-height:68px!important;
+  padding:11px 7px!important;
+  border-bottom:1px solid #302f29!important;
+  border-radius:9px!important;
+  transition:background .16s ease!important;
+}
+.row.on{background:rgba(215,189,131,.085)!important;box-shadow:inset 3px 0 #c7ad75!important}
+.name{color:#f0ede5!important;font-size:17px!important;font-weight:650!important}
+.price,.item-spec{color:#a9a497!important}
+.step{gap:8px!important}
+.step button{width:40px!important;height:40px!important;font-size:22px!important}
+.step .minus{border:1px solid #6c624b!important;color:#d8c69e!important}
+.step .plus{
+  border:1px solid #d4bd88!important;
+  background:linear-gradient(145deg,#dfc994,#b69a60)!important;
+  color:#211d14!important;
+  box-shadow:none!important;
+}
+.qty{color:#f1eee6!important;font-size:19px!important}
+
+/* 辣度、明細、社群與其他表單一致化 */
+.sp{
+  min-height:88px!important;
+  border:1px solid #403d33!important;
+  border-radius:13px!important;
+  background:#1c1d19!important;
+}
+.sp.sel{border-color:#c7ad75!important;background:rgba(215,189,131,.09)!important}
+.sp .st{color:#eee8d9!important;font-size:17px!important}
+.sp-note,.note{color:#a9a497!important}
+.summary{margin-top:25px!important}
+.summary h2{margin-top:0!important}
+.finish-big{
+  min-height:52px!important;
+  border:1px solid #e1cb98!important;
+  border-radius:12px!important;
+  background:linear-gradient(135deg,#dfc994,#b99b61)!important;
+  color:#211d14!important;
+  box-shadow:none!important;
+  font-size:18px!important;
+}
+.social h2{color:#d8c69e!important}
+.social .hrs{color:#f0e8d6!important}
+.social a{border-radius:10px!important;background:#c7a96b!important;color:#201b12!important}
+
+/* 固定結帳列：降低高度與金色面積，優先顯示金額和操作 */
+.bar{
+  padding:10px 0 calc(10px + env(safe-area-inset-bottom,0px))!important;
+  border-top:1px solid rgba(215,189,131,.55)!important;
+  background:rgba(18,19,16,.96)!important;
+  color:#eee8d9!important;
+  box-shadow:0 -8px 28px rgba(0,0,0,.38)!important;
+  -webkit-backdrop-filter:blur(16px)!important;backdrop-filter:blur(16px)!important;
+}
+.bar .lbl,#status{color:#bdb6a4!important}
+.bar #total{color:#f0dfb6!important;text-shadow:none!important;font-size:27px!important}
+.bar-top>div:first-child{padding-left:50px!important;min-height:44px!important}
+.bar-top>div:first-child:before{
+  width:40px!important;height:40px!important;
+  border:1px solid #786744!important;border-radius:11px!important;
+  background:rgba(215,189,131,.06)!important;
+  font-size:22px!important;
+}
+.bar-btns{gap:7px!important}
+.bar button,.bar .btn{
+  min-height:45px!important;
+  padding:0 13px!important;
+  border-radius:10px!important;
+  font-size:16px!important;
+  font-weight:650!important;
+}
+.bar button:not(.btn){
+  border:1px solid #716448!important;
+  background:transparent!important;color:#e6d7b6!important;
+}
+.bar .btn{
+  border:1px solid #e0c991!important;
+  background:linear-gradient(135deg,#dfc994,#b99b61)!important;
+  color:#211d14!important;
+  box-shadow:none!important;
+}
+.bar .btn:after{content:none!important}
+.track{height:4px!important;background:rgba(215,189,131,.16)!important;margin:8px 0 4px!important}
+.track i{background:#c7ad75!important}
+#status{font-size:13px!important}
+
+/* 訂單視窗、付款選項維持易讀，減少厚重金框 */
+.ticket,.done-in{
+  border:1px solid #5a503b!important;
+  border-radius:17px!important;
+  background:#1d1e1a!important;
+}
+.ticket h2,.done-in h2{color:#e4d2a8!important}
+.ticket .num,.done-in .num{color:#e4cc92!important}
+.ticket .how,.payc{border:1px solid #66583b!important;background:rgba(215,189,131,.08)!important}
+.send,.paybox{border-color:#464136!important}
+.send input,.send select{border:1px solid #514a39!important;border-radius:10px!important}
+.po,.ap,.sp,.tp-h,.tp-slot{border-width:1px!important}
+.po.sel,.ap.sel,.tp-h.on,.tp-slot.sel{border-color:#c7ad75!important}
+.send #sendBtn,.payc .paidbtn{
+  border:1px solid #e0c991!important;border-radius:10px!important;
+  background:linear-gradient(135deg,#dfc994,#b99b61)!important;color:#211d14!important;
+}
+#pop{background:#d7bd83!important;color:#211d14!important;box-shadow:0 12px 40px rgba(0,0,0,.35)!important}
+@media(max-width:390px){
+  .hero{padding:27px 0 25px!important}
+  .hero .wrap{padding:0 16px!important}
+  main.wrap{padding-left:13px!important;padding-right:13px!important}
+  .budget,.summary,.social{padding:16px!important}
+  .bar #total{font-size:24px!important}
+  .bar button,.bar .btn{padding:0 10px!important;font-size:15px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition:none!important}
+}
+
+
+/* ===== 公休公告｜皇家精品黑金 2.0 同系列 ===== */
+.pause-notice{
+  position:fixed!important;inset:0!important;z-index:70!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  padding:22px!important;background:rgba(7,8,9,.56)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(115%)!important;
+  backdrop-filter:blur(18px) saturate(115%)!important;
+  color:#f0ede5!important;text-align:center!important;
+}
+.pause-notice[hidden]{display:none!important}
+.pause-notice .pause-panel{
+  position:relative!important;width:min(100%,430px)!important;
+  padding:42px 27px 25px!important;overflow:hidden!important;
+  border:1px solid rgba(215,189,131,.48)!important;border-radius:22px!important;
+  background:radial-gradient(ellipse at 50% 0%,rgba(215,189,131,.10),transparent 52%),linear-gradient(145deg,rgba(31,32,28,.94),rgba(17,18,16,.96))!important;
+  box-shadow:0 24px 70px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.045)!important;
+  -webkit-backdrop-filter:blur(22px)!important;backdrop-filter:blur(22px)!important;
+  animation:pausePanelIn .28s ease-out both!important;
+}
+.pause-notice .pause-panel:before{
+  content:""!important;position:absolute!important;inset:7px!important;
+  border:1px solid rgba(215,189,131,.13)!important;border-radius:16px!important;pointer-events:none!important;
+}
+.pause-notice .pause-kicker{
+  position:relative!important;color:#b9a77f!important;font-family:Arial,sans-serif!important;
+  font-size:9px!important;letter-spacing:.22em!important;font-weight:600!important;
+}
+.pause-notice .pause-mark{
+  width:34px!important;height:1px!important;margin:21px auto 17px!important;
+  background:linear-gradient(90deg,transparent,#d7bd83,transparent)!important;
+}
+.pause-notice h2{
+  position:relative!important;margin:0!important;padding:0!important;border:0!important;
+  color:#ead8ad!important;font-family:"Noto Sans TC","PingFang TC",sans-serif!important;
+  font-size:30px!important;font-weight:650!important;letter-spacing:.16em!important;
+  line-height:1.45!important;text-shadow:0 2px 18px rgba(215,189,131,.12)!important;
+}
+.pause-notice .pause-rule{
+  width:100%!important;height:1px!important;margin:20px auto 19px!important;
+  background:linear-gradient(90deg,transparent,rgba(215,189,131,.48),transparent)!important;
+}
+.pause-notice .pause-copy{
+  position:relative!important;margin:0!important;color:#f0ede5!important;
+  font-size:15px!important;font-weight:600!important;line-height:1.9!important;letter-spacing:.025em!important;
+}
+.pause-notice .pause-thanks{
+  position:relative!important;margin:10px 0 0!important;color:#aaa69a!important;
+  font-size:13px!important;line-height:1.9!important;letter-spacing:.015em!important;
+}
+.pause-notice .pause-brand{
+  position:relative!important;margin:24px 0 0!important;padding-top:16px!important;
+  border-top:1px solid rgba(215,189,131,.18)!important;color:#d7c49b!important;
+  font-size:13px!important;font-weight:650!important;letter-spacing:.075em!important;
+}
+.pause-notice .pause-brand b{padding:0 4px;color:#8f805f!important;font-weight:400!important}
+.pause-notice .pause-contact{
+  position:relative!important;display:inline-flex!important;align-items:center!important;
+  justify-content:center!important;gap:9px!important;margin:17px 0 0!important;padding:10px 15px!important;
+  border:1px solid rgba(215,189,131,.42)!important;border-radius:999px!important;
+  background:rgba(215,189,131,.07)!important;color:#e4d2a8!important;text-decoration:none!important;
+  font-size:12px!important;font-weight:600!important;letter-spacing:.025em!important;
+}
+.pause-notice .pause-contact span{font-size:15px!important;line-height:1!important}
+.pause-notice .pause-close{
+  position:absolute!important;top:13px!important;right:13px!important;z-index:2!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  width:32px!important;height:32px!important;padding:0!important;
+  border:1px solid rgba(215,189,131,.35)!important;border-radius:50%!important;
+  background:rgba(215,189,131,.07)!important;color:#d7bd83!important;
+  font-family:Arial,sans-serif!important;font-size:22px!important;font-weight:300!important;
+  line-height:1!important;cursor:pointer!important;-webkit-tap-highlight-color:transparent!important;
+}
+@keyframes pausePanelIn{from{opacity:0;transform:translateY(9px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:390px){
+  .pause-notice{padding:17px!important}
+  .pause-notice .pause-panel{padding:39px 21px 22px!important;border-radius:19px!important}
+  .pause-notice h2{font-size:27px!important}
+  .pause-notice .pause-copy{font-size:14px!important}
+  .pause-notice .pause-thanks{font-size:12px!important}
+}
+@media(prefers-reduced-motion:reduce){.pause-notice .pause-panel{animation:none!important}}
+
+
+
+/* ===== POS 專用元件：沿用 Pos1 精品黑金色調，僅調整外觀 ===== */
+.tabw{background:rgba(17,18,16,.96)!important;border-bottom:1px solid #39372f!important}
+.tabs{gap:7px!important}
+.tabs button,.seg button,.quick button,.mini,.card,.tx button,.item .ops button{
+  border:1px solid #464136!important;border-radius:10px!important;
+  background:#1b1c19!important;color:#e8e2d3!important;
+}
+.tabs button[aria-selected="true"],.seg button.on{
+  border-color:#d7bd83!important;background:rgba(215,189,131,.13)!important;color:#ead8ad!important;
+}
+button:focus-visible,input:focus-visible{outline:2px solid #c7ad75!important;outline-offset:2px!important}
+.box,.sheet-in,.chgs,.ocard,.paynote{
+  border:1px solid #3d3a31!important;border-radius:15px!important;
+  background:linear-gradient(145deg,#20211d,#191a17)!important;color:#f0ede5!important;
+  box-shadow:0 8px 24px rgba(0,0,0,.16)!important;
+}
+.box h3,.ocard .ts,.s,.sm-h small,.sm-slot small{color:#aaa69a!important}
+.lr,.ocard .lr,.ocard .s,.ocard .order-items,.ocard .tot{color:#f0ede5!important}
+.card{padding:11px 5px!important}
+.card[aria-pressed="true"]{border-color:#c7ad75!important;background:rgba(215,189,131,.09)!important}
+.card span{color:#aaa69a!important}
+.card b,.ocard .tot,.chg{color:#e4cc92!important}
+.bw{background:#39372f!important}
+.bw i{background:#c7ad75!important}
+.tx{border-top:1px solid #39372f!important;color:#e8e2d3!important}
+.tx.v{opacity:.48!important}
+.tx button,.mini,.item .ops button,.quick button{min-height:40px!important}
+input[type=date],#cash{
+  border:1px solid #514a39!important;border-radius:10px!important;
+  background:#111210!important;color:#f4f0e7!important;
+}
+.item{border-top:1px solid #39372f!important;color:#f0ede5!important}
+.item .ops .x{color:#e4cc92!important}
+.paynote{background:rgba(215,189,131,.08)!important;border-color:#66583b!important;color:#e4d2a8!important}
+.paidtag,.chg{color:#8bc9a0!important}
+.chg.bad{color:#e79a87!important}
+.go{
+  border:1px solid #e0c991!important;border-radius:12px!important;
+  background:linear-gradient(135deg,#dfc994,#b99b61)!important;color:#211d14!important;
+  font-size:18px!important;box-shadow:none!important;
+}
+.sheet{background:rgba(7,8,9,.62)!important}
+.sheet-in{border-color:#5a503b!important}
+.sh-top,.chgs h2,.chgs .v{color:#ead8ad!important}
+.chgs{border-color:#514a39!important}
+.chgs button,.toast,#orderAlarm .alarm-in{
+  border:1px solid #66583b!important;border-radius:12px!important;
+  background:#1d1e1a!important;color:#f0ede5!important;
+}
+#orderAlarm{background:rgba(7,8,9,.62)!important;backdrop-filter:blur(14px)!important}
+#orderAlarm .alarm-title{color:#ead8ad!important}
+.obanner{border:1px solid #66583b!important;border-radius:12px!important;background:rgba(215,189,131,.09)!important;color:#ead8ad!important}
+.eta{color:#d8c69e!important}
+.eta.soon{color:#8bc9a0!important}
+.eta.late{color:#e79a87!important}
+.sm-hours{border:1px solid #464136!important;border-radius:13px!important;background:#1b1c19!important}
+.sm-h,.sm-slot{border:1px solid #464136!important;border-radius:9px!important;background:#20211d!important;color:#e8e2d3!important}
+.sm-h.on,.sm-slot.sel{border-color:#c7ad75!important;background:rgba(215,189,131,.11)!important;color:#ead8ad!important}
+.sm-slot.booked,.sm-slot.blocked,.sm-slot.past{opacity:.42!important}
+.olbar{border:1px solid #66583b!important;background:rgba(215,189,131,.09)!important;color:#ead8ad!important}
+.badge{background:#d7bd83!important;color:#211d14!important}
+.ocard{border-top-color:#39372f!important}
+.ocard .tot{font-weight:800!important}
+
 </style>
 </head>
 <body>
@@ -746,7 +1210,24 @@ setInterval(()=>{try{renderOrders()}catch(e){}},30000);
 let sm={d:"",s:[],p:false,r:{},del:[]},smHour=18;
 try{const v=JSON.parse(localStorage.getItem("pos2_slots")||"null");if(v&&typeof v==="object"&&Array.isArray(v.s))sm=v}catch(e){}
 function smSave(){try{localStorage.setItem("pos2_slots",JSON.stringify(sm))}catch(e){}}
-function smFresh(){const t=ymd(Date.now());if(sm.d!==t){sm={d:t,s:[],p:false,r:{},del:[]};smSave()}if(!sm.r)sm.r={};if(!sm.del)sm.del=[]}
+function smFresh(){
+  const t=ymd(Date.now());
+  /* 跨日只重置每日訂單釋放紀錄；手動封鎖時段與暫停狀態永久保留，直到店家手動解除 */
+  if(sm.d!==t){sm.d=t;sm.r={};sm.del=[];smSave()}
+  if(!Array.isArray(sm.s))sm.s=[];
+  if(typeof sm.p!=="boolean")sm.p=false;
+  if(!sm.r)sm.r={};if(!sm.del)sm.del=[];
+}
+let smObservedDate=ymd(Date.now());
+function checkDailyRollover(){
+  const today=ymd(Date.now());
+  if(smObservedDate===today && sm.d===today)return;
+  smObservedDate=today;
+  smFresh();
+  renderSlotMgr();
+  publishStock(true);
+  toast("新的一天開始了，原本手動封鎖的時段仍維持封鎖");
+}
 let slotMapPOS={};const freedSent=new Set();
 function freeOnce(c){if(!c||freedSent.has(c))return;freedSent.add(c);postSlotFree(c)}
 function slotCodes(){
@@ -851,7 +1332,11 @@ function publishStock(force){
 
 /* ---------- 開始 ---------- */
 $("qd").value=ymd(Date.now());
-renderMenu();renderPay();setView("pos");renderOrders();connect();publishStock(true);setInterval(()=>publishStock(true),20*60*1000);paintCtl();paintSort();pollSlotTopic();if(lockOn)acquireLock();
+renderMenu();renderPay();setView("pos");renderOrders();connect();publishStock(true);setInterval(()=>publishStock(true),20*60*1000);
+setInterval(checkDailyRollover,30000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkDailyRollover()});
+window.addEventListener("pageshow",checkDailyRollover);
+paintCtl();paintSort();pollSlotTopic();if(lockOn)acquireLock();
 </script>
 </body>
 </html>
