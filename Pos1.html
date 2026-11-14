@@ -404,12 +404,43 @@ body{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
 .field input,.send input,.send select,.chip,.step button,.sugg button{border-radius:14px}
 .finish-big,.send #sendBtn,.payc .paidbtn{border-radius:16px}
 
-</style>
+
+/* 線上暫停公告：覆蓋整個客人頁，避免客人繼續操作下單 */
+.pause-notice{
+  position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;
+  padding:max(24px,env(safe-area-inset-top,0px)) 22px max(24px,env(safe-area-inset-bottom,0px));
+  background:rgba(255,251,242,.98);color:#211A16;text-align:center;
+}
+.pause-notice[hidden]{display:none}
+.pause-notice .pause-card{
+  width:100%;max-width:440px;padding:34px 24px;border:1px solid #E8DDCB;border-radius:24px;
+  background:#fff;box-shadow:0 14px 40px rgba(45,28,16,.12)
+}
+.pause-notice .pause-mark{font-size:42px;line-height:1.2;margin-bottom:14px}
+.pause-notice h2{margin:0 0 14px;color:#B3241A;font-size:27px;font-weight:900;letter-spacing:.04em}
+.pause-notice p{margin:8px 0;color:#6B5E55;font-size:16px;line-height:1.9}
+.pause-notice .pause-brand{margin-top:22px;color:#211A16;font-weight:900;letter-spacing:.04em}
+.confirm-fb{margin:14px 0 16px;padding:14px;background:var(--tint);border:1px solid var(--line);border-radius:12px;text-align:center;line-height:1.7}
+.confirm-fb strong{display:block;color:var(--accent);font-size:16px}
+.confirm-fb p{margin:6px 0 12px;font-size:14px;color:var(--muted)}
+.confirm-fb a{display:inline-flex;align-items:center;justify-content:center;padding:11px 15px;border-radius:10px;background:#1877F2;color:#fff;font-weight:900;text-decoration:none}
+
+\n</style>
 </head>
 <body>
 
 <canvas id="fx" aria-hidden="true"></canvas>
 <div id="pop" role="status" aria-live="polite"></div>
+<div class="pause-notice" id="pauseNotice" role="alert" aria-live="assertive" hidden>
+  <div class="pause-card">
+    <div class="pause-mark" aria-hidden="true">🍗</div>
+    <h2>今日公休</h2>
+    <p>今天店休，暫不提供現場及線上接單。</p>
+    <p>感謝您的支持與體諒，造成不便敬請見諒！</p>
+    <p>期待下次再為您準備熱騰騰的美味。</p>
+    <div class="pause-brand">台灣第一家鹽酥雞・30年老店</div>
+  </div>
+</div>
 
 <div class="done" id="done" role="dialog" aria-modal="true" aria-labelledby="doneT">
   <div class="done-in">
@@ -420,7 +451,12 @@ body{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
     <ul id="doneLines"></ul>
     <div class="grand"><span>總計</span><strong class="serif" id="doneTotal"></strong></div>
     <div id="donePay"></div>
-    <p class="how">請截圖保存這張畫面，取餐時告訴店員你的號碼</p>
+    <p class="how">請截圖保存這張畫面，取餐時告訴店員您的訂單號碼。</p>
+    <div class="confirm-fb">
+      <strong>📩 訂單送出後，請再私訊粉絲專頁確認訂單！</strong>
+      <p>請點擊下方按鈕前往粉絲專頁，按「傳送訊息」聯絡小編，確認訂單內容與取餐時間，避免漏單。</p>
+      <a id="doneFbLink" href="https://www.facebook.com/share/18uM4DJSed/?mibextid=wwXIfr" target="_blank" rel="noopener">前往 Facebook 粉絲專頁私訊小編 ↗</a>
+    </div>
     <button type="button" id="doneOk">知道了</button>
   </div>
 </div>
@@ -597,7 +633,7 @@ var ORDER_TOPIC = "salt-chicken-jn7ovfnl4u4als62";
 var ORDER_SERVER = "https://ntfy.sh/";
 /* 營業時間與社群連結（連結請貼完整網址，例如 https://www.facebook.com/你的粉專；留空就不顯示） */
 var OPEN_TIME = "18:00", CLOSE_TIME = "23:00";
-var FB_URL = "https://www.facebook.com/share/1A9nX6ikWY/";
+var FB_URL = "https://www.facebook.com/share/18uM4DJSed/?mibextid=wwXIfr";
 var IG_URL = "https://www.instagram.com/taiwan_no.1_c_s_c/";
 var TH_URL = "https://www.threads.com/@taiwan_no.1_c_s_c";
 function setupSocial() {
@@ -1215,10 +1251,14 @@ function buildTimeOptions() {
   pollSlots();
 }
 var slotMap = {}, blockedSlots = [];
-function applyBooked(d) {                       /* 店家收銀頁送來的：封鎖時段、暫停接單 */
-  var fresh = !!(d && d.date === todayStr());
-  paused = !!(fresh && d.paused);
-  blockedSlots = fresh && Array.isArray(d.blocked) ? d.blocked.slice() : [];
+function updatePauseNotice() {
+  var notice = document.getElementById("pauseNotice");
+  if (notice) notice.hidden = !paused;
+}
+function applyBooked(d) {                       /* 店家手動狀態：封鎖與暫停跨日保留，直到店家手動解除 */
+  paused = !!(d && d.paused);
+  blockedSlots = d && Array.isArray(d.blocked) ? d.blocked.slice() : [];
+  updatePauseNotice();
   recomputeBooked();
 }
 function recomputeBooked() {

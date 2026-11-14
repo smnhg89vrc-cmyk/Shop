@@ -746,7 +746,24 @@ setInterval(()=>{try{renderOrders()}catch(e){}},30000);
 let sm={d:"",s:[],p:false,r:{},del:[]},smHour=18;
 try{const v=JSON.parse(localStorage.getItem("pos2_slots")||"null");if(v&&typeof v==="object"&&Array.isArray(v.s))sm=v}catch(e){}
 function smSave(){try{localStorage.setItem("pos2_slots",JSON.stringify(sm))}catch(e){}}
-function smFresh(){const t=ymd(Date.now());if(sm.d!==t){sm={d:t,s:[],p:false,r:{},del:[]};smSave()}if(!sm.r)sm.r={};if(!sm.del)sm.del=[]}
+function smFresh(){
+  const t=ymd(Date.now());
+  /* 跨日只重置每日訂單釋放紀錄；手動封鎖時段與暫停狀態永久保留，直到店家手動解除 */
+  if(sm.d!==t){sm.d=t;sm.r={};sm.del=[];smSave()}
+  if(!Array.isArray(sm.s))sm.s=[];
+  if(typeof sm.p!=="boolean")sm.p=false;
+  if(!sm.r)sm.r={};if(!sm.del)sm.del=[];
+}
+let smObservedDate=ymd(Date.now());
+function checkDailyRollover(){
+  const today=ymd(Date.now());
+  if(smObservedDate===today && sm.d===today)return;
+  smObservedDate=today;
+  smFresh();
+  renderSlotMgr();
+  publishStock(true);
+  toast("新的一天開始了，原本手動封鎖的時段仍維持封鎖");
+}
 let slotMapPOS={};const freedSent=new Set();
 function freeOnce(c){if(!c||freedSent.has(c))return;freedSent.add(c);postSlotFree(c)}
 function slotCodes(){
@@ -851,7 +868,11 @@ function publishStock(force){
 
 /* ---------- 開始 ---------- */
 $("qd").value=ymd(Date.now());
-renderMenu();renderPay();setView("pos");renderOrders();connect();publishStock(true);setInterval(()=>publishStock(true),20*60*1000);paintCtl();paintSort();pollSlotTopic();if(lockOn)acquireLock();
+renderMenu();renderPay();setView("pos");renderOrders();connect();publishStock(true);setInterval(()=>publishStock(true),20*60*1000);
+setInterval(checkDailyRollover,30000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkDailyRollover()});
+window.addEventListener("pageshow",checkDailyRollover);
+paintCtl();paintSort();pollSlotTopic();if(lockOn)acquireLock();
 </script>
 </body>
 </html>
