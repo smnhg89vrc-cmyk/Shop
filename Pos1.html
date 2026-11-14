@@ -405,37 +405,93 @@ body{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
 .finish-big,.send #sendBtn,.payc .paidbtn{border-radius:16px}
 
 
-/* 線上暫停公告：覆蓋整個客人頁，避免客人繼續操作下單 */
+/* 今日公休公告：皇家黑金玻璃質感，依照參考圖設計 */
 .pause-notice{
   position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;
-  padding:max(24px,env(safe-area-inset-top,0px)) 22px max(24px,env(safe-area-inset-bottom,0px));
-  background:rgba(7,8,10,.34);color:#F7E8C2;text-align:center;
-  -webkit-backdrop-filter:blur(11px) saturate(115%);
-  backdrop-filter:blur(11px) saturate(115%);
+  padding:max(22px,env(safe-area-inset-top,0px)) 18px max(22px,env(safe-area-inset-bottom,0px));
+  background:rgba(8,8,9,.42);color:#F7EBD0;text-align:center;
+  -webkit-backdrop-filter:blur(18px) saturate(125%);
+  backdrop-filter:blur(18px) saturate(125%);
 }
 .pause-notice[hidden]{display:none}
 .pause-notice .pause-card{
-  position:relative;overflow:hidden;width:100%;max-width:440px;padding:34px 24px;
-  border:1px solid rgba(224,184,102,.82);border-radius:25px;
-  background:linear-gradient(145deg,rgba(26,25,23,.84),rgba(5,6,8,.78));
-  -webkit-backdrop-filter:blur(22px) saturate(125%);
-  backdrop-filter:blur(22px) saturate(125%);
-  box-shadow:0 22px 65px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,232,184,.18),0 0 24px rgba(204,157,73,.13);
+  position:relative;isolation:isolate;overflow:visible;width:100%;max-width:470px;
+  max-height:calc(100dvh - 44px);overflow-y:auto;padding:76px 25px 56px;
+  border:1.5px solid rgba(236,194,105,.96);border-radius:34px;
+  background:linear-gradient(145deg,rgba(20,19,18,.84),rgba(7,7,8,.80) 58%,rgba(30,23,14,.82));
+  -webkit-backdrop-filter:blur(26px) saturate(135%);
+  backdrop-filter:blur(26px) saturate(135%);
+  box-shadow:0 28px 80px rgba(0,0,0,.58),inset 0 1px 0 rgba(255,239,196,.28),0 0 26px rgba(226,174,76,.22);
 }
 .pause-notice .pause-card:before{
-  content:"";position:absolute;inset:7px;border:1px solid rgba(218,179,101,.22);
-  border-radius:19px;pointer-events:none
+  content:"";position:absolute;inset:7px;z-index:-1;border:1px solid rgba(235,194,108,.36);
+  border-radius:27px;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.035),transparent 34%,rgba(232,181,85,.025));
 }
-.pause-notice .pause-mark{font-size:37px;line-height:1.2;margin-bottom:13px;color:#E9C477;text-shadow:0 0 18px rgba(226,181,91,.42)}
-.pause-notice h2{margin:0 0 16px;color:#F0C875;font-size:29px;font-weight:900;letter-spacing:.12em;text-shadow:0 2px 14px rgba(219,168,75,.25)}
-.pause-notice h2:after{content:"";display:block;width:82%;height:1px;margin:16px auto 0;background:linear-gradient(90deg,transparent,#D7B36B 18%,#F5D995 50%,#D7B36B 82%,transparent)}
-.pause-notice p{margin:9px 0;color:rgba(255,248,232,.88);font-size:16px;line-height:1.9}
-.pause-notice .pause-brand{margin-top:24px;padding-top:17px;border-top:1px solid rgba(218,179,101,.34);color:#F1D69D;font-weight:900;letter-spacing:.06em}
+.pause-notice .pause-close{
+  position:absolute;top:-17px;right:-10px;width:62px;height:62px;display:flex;align-items:center;justify-content:center;
+  border:2px solid #E9C36F;border-radius:50%;background:linear-gradient(145deg,#21190D,#050505 72%);
+  color:#F8D98F;font-size:36px;font-weight:300;line-height:1;cursor:pointer;
+  box-shadow:0 4px 18px rgba(0,0,0,.48),inset 0 1px 5px rgba(255,224,155,.22),0 0 14px rgba(220,169,72,.22);
+  -webkit-tap-highlight-color:transparent;
+}
+.pause-notice .pause-close:active{transform:scale(.95)}
+.pause-notice h2{
+  position:relative;margin:0 0 36px;color:#F6D17C;font-family:"Noto Serif TC","Songti TC","STKaiti",serif;
+  font-size:clamp(37px,9vw,54px);font-weight:900;letter-spacing:.13em;line-height:1.35;
+  text-shadow:0 2px 0 #9D6823,0 5px 12px rgba(0,0,0,.9),0 0 20px rgba(255,194,74,.38);
+}
+.pause-notice h2:before,.pause-notice h2:after{
+  content:"";position:absolute;top:50%;width:19%;height:1.5px;
+  background:linear-gradient(90deg,transparent,#E6BC68,#FFF0B9);
+  box-shadow:0 0 8px rgba(255,197,85,.5);
+}
+.pause-notice h2:before{left:0}
+.pause-notice h2:after{right:0;transform:scaleX(-1)}
+.pause-notice .pause-rule{
+  height:2px;margin:-17px 0 31px;background:linear-gradient(90deg,transparent,#B98535 18%,#FFE6A0 50%,#B98535 82%,transparent);
+  box-shadow:0 0 12px rgba(255,192,73,.55)
+}
+.pause-notice p{
+  position:relative;margin:14px 0;color:rgba(255,248,231,.94);font-family:"Noto Serif TC","Songti TC","STKaiti",serif;
+  font-size:clamp(15px,4.1vw,19px);font-weight:500;line-height:1.95;letter-spacing:.035em;
+  text-shadow:0 1px 5px rgba(0,0,0,.7)
+}
+.pause-notice .pause-divider{
+  display:flex;align-items:center;gap:12px;margin:29px 4px 25px;color:#F3CB75;font-size:19px;
+}
+.pause-notice .pause-divider:before,.pause-notice .pause-divider:after{
+  content:"";height:1.5px;flex:1;background:linear-gradient(90deg,transparent,#E6BD69,#FFF0B9)
+}
+.pause-notice .pause-divider:after{transform:scaleX(-1)}
+.pause-notice .pause-divider span{text-shadow:0 0 12px #F6C65F}
+.pause-notice .pause-brand{
+  position:relative;display:block;margin:0 auto;padding:13px 12px 15px;max-width:390px;
+  border:2px solid #E4B85D;border-radius:17px;
+  background:linear-gradient(180deg,rgba(2,2,2,.88),rgba(24,17,8,.94));
+  color:#F8D987;font-family:"Noto Serif TC","Songti TC","STKaiti",serif;
+  font-size:clamp(17px,4.5vw,23px);font-weight:900;letter-spacing:.045em;
+  text-shadow:0 1px 8px rgba(247,194,86,.3);
+  box-shadow:0 7px 20px rgba(0,0,0,.45),inset 0 1px 5px rgba(255,223,153,.14),0 0 15px rgba(213,163,71,.18)
+}
+.pause-notice .pause-wave{
+  position:absolute;left:0;right:0;bottom:0;height:38px;overflow:hidden;pointer-events:none;
+  border-radius:0 0 32px 32px;opacity:.9;
+}
+.pause-notice .pause-wave:before,.pause-notice .pause-wave:after{
+  content:"";position:absolute;left:-8%;width:116%;height:42px;bottom:-26px;
+  border-top:2px solid #E8BC62;border-radius:50%;transform:rotate(-3deg);
+  box-shadow:0 -3px 12px rgba(255,192,72,.22)
+}
+.pause-notice .pause-wave:after{bottom:-32px;transform:rotate(3deg);border-color:rgba(255,225,151,.72)}
 @media (max-width:380px){
-  .pause-notice .pause-card{padding:29px 18px}
-  .pause-notice h2{font-size:26px}
-  .pause-notice p{font-size:15px}
+  .pause-notice{padding-left:13px;padding-right:13px}
+  .pause-notice .pause-card{padding:68px 18px 48px;border-radius:27px}
+  .pause-notice .pause-close{width:54px;height:54px;font-size:31px;right:-5px}
+  .pause-notice h2{margin-bottom:29px}
+  .pause-notice .pause-divider{margin:23px 2px 20px}
 }
+@media (max-height:700px){.pause-notice .pause-card{padding-top:60px;padding-bottom:42px}.pause-notice h2{margin-bottom:24px}.pause-notice p{margin:9px 0}.pause-notice .pause-divider{margin:17px 4px}}
 .confirm-fb{margin:14px 0 16px;padding:14px;background:var(--tint);border:1px solid var(--line);border-radius:12px;text-align:center;line-height:1.7}
 .confirm-fb strong{display:block;color:var(--accent);font-size:16px}
 .confirm-fb p{margin:6px 0 12px;font-size:14px;color:var(--muted)}
@@ -449,12 +505,15 @@ body{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
 <div id="pop" role="status" aria-live="polite"></div>
 <div class="pause-notice" id="pauseNotice" role="alert" aria-live="assertive" hidden>
   <div class="pause-card">
-    <div class="pause-mark" aria-hidden="true">♛</div>
+    <button class="pause-close" id="pauseClose" type="button" aria-label="關閉公告">×</button>
     <h2>今日公休</h2>
+    <div class="pause-rule" aria-hidden="true"></div>
     <p>今天店休，暫不提供現場及線上接單。</p>
     <p>感謝您的支持與體諒，造成不便敬請見諒！</p>
     <p>期待下次再為您準備熱騰騰的美味。</p>
+    <div class="pause-divider" aria-hidden="true"><span>◆</span></div>
     <div class="pause-brand">台灣第一家鹽酥雞・30年老店</div>
+    <div class="pause-wave" aria-hidden="true"></div>
   </div>
 </div>
 
@@ -1222,7 +1281,7 @@ document.getElementById("sendBtn").addEventListener("click", sendOrder);
 document.getElementById("cancelBtn").addEventListener("click", cancelOrder);
 
 var SLOT_MIN = 5, SLOT_CAP = 1, LEAD_MIN = 10;   /* 一鍋約 5 分鐘，每個時段只收 1 張單 */
-var booked = {}, tpHour = null, sentSlot = "", paused = false;
+var booked = {}, tpHour = null, sentSlot = "", paused = false, pauseNoticeDismissed = false;
 function hhmm(m) { return ("0" + Math.floor(m / 60)).slice(-2) + ":" + ("0" + (m % 60)).slice(-2); }
 function todayStr() { var d = new Date(); return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); }
 function slotList() {
@@ -1267,12 +1326,19 @@ function buildTimeOptions() {
   pollSlots();
 }
 var slotMap = {}, blockedSlots = [];
+var pauseCloseBtn = document.getElementById("pauseClose");
+if (pauseCloseBtn) pauseCloseBtn.addEventListener("click", function () {
+  pauseNoticeDismissed = true;
+  updatePauseNotice();
+});
 function updatePauseNotice() {
   var notice = document.getElementById("pauseNotice");
-  if (notice) notice.hidden = !paused;
+  if (notice) notice.hidden = !paused || pauseNoticeDismissed;
 }
 function applyBooked(d) {                       /* 店家手動狀態：封鎖與暫停跨日保留，直到店家手動解除 */
-  paused = !!(d && d.paused);
+  var nextPaused = !!(d && d.paused);
+  if (nextPaused !== paused) pauseNoticeDismissed = false;
+  paused = nextPaused;
   blockedSlots = d && Array.isArray(d.blocked) ? d.blocked.slice() : [];
   updatePauseNotice();
   recomputeBooked();
