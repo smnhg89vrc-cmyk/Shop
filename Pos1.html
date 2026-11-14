@@ -409,17 +409,33 @@ body{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
 .pause-notice{
   position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;
   padding:max(24px,env(safe-area-inset-top,0px)) 22px max(24px,env(safe-area-inset-bottom,0px));
-  background:rgba(255,251,242,.98);color:#211A16;text-align:center;
+  background:rgba(7,8,10,.34);color:#F7E8C2;text-align:center;
+  -webkit-backdrop-filter:blur(11px) saturate(115%);
+  backdrop-filter:blur(11px) saturate(115%);
 }
 .pause-notice[hidden]{display:none}
 .pause-notice .pause-card{
-  width:100%;max-width:440px;padding:34px 24px;border:1px solid #E8DDCB;border-radius:24px;
-  background:#fff;box-shadow:0 14px 40px rgba(45,28,16,.12)
+  position:relative;overflow:hidden;width:100%;max-width:440px;padding:34px 24px;
+  border:1px solid rgba(224,184,102,.82);border-radius:25px;
+  background:linear-gradient(145deg,rgba(26,25,23,.84),rgba(5,6,8,.78));
+  -webkit-backdrop-filter:blur(22px) saturate(125%);
+  backdrop-filter:blur(22px) saturate(125%);
+  box-shadow:0 22px 65px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,232,184,.18),0 0 24px rgba(204,157,73,.13);
 }
-.pause-notice .pause-mark{font-size:42px;line-height:1.2;margin-bottom:14px}
-.pause-notice h2{margin:0 0 14px;color:#B3241A;font-size:27px;font-weight:900;letter-spacing:.04em}
-.pause-notice p{margin:8px 0;color:#6B5E55;font-size:16px;line-height:1.9}
-.pause-notice .pause-brand{margin-top:22px;color:#211A16;font-weight:900;letter-spacing:.04em}
+.pause-notice .pause-card:before{
+  content:"";position:absolute;inset:7px;border:1px solid rgba(218,179,101,.22);
+  border-radius:19px;pointer-events:none
+}
+.pause-notice .pause-mark{font-size:37px;line-height:1.2;margin-bottom:13px;color:#E9C477;text-shadow:0 0 18px rgba(226,181,91,.42)}
+.pause-notice h2{margin:0 0 16px;color:#F0C875;font-size:29px;font-weight:900;letter-spacing:.12em;text-shadow:0 2px 14px rgba(219,168,75,.25)}
+.pause-notice h2:after{content:"";display:block;width:82%;height:1px;margin:16px auto 0;background:linear-gradient(90deg,transparent,#D7B36B 18%,#F5D995 50%,#D7B36B 82%,transparent)}
+.pause-notice p{margin:9px 0;color:rgba(255,248,232,.88);font-size:16px;line-height:1.9}
+.pause-notice .pause-brand{margin-top:24px;padding-top:17px;border-top:1px solid rgba(218,179,101,.34);color:#F1D69D;font-weight:900;letter-spacing:.06em}
+@media (max-width:380px){
+  .pause-notice .pause-card{padding:29px 18px}
+  .pause-notice h2{font-size:26px}
+  .pause-notice p{font-size:15px}
+}
 .confirm-fb{margin:14px 0 16px;padding:14px;background:var(--tint);border:1px solid var(--line);border-radius:12px;text-align:center;line-height:1.7}
 .confirm-fb strong{display:block;color:var(--accent);font-size:16px}
 .confirm-fb p{margin:6px 0 12px;font-size:14px;color:var(--muted)}
@@ -433,7 +449,7 @@ body{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
 <div id="pop" role="status" aria-live="polite"></div>
 <div class="pause-notice" id="pauseNotice" role="alert" aria-live="assertive" hidden>
   <div class="pause-card">
-    <div class="pause-mark" aria-hidden="true">🍗</div>
+    <div class="pause-mark" aria-hidden="true">♛</div>
     <h2>今日公休</h2>
     <p>今天店休，暫不提供現場及線上接單。</p>
     <p>感謝您的支持與體諒，造成不便敬請見諒！</p>
