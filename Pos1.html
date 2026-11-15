@@ -1128,8 +1128,8 @@ h2{
     <div class="pause-mark" aria-hidden="true"></div>
     <h2 id="pauseTitle">今日公休</h2>
     <div class="pause-rule" aria-hidden="true"></div>
-    <p class="pause-copy">今天店休，暫不提供現場及線上接單。</p>
-    <p class="pause-thanks">感謝您的支持與體諒，造成不便敬請見諒！<br>期待下次再為您準備熱騰騰的美味。</p>
+    <p class="pause-copy" id="pauseCopy">今天店休，暫不提供現場及線上接單。</p>
+    <p class="pause-thanks" id="pauseThanks">感謝您的支持與體諒，造成不便敬請見諒！<br>期待下次再為您準備熱騰騰的美味。</p>
     <div class="pause-brand">台灣第一家鹽酥雞 <b>・</b> 30年老店</div>
     <a class="pause-contact" href="https://www.facebook.com/share/18uM4DJSed/?mibextid=wwXIfr" target="_blank" rel="noopener">有任何問題，歡迎私訊粉絲專頁 <span>↗</span></a>
   </section>
@@ -1935,8 +1935,19 @@ function buildTimeOptions() {
 }
 var slotMap = {}, blockedSlots = [];
 var pauseNoticeDismissed = false;
+var currentNoticeMode = "holiday";
 function updatePauseNotice() {
   var notice = document.getElementById("pauseNotice");
+  var title = document.getElementById("pauseTitle"), copy = document.getElementById("pauseCopy"), thanks = document.getElementById("pauseThanks");
+  if (currentNoticeMode === "busy") {
+    if (title) { title.textContent = "目前忙碌，暫停線上接單"; title.style.fontSize = "23px"; title.style.letterSpacing = ".06em"; }
+    if (copy) copy.textContent = "目前現場訂單較多，為了確保每一份餐點的品質，暫時停止接受線上訂單。";
+    if (thanks) thanks.textContent = "造成不便，敬請見諒！待忙碌情況緩解後，將儘快重新開放。感謝您的體諒與支持！";
+  } else {
+    if (title) { title.textContent = "今日公休"; title.style.fontSize = "30px"; title.style.letterSpacing = ".16em"; }
+    if (copy) copy.textContent = "今天店休，暫不提供現場及線上接單。";
+    if (thanks) thanks.innerHTML = "感謝您的支持與體諒，造成不便敬請見諒！<br>期待下次再為您準備熱騰騰的美味。";
+  }
   if (notice) notice.hidden = !paused || pauseNoticeDismissed;
 }
 var pauseCloseButton = document.getElementById("pauseNoticeClose");
@@ -1946,7 +1957,9 @@ if (pauseCloseButton) pauseCloseButton.addEventListener("click", function () {
 });
 function applyBooked(d) {                       /* 店家手動狀態：封鎖與暫停跨日保留，直到店家手動解除 */
   paused = !!(d && d.paused);
-  if (!paused) pauseNoticeDismissed = false;
+  var nextNoticeMode = d && d.noticeMode === "busy" ? "busy" : "holiday";
+  if (nextNoticeMode !== currentNoticeMode || !paused) pauseNoticeDismissed = false;
+  currentNoticeMode = nextNoticeMode;
   blockedSlots = d && Array.isArray(d.blocked) ? d.blocked.slice() : [];
   updatePauseNotice();
   recomputeBooked();

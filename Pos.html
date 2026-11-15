@@ -682,7 +682,12 @@ input[type=date],#cash{
   <section id="v-orders" hidden><div class="box"><h3>線上訂單（客人按「送出訂單給店家」後出現）</h3><p class="note" id="ostat"></p>
     <div class="ops" style="margin:8px 0 12px"><button class="mini" id="alarmBtn" type="button">🔔 提示音：開</button><button class="mini" id="testBtn" type="button">🔊 測試提示音</button><button class="mini" id="lockBtn" type="button">☀️ 螢幕常亮：關</button><button class="mini" id="sortBtn" type="button">↕ 排序：下單時間（新→舊）</button></div><div id="olist"></div></div>
     <div class="box"><h3>時段管理（封鎖的時段，客人頁會劃掉）</h3>
-      <div class="ops" style="margin-bottom:10px"><button class="mini" id="pauseBtn" type="button">⏸ 暫停線上接單</button><button class="mini" id="orphanBtn" type="button">🧹 開放沒有訂單的時段</button></div>
+      <div class="ops" style="margin-bottom:10px;flex-wrap:wrap">
+        <button class="mini" id="holidayNoticeBtn" type="button">📢 公告今日公休</button>
+        <button class="mini" id="busyNoticeBtn" type="button">⏳ 公告目前忙碌</button>
+        <button class="mini" id="pauseBtn" type="button">▶ 恢復線上接單</button>
+        <button class="mini" id="orphanBtn" type="button">🧹 開放沒有訂單的時段</button>
+      </div><p class="note" id="noticeModeStatus">選擇公告後，客人端會同步顯示；恢復接單即可關閉公告。</p>
       <div id="slotmgr"></div>
       <p class="note">點「空」的時段＝封鎖（現場客人多、休息時用），再點一次解除。點有 📦 的時段＝開放給其他客人預約（訂單會保留，例如客人不來了）。</p></div></section>
   <section id="v-ledger" hidden>
@@ -1207,7 +1212,7 @@ function etaLine(o){
 }
 setInterval(()=>{try{renderOrders()}catch(e){}},30000);
 
-let sm={d:"",s:[],p:false,r:{},del:[]},smHour=18;
+let sm={d:"",s:[],p:false,noticeMode:"holiday",r:{},del:[]},smHour=18;
 try{const v=JSON.parse(localStorage.getItem("pos2_slots")||"null");if(v&&typeof v==="object"&&Array.isArray(v.s))sm=v}catch(e){}
 function smSave(){try{localStorage.setItem("pos2_slots",JSON.stringify(sm))}catch(e){}}
 function smFresh(){
@@ -1216,6 +1221,7 @@ function smFresh(){
   if(sm.d!==t){sm.d=t;sm.r={};sm.del=[];smSave()}
   if(!Array.isArray(sm.s))sm.s=[];
   if(typeof sm.p!=="boolean")sm.p=false;
+  if(sm.noticeMode!=="busy"&&sm.noticeMode!=="holiday")sm.noticeMode="holiday";
   if(!sm.r)sm.r={};if(!sm.del)sm.del=[];
 }
 let smObservedDate=ymd(Date.now());
@@ -1279,7 +1285,10 @@ function renderSlotMgr(){
     chips+=`<button type="button" class="sm-slot${c?" booked":""}${b?" blocked":""}${m<cur?" past":""}" data-v="${v}">${v}<small>${c?"📦 "+esc(c.join("、")):b?"已封鎖":"空"}</small></button>`;
   }
   box.innerHTML=`<div class="sm-hours">${hb}</div><div class="sm-grid">${chips}</div>`;
-  $("pauseBtn").textContent=sm.p?"▶ 恢復線上接單（目前暫停中）":"⏸ 暫停線上接單";
+  $("pauseBtn").textContent=sm.p?"▶ 恢復線上接單（目前暫停中）":"▶ 恢復線上接單";
+  $("holidayNoticeBtn").textContent=(sm.p&&sm.noticeMode==="holiday"?"✓ ":"")+"📢 公告今日公休";
+  $("busyNoticeBtn").textContent=(sm.p&&sm.noticeMode==="busy"?"✓ ":"")+"⏳ 公告目前忙碌";
+  $("noticeModeStatus").textContent=sm.p?(sm.noticeMode==="busy"?"目前公告：忙碌暫停線上接單，客人端同步顯示。":"目前公告：今日公休，客人端同步顯示。"):"目前未公告，線上接單開放中。";
 }
 $("slotmgr").addEventListener("click",e=>{
   const h=e.target.closest("button[data-h]");if(h){smHour=+h.dataset.h;renderSlotMgr();return}
@@ -1302,7 +1311,10 @@ $("orphanBtn").addEventListener("click",()=>{
   list.forEach(x=>{sm.r[x[1]]=x[0];delete slotMapPOS[x[1]];postSlotFree(x[1]);freedSent.add(x[1])});
   smSave();renderSlotMgr();publishStock();toast("已開放 "+list.length+" 個時段");
 });
-$("pauseBtn").addEventListener("click",()=>{smFresh();sm.p=!sm.p;smSave();renderSlotMgr();publishStock();toast(sm.p?"已暫停線上接單，客人頁會顯示暫停":"已恢復線上接單")});
+function setNoticeMode(mode){smFresh();sm.p=true;sm.noticeMode=mode;smSave();renderSlotMgr();publishStock(true);toast(mode==="holiday"?"已發布今日公休公告":"已發布忙碌暫停接單公告")}
+$("holidayNoticeBtn").addEventListener("click",()=>setNoticeMode("holiday"));
+$("busyNoticeBtn").addEventListener("click",()=>setNoticeMode("busy"));
+$("pauseBtn").addEventListener("click",()=>{smFresh();sm.p=false;smSave();renderSlotMgr();publishStock(true);toast("已恢復線上接單，客人端公告已關閉")});
 
 /* ---------- 售完同步（送到客人頁） ---------- */
 const STOCK_TOPIC="salt-stock-h8ppt9tbymvyced3";
@@ -1321,12 +1333,12 @@ function publishStock(force){
   const out=items.filter(i=>i.out).map(i=>i.name);
   const gl=[],gm={};
   const m=items.map(i=>{if(!(i.group in gm)){gm[i.group]=gl.length;gl.push(i.group)}return[i.name,i.price,gm[i.group]]});
-  const sig=JSON.stringify([out,today,sm.s.slice().sort(),sm.p,gl,m]);
+  const sig=JSON.stringify([out,today,sm.s.slice().sort(),sm.p,sm.noticeMode,gl,m]);
   if(!force&&sig===lastStockSig)return;
   lastStockSig=sig;
   try{
     fetch("https://ntfy.sh/",{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({topic:STOCK_TOPIC,title:"品項狀態",message:JSON.stringify({out:out,blocked:sm.s,paused:sm.p,date:today,g:gl,m:m,t:Date.now()}),priority:1})}).catch(()=>{});
+      body:JSON.stringify({topic:STOCK_TOPIC,title:"品項狀態",message:JSON.stringify({out:out,blocked:sm.s,paused:sm.p,noticeMode:sm.noticeMode,date:today,g:gl,m:m,t:Date.now()}),priority:1})}).catch(()=>{});
   }catch(e){}
 }
 
