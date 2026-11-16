@@ -662,6 +662,32 @@ input[type=date],#cash{
 .ocard{border-top-color:#39372f!important}
 .ocard .tot{font-weight:800!important}
 
+
+/* ===== 快速收銀磁磚版：品名直接點選、分類快速篩選 ===== */
+#menuTools{position:sticky;top:calc(env(safe-area-inset-top,0px) + 62px);z-index:4;background:var(--bg);padding:8px 0 10px;margin-bottom:8px}
+#menuCats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+#menuCats button{min-width:0;min-height:42px;padding:4px 2px;border:1px solid var(--line);border-radius:10px;background:#20211d;color:var(--ink);font:inherit;font-size:13px;font-weight:800;white-space:nowrap}
+#menuCats button.on{background:var(--btn);border-color:var(--btn);color:#171611}
+#menuHint{font-size:12px;color:var(--muted);margin:6px 2px 0}
+#menu.menu-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:stretch}
+.menu-tile{min-width:0;min-height:112px;border:1px solid var(--line);border-radius:13px;background:linear-gradient(145deg,#24251f,#1a1b18);padding:0;overflow:hidden;display:flex;flex-direction:column}
+.menu-tile.selected{border:2px solid #c7a96b;background:linear-gradient(145deg,#332d20,#222019)}
+.menu-tile.sold{opacity:.48}
+.menu-tile .tile-add{width:100%;flex:1;min-height:66px;padding:8px 3px 3px;border:0;background:transparent;color:var(--ink);font:inherit;text-align:center;cursor:pointer}
+.menu-tile .tile-name{display:block;font-size:16px;font-weight:900;line-height:1.3;overflow-wrap:anywhere}
+.menu-tile .tile-price{display:block;margin-top:4px;color:#d7bd83;font-size:13px;font-weight:700}
+.menu-tile .tile-qty{display:inline-block;margin-top:4px;min-width:22px;padding:0 6px;border-radius:20px;background:#c7a96b;color:#171611;font-size:13px;font-weight:900;line-height:21px}
+.menu-tile .tile-ops{display:flex;align-items:center;justify-content:space-between;gap:4px;padding:4px 6px 6px}
+.menu-tile .tile-ops button{width:32px;height:30px;padding:0;border:1px solid #746342;border-radius:8px;background:#292820;color:#ead8ad;font-size:20px;font-weight:900;line-height:1}
+.menu-tile .tile-ops button:disabled{opacity:.25}
+.menu-tile .tile-ops .tile-count{font-size:15px;font-weight:900;color:var(--ink);font-variant-numeric:tabular-nums}
+@media(max-width:370px){
+ #menuCats{grid-template-columns:repeat(3,minmax(0,1fr))}
+ #menu.menu-grid{gap:6px}
+ .menu-tile{min-height:106px}
+ .menu-tile .tile-name{font-size:14px}
+}
+
 </style>
 </head>
 <body>
@@ -678,7 +704,7 @@ input[type=date],#cash{
 </nav></div>
 <div class="obanner" id="obanner" hidden role="alert"></div>
 <main class="wrap">
-  <section id="v-pos"><div class="olbar" id="olbar" hidden></div><div id="menu"></div></section>
+  <section id="v-pos"><div class="olbar" id="olbar" hidden></div><div id="menuTools"><div id="menuCats" aria-label="品項分類"></div><div id="menuHint">直接點品名即可加入，右下角可快速增減數量</div></div><div id="menu" class="menu-grid"></div></section>
   <section id="v-orders" hidden><div class="box"><h3>線上訂單（客人按「送出訂單給店家」後出現）</h3><p class="note" id="ostat"></p>
     <div class="ops" style="margin:8px 0 12px"><button class="mini" id="alarmBtn" type="button">🔔 提示音：開</button><button class="mini" id="testBtn" type="button">🔊 測試提示音</button><button class="mini" id="lockBtn" type="button">☀️ 螢幕常亮：關</button><button class="mini" id="sortBtn" type="button">↕ 排序：下單時間（新→舊）</button></div><div id="olist"></div></div>
     <div class="box"><h3>時段管理（封鎖的時段，客人頁會劃掉）</h3>
@@ -886,19 +912,34 @@ const total=()=>items.reduce((s,i)=>s+(cart[i.id]||0)*i.price,0);
 const count=()=>Object.keys(cart).reduce((s,k)=>s+cart[k],0);
 
 /* ---------- 收銀 ---------- */
+let menuCategory="全部";
+function categoryOf(i){
+  const n=i.name;
+  if(["雞屁股","雞心","雞胗","花枝丸"].includes(n))return "串類";
+  if(["四季豆","玉米","地瓜"].includes(n))return "蔬菜";
+  if(["鹽酥雞","魷魚"].includes(n))return "雞肉海鮮";
+  return "加工品";
+}
 function renderMenu(){
   normalizeXinxinPlacement();
-  const list=sortMenuItems(items.slice());
-  $("menu").innerHTML=list.map(i=>`<div class="row${i.out?" outr":""}" id="row-${i.id}"><div><div class="name">${esc(i.name)}</div><div class="price">${i.out?"售完":"NT$ "+i.price+"／"+(i.unit||"份")}</div></div><div class="step"><button class="minus" type="button" data-id="${i.id}" data-d="-1" aria-label="減少${esc(i.name)}">−</button><span class="qty" id="qty-${i.id}">0</span><button class="plus" type="button" data-id="${i.id}" data-d="1" aria-label="增加${esc(i.name)}">+</button></div></div>`).join("");
+  const cats=["全部","雞肉海鮮","串類","蔬菜","加工品"];
+  $("menuCats").innerHTML=cats.map(c=>`<button type="button" data-cat="${c}" class="${menuCategory===c?"on":""}" aria-pressed="${menuCategory===c}">${c}</button>`).join("");
+  const list=sortMenuItems(items.slice()).filter(i=>menuCategory==="全部"||categoryOf(i)===menuCategory);
+  $("menu").innerHTML=list.map(i=>{const q=cart[i.id]||0;return `<div class="menu-tile${q?" selected":""}${i.out?" sold":""}" id="row-${i.id}"><button class="tile-add" type="button" data-id="${i.id}" data-d="1" aria-label="加入${esc(i.name)}" ${i.out?"disabled":""}><span class="tile-name">${esc(i.name)}</span><span class="tile-price">${i.out?"售完":"NT$ "+i.price+"／"+(i.unit||"份")}</span>${q?`<span class="tile-qty">${q} 份</span>`:""}</button><div class="tile-ops"><button type="button" data-id="${i.id}" data-d="-1" aria-label="減少${esc(i.name)}" ${q===0?"disabled":""}>−</button><span class="tile-count">${q}</span><button type="button" data-id="${i.id}" data-d="1" aria-label="增加${esc(i.name)}" ${i.out||q>=MAX?"disabled":""}>＋</button></div></div>`}).join("");
   updateRows();
 }
 function updateRows(){
   items.forEach(i=>{
     const q=cart[i.id]||0,row=$("row-"+i.id);if(!row)return;
-    $("qty-"+i.id).textContent=q;
-    row.classList.toggle("on",q>0);
-    row.querySelector(".minus").disabled=q===0;
-    row.querySelector(".plus").disabled=i.out||q>=MAX;
+    row.classList.toggle("selected",q>0);
+    const minus=row.querySelector('[data-d="-1"]');
+    const plus=row.querySelector('[data-d="1"]');
+    if(minus)minus.disabled=q===0;
+    if(plus)plus.disabled=i.out||q>=MAX;
+    const countEl=row.querySelector(".tile-count");if(countEl)countEl.textContent=q;
+    const qtyEl=row.querySelector(".tile-qty");
+    if(q>0&&!qtyEl){const b=row.querySelector(".tile-add");if(b)b.insertAdjacentHTML("beforeend",`<span class="tile-qty">${q} 份</span>`)}
+    else if(qtyEl){if(q>0)qtyEl.textContent=q+" 份";else qtyEl.remove()}
   });
   $("total").textContent=money(total());
   $("cnt").textContent="共 "+count()+" 份";
@@ -1000,7 +1041,8 @@ function setView(v){
 
 /* ---------- 事件 ---------- */
 document.querySelector(".tabs").addEventListener("click",e=>{const b=e.target.closest("button[data-tab]");if(b)setView(b.dataset.tab)});
-$("menu").addEventListener("click",e=>{const b=e.target.closest("button[data-id]");if(b)add(b.dataset.id,+b.dataset.d)});
+$("menuCats").addEventListener("click",e=>{const b=e.target.closest("button[data-cat]");if(!b)return;menuCategory=b.dataset.cat;renderMenu()});
+$("menu").addEventListener("click",e=>{const b=e.target.closest("button[data-id]");if(b&&!b.disabled)add(b.dataset.id,+b.dataset.d)});
 $("pay").addEventListener("click",openSheet);
 $("sh-x").addEventListener("click",closeSheet);
 $("seg").addEventListener("click",e=>{const b=e.target.closest("button[data-p]");if(b){pay=b.dataset.p;renderPay()}});
