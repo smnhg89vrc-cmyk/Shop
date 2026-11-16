@@ -1366,7 +1366,7 @@ function buildMenu(){
   sortMenuItems(ALL.slice()).filter(function(i){return menuCategory==="全部"||categoryOf(i)===menuCategory;}).forEach(function(i){
     var q=qty[i.id]||0, out=!!soldOut[i.name];
     html+='<div class="menu-tile'+(q?' selected':'')+(out?' soldout':'')+'" id="row-'+i.id+'">'+
-      '<button type="button" class="tile-add" data-id="'+i.id+'" data-d="1" '+(out||q>=MAX_QTY?'disabled':'')+'><span class="tile-name">'+i.name+'</span><span class="tile-price">'+(out?'已售完':money(i.price)+'／'+i.unit)+'</span>'+(q?'<span class="tile-qty">'+q+' 份</span>':'')+'</button>'+
+      '<button type="button" class="tile-add" data-id="'+i.id+'" data-d="1" '+(out||q>=MAX_QTY?'disabled':'')+'><span class="tile-name">'+i.name+'</span><span class="tile-price">'+(out?'已售完':money(i.price)+'／'+i.unit)+'</span>'+'<span class="tile-qty">'+q+' 份</span>'+'</button>'+
       '<div class="tile-ops"><button type="button" data-id="'+i.id+'" data-d="-1" '+(q===0?'disabled':'')+'>−</button><span class="tile-count">'+q+'</span><button type="button" data-id="'+i.id+'" data-d="1" '+(out||q>=MAX_QTY?'disabled':'')+'>＋</button></div></div>';
   });
   document.getElementById("menu").innerHTML=html;
