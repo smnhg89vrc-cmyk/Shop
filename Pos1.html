@@ -1359,7 +1359,18 @@ function total() {
 
 var menuCategory="全部";
 function categoryOf(i){var n=i.name;if(["鹽酥雞","雞皮","雞屁股","雞心","雞胗","雞脖子"].includes(n))return "雞肉類";if(n==="魷魚")return "海鮮類";if(["四季豆","玉米","地瓜","地瓜條"].includes(n))return "蔬菜區";return "台式經典炸物";}
-function buildMenu(){var cats=["全部","雞肉類","海鮮類","台式經典炸物","蔬菜區"];document.getElementById("menuCats").innerHTML=cats.map(function(c){return '<button type="button" data-cat="'+c+'" class="'+(menuCategory===c?"on":"")+'">'+c+'</button>';}).join("");var html="";sortMenuItems(ALL.slice()).filter(function(i){return menuCategory==="全部"||categoryOf(i)===menuCategory;}).forEach(function(i){var q=qty[i.id]||0;html+='<div class="menu-tile'+(q?' selected':'')+'" id="row-'+i.id+'"><button type="button" class="tile-add" data-id="'+i.id+'" data-d="1"><span class="tile-name">'+i.name+'</span><span class="tile-price">'+money(i.price)+'／'+i.unit+'</span>'+(q?'<span class="tile-qty">'+q+' 份</span>':'')+'</button><div class="tile-ops"><button type="button" data-id="'+i.id+'" data-d="-1">−</button><span class="tile-count">'+q+'</span><button type="button" data-id="'+i.id+'" data-d="1">＋</button></div></div>';});document.getElementById("menu").innerHTML=html;}
+function buildMenu(){
+  var cats=["全部","雞肉類","海鮮類","台式經典炸物","蔬菜區"];
+  document.getElementById("menuCats").innerHTML=cats.map(function(c){return '<button type="button" data-cat="'+c+'" class="'+(menuCategory===c?"on":"")+'">'+c+'</button>';}).join("");
+  var html="";
+  sortMenuItems(ALL.slice()).filter(function(i){return menuCategory==="全部"||categoryOf(i)===menuCategory;}).forEach(function(i){
+    var q=qty[i.id]||0, out=!!soldOut[i.name];
+    html+='<div class="menu-tile'+(q?' selected':'')+(out?' soldout':'')+'" id="row-'+i.id+'">'+
+      '<button type="button" class="tile-add" data-id="'+i.id+'" data-d="1" '+(out||q>=MAX_QTY?'disabled':'')+'><span class="tile-name">'+i.name+'</span><span class="tile-price">'+(out?'已售完':money(i.price)+'／'+i.unit)+'</span>'+(q?'<span class="tile-qty">'+q+' 份</span>':'')+'</button>'+
+      '<div class="tile-ops"><button type="button" data-id="'+i.id+'" data-d="-1" '+(q===0?'disabled':'')+'>−</button><span class="tile-count">'+q+'</span><button type="button" data-id="'+i.id+'" data-d="1" '+(out||q>=MAX_QTY?'disabled':'')+'>＋</button></div></div>';
+  });
+  document.getElementById("menu").innerHTML=html;
+}
 buildMenu();
 
 var TIERS = [
@@ -1503,17 +1514,8 @@ function update() {
   MILESTONES.forEach(function (m, k) { if (prevT < m.at && t >= m.at) hit = k; });
   if (hit >= 0) celebrate(hit);
   prevT = t;
-  ALL.forEach(function (i) {
-    var q = qty[i.id] || 0;
-    document.getElementById("qty-" + i.id).textContent = q;
-    var row = document.getElementById("row-" + i.id);
-    row.classList.toggle("on", q > 0);
-    row.querySelector(".minus").disabled = q === 0;
-    var out = !!soldOut[i.name];
-    row.classList.toggle("soldout", out);
-    row.querySelector(".price").textContent = out ? "已售完" : money(i.price) + "／" + i.unit;
-    row.querySelector(".plus").disabled = out || q >= MAX_QTY;
-  });
+  // 磁磚式菜單由 buildMenu 統一依照最新數量與售完狀態重繪，避免舊版列表 DOM 查找失敗。
+  buildMenu();
 
   document.getElementById("total").textContent = money(t);
 
@@ -1556,7 +1558,6 @@ function update() {
     }
     box.innerHTML = "<ul>" + lines + "</ul>";
   }
-  buildMenu();
 }
 
 document.getElementById("menuCats").addEventListener("click",function(e){var c=e.target.closest("button[data-cat]");if(!c)return;menuCategory=c.getAttribute("data-cat");buildMenu();});
