@@ -1063,8 +1063,61 @@ $("wipe").addEventListener("click",()=>{
 
 /* ---------- 線上訂單（客人頁送出 → ntfy → 這裡） ---------- */
 const ORDER_TOPIC="salt-chicken-jn7ovfnl4u4als62";
+/* 夫妻雙手機 POS 狀態同步：只傳訂單代碼、日期與狀態，不傳客人姓名/電話/品項 */
+const POS_SYNC_TOPIC="salt-pos-sync-7f3c9a2d6e8b4f1a";
+let posSyncSeen=load("pos2_sync_seen",[]),posSyncActions=load("pos2_sync_actions",[]),posSyncOutbox=load("pos2_sync_outbox",[]),posSyncBusy=false,posSyncLast=0;
 let orders=load("pos2_orders",[]),seen=load("pos2_seen",[]),curOrder=null,es=null,online=false,polling=false,pollBusy=false;
 orders.forEach(o=>(o.items||[]).forEach(i=>{if(REN[i.n])i.n=REN[i.n]}));
+function orderDay(o){return ymd(Number(o.t0||o.t)||Date.now())}
+function savePosSync(){try{localStorage.setItem("pos2_sync_seen",JSON.stringify(posSyncSeen.slice(-400)));localStorage.setItem("pos2_sync_actions",JSON.stringify(posSyncActions.slice(-300)));localStorage.setItem("pos2_sync_outbox",JSON.stringify(posSyncOutbox.slice(-100)))}catch(e){}}
+function flushPosSyncOutbox(){
+  if(!POS_SYNC_TOPIC||typeof fetch==="undefined"||!posSyncOutbox.length)return;
+  posSyncOutbox.slice().forEach(a=>{if(posSyncSending.has(a.id))return;posSyncSending.add(a.id);fetch("https://ntfy.sh/",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({topic:POS_SYNC_TOPIC,title:"POS_SYNC",message:JSON.stringify(a),priority:1})}).then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);posSyncOutbox=posSyncOutbox.filter(x=>x.id!==a.id);savePosSync()}).catch(()=>{}).finally(()=>posSyncSending.delete(a.id))});
+}
+function applyPosSync(a,remember=true){
+  if(!a||!a.code||!a.day||!['done','delete'].includes(a.action))return false;
+  if(remember){posSyncActions.push(a);posSyncActions=posSyncActions.slice(-300);savePosSync()}
+  const o=orders.find(x=>x.code===a.code&&orderDay(x)===a.day);
+  if(a.action==="done"){
+    if(o&&o.status==="pending"){o.status="done";freeOnce(o.code);if(curOrder===o.k){curOrder=null;renderBanner()}}
+  }else{
+    if(o){freeOnce(o.code);orders=orders.filter(x=>x!==o);if(curOrder===o.k){curOrder=null;renderBanner()}}
+  }
+  saveO();renderOrders();
+  return true;
+}
+function publishPosSync(action,o){
+  if(!o||!o.code||!POS_SYNC_TOPIC||typeof fetch==="undefined")return;
+  const a={v:1,id:"ps"+Date.now().toString(36)+Math.random().toString(36).slice(2,8),action:action,code:o.code,day:orderDay(o),at:Date.now()};
+  applyPosSync(a,true);posSyncOutbox.push(a);posSyncOutbox=posSyncOutbox.slice(-100);savePosSync();flushPosSyncOutbox();
+}
+function handlePosSyncMessage(m){
+  if(!m||m.event!=="message"||m.title!=="POS_SYNC")return false;
+  let a;try{a=JSON.parse(m.message||"{}")}catch(e){return true}
+  if(!a||!a.id)return true;
+  if(posSyncSeen.includes(a.id))return true;
+  posSyncSeen.push(a.id);posSyncSeen=posSyncSeen.slice(-400);
+  if(a.at)posSyncLast=Math.max(posSyncLast,Number(a.at)||0);
+  applyPosSync(a,true);savePosSync();return true;
+}
+async function pollPosSync(){
+  if(!POS_SYNC_TOPIC||posSyncBusy||typeof fetch==="undefined")return;
+  posSyncBusy=true;flushPosSyncOutbox();
+  try{
+    const since=posSyncLast?String(Math.max(0,Math.floor(posSyncLast/1000)-30)):"12h";
+    const r=await fetch("https://ntfy.sh/"+POS_SYNC_TOPIC+"/json?poll=1&since="+encodeURIComponent(since),{cache:"no-store"});
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    const body=await r.text();
+    body.split(/\r?\n/).forEach(line=>{if(!line.trim())return;try{handlePosSyncMessage(JSON.parse(line))}catch(e){}});
+  }catch(e){}finally{posSyncBusy=false}
+}
+let posSyncES=null,posSyncSending=new Set();
+function connectPosSync(){
+  if(!POS_SYNC_TOPIC||typeof EventSource==="undefined")return;
+  try{if(posSyncES)posSyncES.close()}catch(e){}
+  try{posSyncES=new EventSource("https://ntfy.sh/"+POS_SYNC_TOPIC+"/sse?since=12h");posSyncES.onmessage=e=>{try{handlePosSyncMessage(JSON.parse(e.data))}catch(x){}}}catch(e){}
+  pollPosSync();
+}
 function saveO(){
   orders=orders.filter(x=>x.status==="pending"||Date.now()-x.t<864e5).slice(-100);
   try{localStorage.setItem("pos2_orders",JSON.stringify(orders));localStorage.setItem("pos2_seen",JSON.stringify(seen.slice(-300)))}catch(e){}
@@ -1090,6 +1143,7 @@ function saveCursor(m){
 }
 function handleMsg(m){
   if(!m||m.event!=="message")return;
+  if(handlePosSyncMessage(m))return;
   saveCursor(m);
   if(m.id&&seen.includes(m.id))return;
   if(m.id)seen.push(m.id);
@@ -1116,6 +1170,8 @@ function handleMsg(m){
     triggerOrderAlarm(rec,false);
     toast("🍗 新訂單 "+o.code+"・"+o.name+"・"+o.pickup+"取");
   }
+  const prior=posSyncActions.filter(a=>a.code===o.code&&a.day===orderDay(rec)).sort((a,b)=>(Number(b.at)||0)-(Number(a.at)||0))[0];
+  if(prior){if(prior.action==="delete")orders=orders.filter(x=>x.code!==o.code||orderDay(x)!==prior.day);else if(prior.action==="done"){const just=orders.find(x=>x.code===o.code&&orderDay(x)===prior.day);if(just)just.status="done"}}
   saveO();renderOrders();
 }
 const pending=()=>orders.filter(x=>x.status==="pending");
@@ -1148,7 +1204,7 @@ function loadOrder(k){
 }
 function markDone(){
   const o=orders.find(x=>x.k===curOrder);
-  if(o){o.status="done";freeOnce(o.code)}
+  if(o){o.status="done";freeOnce(o.code);publishPosSync("done",o)}
   curOrder=null;saveO();renderBanner();renderOrders();
 }
 function getCursor(){try{return Number(localStorage.getItem("pos2_last")||0)||0}catch(e){return 0}}
@@ -1185,7 +1241,7 @@ function connect(){
 $("olist").addEventListener("click",e=>{
   const b=e.target.closest("button[data-o]");if(!b)return;
   if(b.dataset.o==="load")loadOrder(b.dataset.k);
-  else if(confirm("確定刪除這張線上訂單嗎？")){const od=orders.find(x=>x.k===b.dataset.k);if(od){smFresh();sm.del.push(od.code);smSave();freeOnce(od.code)}orders=orders.filter(x=>x.k!==b.dataset.k);if(curOrder===b.dataset.k){curOrder=null;renderBanner()}saveO();renderOrders()}
+  else if(confirm("確定刪除這張線上訂單嗎？")){const od=orders.find(x=>x.k===b.dataset.k);if(od){smFresh();sm.del.push(od.code);smSave();freeOnce(od.code);publishPosSync("delete",od)}orders=orders.filter(x=>x.k!==b.dataset.k);if(curOrder===b.dataset.k){curOrder=null;renderBanner()}saveO();renderOrders()}
 });
 $("olbar").addEventListener("click",e=>{if(e.target.closest("#olx")){curOrder=null;cart={};updateRows();renderBanner()}});
 document.addEventListener("visibilitychange",()=>{if(!document.hidden){connect();pollMissed();pollSlotTopic();publishStock();if(lockOn&&!wl)acquireLock()}});
@@ -1342,7 +1398,7 @@ function publishStock(force){
 
 /* ---------- 開始 ---------- */
 $("qd").value=ymd(Date.now());
-renderMenu();renderPay();setView("pos");renderOrders();connect();publishStock(true);setInterval(()=>publishStock(true),20*60*1000);
+renderMenu();renderPay();setView("pos");renderOrders();connect();connectPosSync();setInterval(pollPosSync,12000);window.addEventListener("online",()=>{connectPosSync();pollPosSync()});document.addEventListener("visibilitychange",()=>{if(!document.hidden){connectPosSync();pollPosSync()}});publishStock(true);setInterval(()=>publishStock(true),20*60*1000);
 setInterval(checkDailyRollover,30000);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkDailyRollover()});
 window.addEventListener("pageshow",checkDailyRollover);
