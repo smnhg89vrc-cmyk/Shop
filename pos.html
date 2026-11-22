@@ -690,7 +690,7 @@ input[type=date],#cash{
       </div><p class="note" id="noticeModeStatus">選擇公告後，客人端會同步顯示；恢復接單即可關閉公告。</p>
       <div id="slotmgr"></div>
       <p class="note">點「空」的時段＝封鎖（現場客人多、休息時用），再點一次解除。點有 📦 的時段＝開放給其他客人預約（訂單會保留，例如客人不來了）。</p>
-      <p class="note" id="verTag">版本：2026-11-15 公休／忙碌公告版</p></div></section>
+      <p class="note" id="verTag">版本：2026-11-23 公告同步修正版</p></div></section>
   <section id="v-ledger" hidden>
     <div class="cards" id="cards"></div>
     <div class="box"><h3>收款方式</h3><div id="pays"></div></div>
@@ -1274,7 +1274,7 @@ function smFresh(){
   /* 跨日只重置每日訂單釋放紀錄；手動封鎖時段與暫停狀態永久保留，直到店家手動解除 */
   if(sm.d!==t){sm.d=t;sm.r={};sm.del=[];smSave()}
   if(!Array.isArray(sm.s))sm.s=[];
-  if(typeof sm.p!=="boolean")sm.p=false;
+  if(typeof sm.p!=="boolean")sm.p=false;if(typeof sm.pt!=="number")sm.pt=0;
   if(sm.noticeMode!=="busy"&&sm.noticeMode!=="holiday")sm.noticeMode="holiday";
   if(!sm.r)sm.r={};if(!sm.del)sm.del=[];
 }
@@ -1365,10 +1365,10 @@ $("orphanBtn").addEventListener("click",()=>{
   list.forEach(x=>{sm.r[x[1]]=x[0];delete slotMapPOS[x[1]];postSlotFree(x[1]);freedSent.add(x[1])});
   smSave();renderSlotMgr();publishStock();toast("已開放 "+list.length+" 個時段");
 });
-function setNoticeMode(mode){smFresh();sm.p=true;sm.noticeMode=mode;smSave();renderSlotMgr();publishStock(true);toast(mode==="holiday"?"已發布今日公休公告":"已發布忙碌暫停接單公告")}
+function setNoticeMode(mode){smFresh();sm.p=true;sm.noticeMode=mode;sm.pt=Date.now();smSave();renderSlotMgr();publishStock(true);toast(mode==="holiday"?"已發布今日公休公告":"已發布忙碌暫停接單公告")}
 $("holidayNoticeBtn").addEventListener("click",()=>setNoticeMode("holiday"));
 $("busyNoticeBtn").addEventListener("click",()=>setNoticeMode("busy"));
-$("pauseBtn").addEventListener("click",()=>{smFresh();sm.p=false;smSave();renderSlotMgr();publishStock(true);toast("已恢復線上接單，客人端公告已關閉")});
+$("pauseBtn").addEventListener("click",()=>{smFresh();sm.p=false;sm.pt=Date.now();smSave();renderSlotMgr();publishStock(true);toast("已恢復線上接單，客人端公告已關閉")});
 
 /* ---------- 售完同步（送到客人頁） ---------- */
 const STOCK_TOPIC="salt-stock-h8ppt9tbymvyced3";
@@ -1378,7 +1378,7 @@ function postSlotFree(code){
   try{fetch("https://ntfy.sh/",{method:"POST",headers:{"Content-Type":"text/plain;charset=UTF-8"},
     body:JSON.stringify({topic:SLOT_TOPIC,title:"時段",message:JSON.stringify({k:"free",c:code,s:"",d:ymd(Date.now())}),priority:1})}).catch(()=>{})}catch(e){}
 }
-let lastStockSig="";
+let lastStockSig="",stockFails=0,stockRetryT=null;
 function publishStock(force){
   normalizeXinxinPlacement();
   if(!STOCK_TOPIC||typeof fetch==="undefined")return;
@@ -1390,10 +1390,21 @@ function publishStock(force){
   const sig=JSON.stringify([out,today,sm.s.slice().sort(),sm.p,sm.noticeMode,gl,m]);
   if(!force&&sig===lastStockSig)return;
   lastStockSig=sig;
+  const fail=()=>{lastStockSig="";stockFails++;if(stockFails<=5){clearTimeout(stockRetryT);stockRetryT=setTimeout(()=>publishStock(true),8000*stockFails)}if(stockFails===2)toast("⚠️ 客人端同步失敗，正在重試，請確認網路")};
   try{
     fetch("https://ntfy.sh/",{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({topic:STOCK_TOPIC,title:"品項狀態",message:JSON.stringify({out:out,blocked:sm.s,paused:sm.p,noticeMode:sm.noticeMode,date:today,g:gl,m:m,t:Date.now()}),priority:1})}).catch(()=>{});
-  }catch(e){}
+      body:JSON.stringify({topic:STOCK_TOPIC,title:"品項狀態",message:JSON.stringify({out:out,blocked:sm.s,paused:sm.p,noticeMode:sm.noticeMode,pt:sm.pt||0,date:today,g:gl,m:m,t:Date.now()}),priority:1})}).then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);stockFails=0}).catch(fail);
+  }catch(e){fail()}
+}
+/* 多裝置同步：公告狀態以「最後一次手動操作時間 pt」最新的為準，舊裝置不會再蓋掉新的狀態 */
+function pollPauseSync(){
+  if(!STOCK_TOPIC||typeof fetch==="undefined")return;
+  fetch("https://ntfy.sh/"+STOCK_TOPIC+"/json?poll=1&since=12h",{cache:"no-store"}).then(r=>r.text()).then(t=>{
+    let best=null;
+    t.split("\n").forEach(l=>{try{const m=JSON.parse(l);if(m.event!=="message")return;const d=JSON.parse(m.message);if(!d||typeof d.pt!=="number")return;if(!best||d.pt>=best.pt)best=d}catch(e){}});
+    smFresh();
+    if(best&&best.pt>(sm.pt||0)){sm.p=!!best.paused;sm.noticeMode=best.noticeMode==="busy"?"busy":"holiday";sm.pt=best.pt;smSave();renderSlotMgr();toast("已同步其他裝置的公告狀態")}
+  }).catch(()=>{});
 }
 
 /* ---------- 開始 ---------- */
@@ -1402,7 +1413,7 @@ renderMenu();renderPay();setView("pos");renderOrders();connect();connectPosSync(
 setInterval(checkDailyRollover,30000);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkDailyRollover()});
 window.addEventListener("pageshow",checkDailyRollover);
-paintCtl();paintSort();pollSlotTopic();if(lockOn)acquireLock();
+paintCtl();paintSort();pollSlotTopic();pollPauseSync();setInterval(pollPauseSync,30000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)pollPauseSync()});if(lockOn)acquireLock();
 </script>
 </body>
 </html>

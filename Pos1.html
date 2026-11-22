@@ -2143,12 +2143,22 @@ function pollStock() {
   return fetch("https://ntfy.sh/" + STOCK_TOPIC + "/json?poll=1&since=12h", { cache: "no-store" })
     .then(function (r) { return r.text(); })
     .then(function (t) {
-      var last = null;
+      var last = null, best = null;
       t.split("\n").forEach(function (l) {
-        try { var m = JSON.parse(l); if (m.event === "message") last = m; } catch (e) {}
+        try {
+          var m = JSON.parse(l);
+          if (m.event === "message") {
+            last = m;
+            try {                                  /* 公告狀態以最後一次手動操作時間 pt 最新的那則為準 */
+              var bd = JSON.parse(m.message), bp = (bd && typeof bd.pt === "number") ? bd.pt : 0;
+              if (!best || bp >= best.pt) best = { pt: bp, paused: !!(bd && bd.paused), noticeMode: bd && bd.noticeMode };
+            } catch (e2) {}
+          }
+        } catch (e) {}
       });
       if (!last) return;
       var d = JSON.parse(last.message);
+      if (best) { d.paused = best.paused; d.noticeMode = best.noticeMode; }
       if (d && Array.isArray(d.out)) applyStock(d.out);
       applyMenu(d);
       applyBooked(d);
