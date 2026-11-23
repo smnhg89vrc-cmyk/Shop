@@ -663,6 +663,25 @@ input[type=date],#cash{
 .ocard .tot{font-weight:800!important}
 
 #menuCats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:8px 0 12px}#menuCats button{min-height:40px;padding:5px 2px;border:1px solid var(--line);border-radius:10px;background:#24251f;color:var(--ink);font-weight:800;font-size:12px}#menuCats button.on{background:#c7a96b;color:#171611}#menu.menu-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.menu-tile{min-width:0;border:1px solid var(--line);border-radius:12px;background:#22231f;overflow:hidden;display:flex;flex-direction:column}.menu-tile.selected{border:2px solid #c7a96b;background:#302b20}.menu-tile .tile-add{min-height:68px;padding:8px 3px 4px;border:0;background:transparent;color:var(--ink);font:inherit}.tile-name{display:block;font-size:15px;font-weight:900}.tile-price{display:block;margin-top:4px;color:#d7bd83;font-size:12px}.tile-qty{display:inline-block;margin-top:4px;background:#c7a96b;color:#171611;border-radius:15px;padding:1px 7px;font-size:12px;font-weight:900}.tile-ops{display:flex;align-items:center;justify-content:space-between;padding:4px 6px 6px}.tile-ops button{width:32px;height:29px;border:1px solid #746342;border-radius:8px;background:#292820;color:#ead8ad;font-size:19px}.tile-ops button:disabled{opacity:.25}.tile-count{font-weight:900}@media(max-width:370px){#menuCats{grid-template-columns:repeat(3,minmax(0,1fr))}.tile-name{font-size:13px}}</style>
+<style>
+/* ===== 列印訂單（感熱紙 58／80mm） ===== */
+#printArea{display:none}
+@media print{
+  html,body{background:#fff!important;margin:0!important;padding:0!important}
+  body>*:not(#printArea){display:none!important}
+  #printArea{display:block!important;margin:0 auto;padding:0;background:#fff!important;font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.45}
+  #printArea,#printArea *{color:#000!important;box-sizing:border-box}
+  #printArea .pt-h{font-size:20px;font-weight:900;text-align:center}
+  #printArea .pt-tag{text-align:center;font-weight:900;font-size:16px;border:2px solid #000;margin:4px 0;padding:2px}
+  #printArea .pt-big{font-size:28px;font-weight:900;text-align:center;line-height:1.25;margin:2px 0}
+  #printArea .pt-hr{border:0;border-top:2px dashed #000;margin:6px 0;height:0}
+  #printArea .pt-row{display:flex;justify-content:space-between;gap:6px}
+  #printArea .pt-item{font-size:18px;font-weight:700}
+  #printArea .pt-tot{font-size:22px;font-weight:900}
+  #printArea .pt-s{font-size:12px}
+  @page{margin:2mm}
+}
+</style>
 </head>
 <body>
 <header class="hero"><div class="wrap">
@@ -680,7 +699,7 @@ input[type=date],#cash{
 <main class="wrap">
   <section id="v-pos"><div class="olbar" id="olbar" hidden></div><div id="menuCats"></div><div id="menu" class="menu-grid"></div></section>
   <section id="v-orders" hidden><div class="box"><h3>線上訂單（客人按「送出訂單給店家」後出現）</h3><p class="note" id="ostat"></p>
-    <div class="ops" style="margin:8px 0 12px"><button class="mini" id="shareBtn" type="button">📤 分享點餐連結</button><button class="mini" id="alarmBtn" type="button">🔔 提示音：開</button><button class="mini" id="testBtn" type="button">🔊 測試提示音</button><button class="mini" id="lockBtn" type="button">☀️ 螢幕常亮：關</button><button class="mini" id="sortBtn" type="button">↕ 排序：下單時間（新→舊）</button></div><div id="olist"></div></div>
+    <div class="ops" style="margin:8px 0 12px"><button class="mini" id="shareBtn" type="button">📤 分享點餐連結</button><button class="mini" id="alarmBtn" type="button">🔔 提示音：開</button><button class="mini" id="testBtn" type="button">🔊 測試提示音</button><button class="mini" id="lockBtn" type="button">☀️ 螢幕常亮：關</button><button class="mini" id="sortBtn" type="button">↕ 排序：下單時間（新→舊）</button><button class="mini" id="printWBtn" type="button">🖨️ 紙寬：80mm</button><button class="mini" id="autoPrintBtn" type="button">🖨️ 新訂單自動列印：關</button></div><div id="olist"></div></div>
     <div class="box"><h3>時段管理（封鎖的時段，客人頁會劃掉）</h3>
       <div class="ops" style="margin-bottom:10px;flex-wrap:wrap">
         <button class="mini" id="holidayNoticeBtn" type="button">📢 公告今日公休</button>
@@ -690,7 +709,7 @@ input[type=date],#cash{
       </div><p class="note" id="noticeModeStatus">選擇公告後，客人端會同步顯示；恢復接單即可關閉公告。</p>
       <div id="slotmgr"></div>
       <p class="note">點「空」的時段＝封鎖（現場客人多、休息時用），再點一次解除。點有 📦 的時段＝開放給其他客人預約（訂單會保留，例如客人不來了）。</p>
-      <p class="note" id="verTag">版本：2026-11-23 分享連結＋偽APP版</p></div></section>
+      <p class="note" id="verTag">版本：2026-11-23 分享連結＋偽APP＋列印版</p></div></section>
   <section id="v-ledger" hidden>
     <div class="cards" id="cards"></div>
     <div class="box"><h3>收款方式</h3><div id="pays"></div></div>
@@ -757,6 +776,7 @@ input[type=date],#cash{
   <button class="go" id="shareGo" type="button">📤 分享給客人</button>
   <div class="ops" style="margin-top:10px;justify-content:center"><button class="mini" id="shareCopy" type="button">📋 複製連結</button><button class="mini" id="sharePreview" type="button">👀 預覽客人頁</button></div>
 </div></div>
+<div id="printArea" aria-hidden="true"></div>
 <div class="toast" id="toast" role="status"></div>
 
 <script>
@@ -1173,10 +1193,12 @@ function handleMsg(m){
     const wasPaid=pend.paid;
     Object.assign(pend,rec,{ver:(pend.ver||1)+1});
     triggerOrderAlarm(pend,true);
+    if(autoPrint)queuePrint(pend,"訂單已修改（第"+pend.ver+"版）");
     toast("訂單 "+o.code+" 已更新"+(wasPaid?"（先前已回報付款，請注意金額）":"")+(curOrder===pend.k?"，請重新載入":""));
   }else{
     rec.k=m.id;rec.ver=1;rec.t0=rec.t;orders.push(rec);
     triggerOrderAlarm(rec,false);
+    if(autoPrint)queuePrint(rec,"新訂單");
     toast("🍗 新訂單 "+o.code+"・"+o.name+"・"+o.pickup+"取");
   }
   const prior=posSyncActions.filter(a=>a.code===o.code&&a.day===orderDay(rec)).sort((a,b)=>(Number(b.at)||0)-(Number(a.at)||0))[0];
@@ -1194,7 +1216,7 @@ function renderOrders(){
   $("ostat").textContent=(online?"🟢 即時連線＋每 25 秒補查漏單":"🟠 即時連線中斷；會持續嘗試補查漏單（需要網路）")+(lastPoll?"　上次檢查 "+hm(lastPoll):"")+(pollFail>=2?"　⚠️ 網路異常":"")+(alarmOn&&!(alarmAudio&&alarmAudio.state==="running")?"　🔇 請點一下畫面以啟用提示音":"");
   renderBanner2();
   const dup={};l.forEach(o=>{dup[o.pickup]=(dup[o.pickup]||0)+1});
-  $("olist").innerHTML=l.length?l.map(o=>`<div class="ocard"><div class="lr"><b>${esc(o.code)}・${esc(o.name)}</b><b>取餐 ${esc(o.pickup)}</b></div>${dup[o.pickup]>1?'<div class="s"><b style="color:var(--over)">⚠️ 這個時段有 '+dup[o.pickup]+" 張單（一鍋約 5 分鐘）</b></div>":""}<div class="ts">🕒 下單 ${fmtT(o.t0||o.t)}${o.ver>1?"　✏️ 最後修改 "+hm(o.t):""}</div>${etaLine(o)}${sm.r&&sm.r[o.code]===o.pickup?'<div class="s"><b>🔓 這張單的時段已開放給其他客人</b></div>':""}${o.ver>1?'<div class="s">✏️ 已修改（第 '+o.ver+' 版）</div>':""}<div class="s"><div class="order-items">${o.items.map(i=>'<div class="order-item">'+esc(i.n)+' × '+i.q+'</div>').join("")}</div></div>${o.spice?'<div class="s">🌶️ 辣度：'+esc(o.spice)+"</div>":""}${payLine(o)}${o.note?'<div class="s">備註：'+esc(o.note)+"</div>":""}<div class="lr"><b class="tot">NT$ ${o.total}</b><span class="ops"><button class="mini" type="button" data-o="load" data-k="${esc(o.k)}">載入收銀</button><button class="mini" type="button" data-o="del" data-k="${esc(o.k)}">刪除</button></span></div></div>`).join(""):'<div class="empty">目前沒有待處理的線上訂單</div>';
+  $("olist").innerHTML=l.length?l.map(o=>`<div class="ocard"><div class="lr"><b>${esc(o.code)}・${esc(o.name)}</b><b>取餐 ${esc(o.pickup)}</b></div>${dup[o.pickup]>1?'<div class="s"><b style="color:var(--over)">⚠️ 這個時段有 '+dup[o.pickup]+" 張單（一鍋約 5 分鐘）</b></div>":""}<div class="ts">🕒 下單 ${fmtT(o.t0||o.t)}${o.ver>1?"　✏️ 最後修改 "+hm(o.t):""}</div>${etaLine(o)}${sm.r&&sm.r[o.code]===o.pickup?'<div class="s"><b>🔓 這張單的時段已開放給其他客人</b></div>':""}${o.ver>1?'<div class="s">✏️ 已修改（第 '+o.ver+' 版）</div>':""}<div class="s"><div class="order-items">${o.items.map(i=>'<div class="order-item">'+esc(i.n)+' × '+i.q+'</div>').join("")}</div></div>${o.spice?'<div class="s">🌶️ 辣度：'+esc(o.spice)+"</div>":""}${payLine(o)}${o.note?'<div class="s">備註：'+esc(o.note)+"</div>":""}<div class="lr"><b class="tot">NT$ ${o.total}</b><span class="ops"><button class="mini" type="button" data-o="print" data-k="${esc(o.k)}">🖨️ 列印</button><button class="mini" type="button" data-o="load" data-k="${esc(o.k)}">載入收銀</button><button class="mini" type="button" data-o="del" data-k="${esc(o.k)}">刪除</button></span></div></div>`).join(""):'<div class="empty">目前沒有待處理的線上訂單</div>';
 }
 function curOrderInfo(){const o=orders.find(x=>x.k===curOrder);return o?{placed:o.t0||o.t,code:o.code,name:o.name,pickup:o.pickup,note:o.note,spice:o.spice||"",pay:o.payLabel||"現場付現",online:!!o.online,paid:!!o.paid}:undefined}
 function renderBanner(){
@@ -1250,6 +1272,7 @@ function connect(){
 $("olist").addEventListener("click",e=>{
   const b=e.target.closest("button[data-o]");if(!b)return;
   if(b.dataset.o==="load")loadOrder(b.dataset.k);
+  else if(b.dataset.o==="print"){const po=orders.find(x=>x.k===b.dataset.k);if(po)printOrder(po)}
   else if(confirm("確定刪除這張線上訂單嗎？")){const od=orders.find(x=>x.k===b.dataset.k);if(od){smFresh();sm.del.push(od.code);smSave();freeOnce(od.code);publishPosSync("delete",od)}orders=orders.filter(x=>x.k!==b.dataset.k);if(curOrder===b.dataset.k){curOrder=null;renderBanner()}saveO();renderOrders()}
 });
 $("olbar").addEventListener("click",e=>{if(e.target.closest("#olx")){curOrder=null;cart={};updateRows();renderBanner()}});
@@ -1375,6 +1398,36 @@ $("orphanBtn").addEventListener("click",()=>{
   smSave();renderSlotMgr();publishStock();toast("已開放 "+list.length+" 個時段");
 });
 function setNoticeMode(mode){smFresh();sm.p=true;sm.noticeMode=mode;sm.pt=Date.now();smSave();renderSlotMgr();publishStock(true);toast(mode==="holiday"?"已發布今日公休公告":"已發布忙碌暫停接單公告")}
+/* ===== 列印訂單（80mm／58mm 感熱紙；用瀏覽器列印，裝置設好預設印表機即可） ===== */
+let printW=(()=>{try{return localStorage.getItem("pos2_pw")==="58"?58:80}catch(e){return 80}})();
+let autoPrint=(()=>{try{return localStorage.getItem("pos2_autoprint")==="1"}catch(e){return false}})();
+let printQ=[],printBusy=false;
+function paintPrintCtl(){$("printWBtn").textContent="🖨️ 紙寬："+printW+"mm";$("autoPrintBtn").textContent="🖨️ 新訂單自動列印："+(autoPrint?"開":"關")}
+function ticketHTML(o,tag){
+  const items=(o.items||[]).map(i=>{const sub=(Number(i.p)>0&&Number(i.q)>0)?"<span>"+(Number(i.p)*Number(i.q))+"</span>":"";return '<div class="pt-row pt-item"><span>'+esc(i.n)+" × "+esc(i.q)+"</span>"+sub+"</div>"}).join("");
+  const payTxt=(o.online&&o.paid)?"已付款（"+(o.payLabel||"線上")+"）":(o.payLabel||"現場付現");
+  return (tag?'<div class="pt-tag">'+esc(tag)+"</div>":"")+
+    '<div class="pt-h">台灣第一家鹽酥雞</div>'+
+    '<div class="pt-big">取餐 '+esc(o.pickup||"")+"</div>"+
+    '<div class="pt-row"><b>'+esc(o.code||"")+"</b><b>"+esc(o.name||"")+"</b></div>"+
+    '<div class="pt-s">下單 '+esc(fmtT(o.t0||o.t))+"</div>"+
+    '<hr class="pt-hr">'+items+'<hr class="pt-hr">'+
+    (o.spice?'<div class="pt-item">辣度：'+esc(o.spice)+"</div>":"")+
+    (o.note?"<div>備註："+esc(o.note)+"</div>":"")+
+    '<div class="pt-row"><span>付款：'+esc(payTxt)+'</span><span class="pt-tot">NT$ '+esc(o.total)+"</span></div>"+
+    '<hr class="pt-hr"><div class="pt-s" style="text-align:center">列印 '+hm(Date.now())+"</div>";
+}
+function printOrder(o,tag){
+  const a=$("printArea");
+  a.style.width=printW===58?"48mm":"72mm";a.style.fontSize=printW===58?"13px":"14px";
+  a.innerHTML=ticketHTML(o,tag);
+  setTimeout(()=>{try{window.print()}catch(e){toast("這個瀏覽器無法列印")}},60);
+}
+function queuePrint(o,tag){printQ.push([o,tag]);runPrintQ()}
+function runPrintQ(){if(printBusy||!printQ.length)return;printBusy=true;const q=printQ.shift();printOrder(q[0],q[1]);setTimeout(()=>{printBusy=false;runPrintQ()},2500)}
+window.addEventListener("afterprint",()=>{$("printArea").innerHTML=""});
+$("printWBtn").addEventListener("click",()=>{printW=printW===80?58:80;try{localStorage.setItem("pos2_pw",String(printW))}catch(e){}paintPrintCtl()});
+$("autoPrintBtn").addEventListener("click",()=>{autoPrint=!autoPrint;try{localStorage.setItem("pos2_autoprint",autoPrint?"1":"0")}catch(e){}paintPrintCtl();if(autoPrint)toast("已開啟：新訂單進來會自動列印（需已設好預設印表機）")});
 /* ===== 分享點餐連結（自動以目前網址為基準，指向同資料夾的 Pos1.html） ===== */
 let qrLoading=null;
 function orderUrl(){const u=new URL("Pos1.html",location.href);u.search="";u.hash="";return u.href}
@@ -1449,7 +1502,7 @@ renderMenu();renderPay();setView("pos");renderOrders();connect();connectPosSync(
 setInterval(checkDailyRollover,30000);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkDailyRollover()});
 window.addEventListener("pageshow",checkDailyRollover);
-paintCtl();paintSort();pollSlotTopic();pollPauseSync();setInterval(pollPauseSync,30000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)pollPauseSync()});if(lockOn)acquireLock();
+paintCtl();paintSort();paintPrintCtl();pollSlotTopic();pollPauseSync();setInterval(pollPauseSync,30000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)pollPauseSync()});if(lockOn)acquireLock();
 </script>
 </body>
 </html>

@@ -223,13 +223,6 @@ html{background:#164B43}
 .bar .btn{background:#164B43;color:#EAF5EF;border-color:#164B43}
 
 .item-spec{font-size:.82em;color:#8b7764;margin-top:2px;font-weight:600}
-
-/* 手機主畫面教學：沿用營業公告彈窗尺寸與視覺 */
-.home-install-modal{z-index:71}
-.home-install-steps{margin:14px 0 0;text-align:left;background:rgba(184,145,75,.10);border:1px solid var(--gold);border-radius:14px;padding:12px 16px;font-size:15px;line-height:1.75}
-.home-install-steps ol{margin:0;padding-left:1.35em}
-.home-install-steps li+li{margin-top:5px}
-.home-install-later{display:block;width:100%;min-height:42px;margin:10px 0 0;border:1px solid var(--gold);border-radius:999px;background:transparent;color:var(--muted);font:inherit;font-size:15px;font-weight:700;cursor:pointer}
 </style>
 <style>
 /* ===== 今日有營業公告輪播（hero 內） ===== */
@@ -258,33 +251,11 @@ html{background:#164B43}
 .sn-contact{display:inline-block;margin:12px 0 0;padding:9px 16px;border:1.5px solid var(--gold);border-radius:999px;color:var(--accent);font-size:13px;font-weight:700;text-decoration:none}
 .sn-go{display:block;width:100%;min-height:54px;margin:18px 0 0;padding:0 16px;border:0;border-radius:999px;background:var(--gold);color:#211A16;font:inherit;font-size:19px;font-weight:900;letter-spacing:.08em;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .sn-card[data-mode="holiday"] .sn-title{color:var(--ink)}
-.sn-card[data-mode="holiday"] .sn-msg{font-size:18px;min-height:0}
+.sn-card[data-mode="holiday"] .sn-msg{font-size:19px}
 .sn-x:focus-visible,.sn-go:focus-visible,.sn-contact:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
 @keyframes snIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
 @media(max-width:390px){.sn{padding:16px}.sn-title{font-size:30px}.sn-msg{font-size:18px}}
 @media(prefers-reduced-motion:reduce){.sn-card{animation:none}.sn-msg{transition:none}}
-
-/* ===== 加入手機主畫面引導 ===== */
-.home-prompt{margin:18px 0 22px;padding:16px;border:2px solid #D9E9A6;border-radius:16px;background:linear-gradient(135deg,#fff 0%,#f1f7f3 100%);box-shadow:0 7px 22px rgba(20,70,55,.08);color:#19332E}
-.home-prompt-inner{display:flex;align-items:center;gap:12px}
-.home-prompt-icon{flex:0 0 48px;width:48px;height:48px;display:grid;place-items:center;border-radius:14px;background:#164B43;color:#D9E9A6;font-size:26px}
-.home-prompt-copy{min-width:0;flex:1}
-.home-prompt-title{font-size:17px;font-weight:900;line-height:1.35}
-.home-prompt-desc{margin-top:3px;font-size:13px;color:#60756F;line-height:1.5}
-.home-prompt-actions{display:flex;gap:8px;margin-top:12px}
-.home-prompt-actions button{min-height:43px;padding:0 14px;border-radius:999px;font:inherit;font-size:15px;font-weight:900;cursor:pointer}
-.home-help{border:0;background:#164B43;color:#fff}
-.home-dismiss{border:1px solid #cbd9d1;background:transparent;color:#49645a}
-.home-guide{position:fixed;inset:0;z-index:90;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(13,35,29,.68);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-.home-guide[hidden]{display:none}
-.home-guide-card{width:min(100%,420px);max-height:85vh;overflow:auto;padding:22px;border-radius:20px;background:#fff;color:#19332E;box-shadow:0 20px 60px rgba(0,0,0,.3)}
-.home-guide-card h2{margin:0 0 8px;padding:0;border:0;font-size:24px;color:#164B43}
-.home-guide-card p{margin:8px 0;line-height:1.65}
-.home-guide-card ol{padding-left:24px;line-height:1.85}
-.home-guide-tip{margin-top:12px;padding:11px 13px;border-radius:12px;background:#F1F7F3;font-size:13px;line-height:1.6}
-.home-guide-close{width:100%;min-height:48px;margin-top:14px;border:0;border-radius:999px;background:#164B43;color:#fff;font:inherit;font-weight:900}
-@media(max-width:390px){.home-prompt{padding:13px}.home-prompt-inner{align-items:flex-start}.home-prompt-icon{width:42px;height:42px;flex-basis:42px}.home-prompt-title{font-size:16px}}
-
 </style>
 </head>
 <body>
@@ -323,25 +294,6 @@ html{background:#164B43}
     </div>
   </div>
 </header>
-
-
-<div class="sn home-install-modal" id="homePromptModal" role="dialog" aria-modal="true" aria-labelledby="homePromptTitle" hidden>
-  <section class="sn-card" data-mode="open">
-    <div class="sn-band">
-      <button type="button" class="sn-x" id="homePromptClose" aria-label="關閉教學">×</button>
-      <div class="sn-shop serif">台灣第一家鹽酥雞</div>
-      <div class="sn-stamp serif">30年老店</div>
-    </div>
-    <div class="sn-body">
-      <div class="sn-title serif" id="homePromptTitle">把我們放進手機主畫面</div>
-      <p class="sn-msg" id="homePromptIntro">設定一次，以後點手機桌面圖示，就能快速開啟菜單計算機！</p>
-      <div class="home-install-steps" id="homePromptSteps"></div>
-      <p class="sn-sub">小提醒：這是菜單與金額計算工具，並非線上點餐，不會自動送出訂單。</p>
-      <button type="button" class="sn-go" id="homePromptDone">我已加入，謝謝</button>
-      <button type="button" class="home-install-later" id="homePromptLater">稍後再說</button>
-    </div>
-  </section>
-</div>
 
 <main class="wrap">
   <section class="budget" aria-label="預算">
@@ -839,19 +791,42 @@ var OPEN_MSGS = [
   "營業中！百頁豆腐、雞心、雞胗任你配。",
   "今天有營業，現場見！謝謝你的支持！"
 ];
-var shopState = "", otTimer = null, otIdx = 0, shopNoticeReady = false;
+var HOLIDAY_MSGS = [
+  "今日公休，暫不營業，謝謝您的體諒！",
+  "今天店休，讓老闆休息一天，下次見！",
+  "30 年老店，今天休息一天，期待再見！",
+  "今天公休，沒有營業，請您改天再來！",
+  "休息是為了走更長遠的路，期待下次見面！",
+  "今日公休，暫不提供現場及線上接單。",
+  "感謝您一直以來的支持，今天先休息一下！",
+  "今天沒有開店，不好意思讓您白跑一趟！",
+  "鹽酥雞今天休息，下次再為您準備熱騰騰的美味！",
+  "今日店休，造成不便敬請見諒！",
+  "老闆今天放假，讓我們充飽電再回來！",
+  "三十年的好味道，今天先休息，期待下次再見！",
+  "今天公休囉，請先不要出門撲空喔！",
+  "感謝您的體諒，休息後我們會更用心準備！",
+  "最新營業消息，歡迎追蹤我們的粉絲專頁！",
+  "今日公休，想吃鹽酥雞的朋友再等等喔！",
+  "休息一天，是為了讓您吃到更好的味道！",
+  "今天沒有營業，謝謝您的關心與支持！",
+  "台灣第一家鹽酥雞，今天公休一天，謝謝！",
+  "今日店休，期待下次營業時再見到您！"
+];
+var shopState = "", curMsgs = OPEN_MSGS, otTimer = null, otIdx = 0, shopNoticeReady = false;
 function $sn(id) { return document.getElementById(id); }
 function openHours() {
   var h = document.querySelector(".hrs");
   return h ? h.textContent.replace(/\s+/g, "") : "18:00–23:00";
 }
-function otText(i) { return OPEN_MSGS[i].replace("{H}", openHours()); }
+function otText(i) { return curMsgs[i].replace("{H}", openHours()); }
 function stopRotate() { if (otTimer) { clearInterval(otTimer); otTimer = null; } }
-function startRotate() {
+function startRotate(list, tag) {
   stopRotate();
+  curMsgs = list;
   var m1 = $sn("otMsg"), m2 = $sn("snMsg");
-  $sn("otTag").textContent = "📢 今日營業公告";
-  otIdx = Math.floor(Math.random() * OPEN_MSGS.length);
+  $sn("otTag").textContent = tag;
+  otIdx = Math.floor(Math.random() * curMsgs.length);
   m1.textContent = m2.textContent = otText(otIdx);
   m1.classList.remove("out"); m2.classList.remove("out");
   $sn("openTicker").hidden = false;
@@ -859,18 +834,13 @@ function startRotate() {
     if (document.hidden) return;
     m1.classList.add("out"); m2.classList.add("out");
     setTimeout(function () {
-      otIdx = (otIdx + 1) % OPEN_MSGS.length;
+      otIdx = (otIdx + 1) % curMsgs.length;
       m1.textContent = m2.textContent = otText(otIdx);
       m1.classList.remove("out"); m2.classList.remove("out");
     }, 450);
   }, 5000);
 }
-function closeShopNotice() {
-  $sn("shopNotice").hidden = true;
-  if (typeof showHomeInstallPrompt === "function") {
-    window.setTimeout(showHomeInstallPrompt, 260);
-  }
-}
+function closeShopNotice() { $sn("shopNotice").hidden = true; }
 function applyShopNotice(d) {
   shopNoticeReady = true;
   var holiday = !!(d && d.paused && d.noticeMode !== "busy");      /* 忙碌中 = 照常營業 */
@@ -879,22 +849,17 @@ function applyShopNotice(d) {
   shopState = next;
   $sn("snCard").setAttribute("data-mode", next);
   if (holiday) {
-    stopRotate();
     $sn("snTitle").textContent = "今日公休";
-    $sn("snMsg").textContent = "今天店休，暫不提供現場及線上接單。";
-    $sn("snMsg").classList.remove("out");
     $sn("snHours").hidden = true; $sn("snSub").hidden = false;
     $sn("snContact").hidden = !/^https:\/\//i.test(FB_URL);
     $sn("snGo").textContent = "我知道了";
-    $sn("otTag").textContent = "📢 店家公告";
-    $sn("otMsg").textContent = "今日公休，暫不營業。謝謝體諒！";
-    $sn("openTicker").hidden = false;
+    startRotate(HOLIDAY_MSGS, "📢 店家公告");                      /* 公休也輪播 20 則公告 */
   } else {
     $sn("snTitle").textContent = "今日有營業";
     $sn("snHours").textContent = "🕕 營業時間 " + openHours();
     $sn("snHours").hidden = false; $sn("snSub").hidden = true; $sn("snContact").hidden = true;
     $sn("snGo").textContent = "開始算看看";
-    startRotate();
+    startRotate(OPEN_MSGS, "📢 今日營業公告");
   }
   $sn("shopNotice").hidden = false;                                /* 一開網頁就跳出公告 */
   try { $sn("snGo").focus({ preventScroll: true }); } catch (e) {}
@@ -1015,52 +980,6 @@ pollStock();
 setInterval(pollStock, 45000);
 document.addEventListener("visibilitychange", function () { if (!document.hidden) pollStock(); });
 
-
-/* ===== 關閉營業公告後，顯示同尺寸的手機主畫面教學 ===== */
-var showHomeInstallPrompt;
-(function setupHomePrompt() {
-  var modal = document.getElementById("homePromptModal");
-  var steps = document.getElementById("homePromptSteps");
-  var intro = document.getElementById("homePromptIntro");
-  if (!modal || !steps || !intro) return;
-  var ua = navigator.userAgent || "";
-  var isIOS = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-  var isAndroid = /Android/i.test(ua);
-  if (isIOS) {
-    intro.textContent = "iPhone 請使用 Safari，照著下面 3 步驟設定：";
-    steps.innerHTML = "<ol><li>先確認這個網頁是在 <b>Safari</b> 開啟。</li><li>點「分享」圖示（方框向上箭頭）。</li><li>選擇「加入主畫面」，再按右上角「加入」。</li></ol>";
-  } else if (isAndroid) {
-    intro.textContent = "Android 手機建議使用 Chrome，照著下面步驟設定：";
-    steps.innerHTML = "<ol><li>使用 <b>Chrome</b> 開啟這個網頁。</li><li>點右上角「⋮」選單。</li><li>選擇「加到主畫面」或「安裝應用程式」，再依畫面確認。</li></ol>";
-  } else {
-    intro.textContent = "用手機瀏覽器開啟本頁，就能把我們加到手機桌面：";
-    steps.innerHTML = "<ol><li>iPhone：使用 Safari，點「分享」→「加入主畫面」。</li><li>Android：使用 Chrome，點「⋮」→「加到主畫面」。</li></ol>";
-  }
-  function get(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
-  function set(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
-  function standalone() {
-    return (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) ||
-      (window.navigator && window.navigator.standalone === true);
-  }
-  showHomeInstallPrompt = function () {
-    if (standalone() || get("shopHomeAdded") === "1") return;
-    var until = parseInt(get("shopHomeLaterUntil") || "0", 10);
-    if (Date.now() < until) return;
-    modal.hidden = false;
-  };
-  function later() {
-    set("shopHomeLaterUntil", String(Date.now() + 7 * 24 * 60 * 60 * 1000));
-    modal.hidden = true;
-  }
-  document.getElementById("homePromptDone").addEventListener("click", function () {
-    set("shopHomeAdded", "1");
-    modal.hidden = true;
-  });
-  document.getElementById("homePromptLater").addEventListener("click", later);
-  document.getElementById("homePromptClose").addEventListener("click", later);
-  modal.addEventListener("click", function (e) { if (e.target === modal) later(); });
-  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !modal.hidden) later(); });
-})();
 update();
 </script>
 </body>
