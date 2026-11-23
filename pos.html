@@ -680,7 +680,7 @@ input[type=date],#cash{
 <main class="wrap">
   <section id="v-pos"><div class="olbar" id="olbar" hidden></div><div id="menuCats"></div><div id="menu" class="menu-grid"></div></section>
   <section id="v-orders" hidden><div class="box"><h3>線上訂單（客人按「送出訂單給店家」後出現）</h3><p class="note" id="ostat"></p>
-    <div class="ops" style="margin:8px 0 12px"><button class="mini" id="alarmBtn" type="button">🔔 提示音：開</button><button class="mini" id="testBtn" type="button">🔊 測試提示音</button><button class="mini" id="lockBtn" type="button">☀️ 螢幕常亮：關</button><button class="mini" id="sortBtn" type="button">↕ 排序：下單時間（新→舊）</button></div><div id="olist"></div></div>
+    <div class="ops" style="margin:8px 0 12px"><button class="mini" id="shareBtn" type="button">📤 分享點餐連結</button><button class="mini" id="alarmBtn" type="button">🔔 提示音：開</button><button class="mini" id="testBtn" type="button">🔊 測試提示音</button><button class="mini" id="lockBtn" type="button">☀️ 螢幕常亮：關</button><button class="mini" id="sortBtn" type="button">↕ 排序：下單時間（新→舊）</button></div><div id="olist"></div></div>
     <div class="box"><h3>時段管理（封鎖的時段，客人頁會劃掉）</h3>
       <div class="ops" style="margin-bottom:10px;flex-wrap:wrap">
         <button class="mini" id="holidayNoticeBtn" type="button">📢 公告今日公休</button>
@@ -690,7 +690,7 @@ input[type=date],#cash{
       </div><p class="note" id="noticeModeStatus">選擇公告後，客人端會同步顯示；恢復接單即可關閉公告。</p>
       <div id="slotmgr"></div>
       <p class="note">點「空」的時段＝封鎖（現場客人多、休息時用），再點一次解除。點有 📦 的時段＝開放給其他客人預約（訂單會保留，例如客人不來了）。</p>
-      <p class="note" id="verTag">版本：2026-11-23 公告同步修正版</p></div></section>
+      <p class="note" id="verTag">版本：2026-11-23 分享連結版</p></div></section>
   <section id="v-ledger" hidden>
     <div class="cards" id="cards"></div>
     <div class="box"><h3>收款方式</h3><div id="pays"></div></div>
@@ -748,6 +748,15 @@ input[type=date],#cash{
   <h2 class="serif" id="ct">找零</h2><div class="v serif" id="cv">0</div><p id="ci"></p>
   <button id="cb" type="button">返回</button>
 </div>
+<div class="sheet" id="shareSheet" role="dialog" aria-modal="true" aria-labelledby="share-t"><div class="sheet-in" style="text-align:center">
+  <div class="sh-top"><h2 class="serif" id="share-t">分享點餐連結</h2><button type="button" class="mini" id="shareX">關閉</button></div>
+  <p class="note" id="shareWarn" hidden style="color:#ff9a8a">⚠️ 目前是用「檔案」方式開啟收銀頁，客人打不開這個連結。請改用 GitHub Pages 的網址開啟收銀頁再分享。</p>
+  <input id="shareUrl" readonly aria-label="點餐連結" style="width:100%;min-height:44px;margin:12px 0;padding:0 10px;font-size:14px;background:transparent;color:inherit;border:1px solid #5a503b;border-radius:10px">
+  <div id="shareQr" style="display:inline-block;background:#fff;padding:10px;border-radius:12px;min-width:220px;min-height:220px;color:#333;font-size:13px;line-height:1.5"></div>
+  <p class="note" style="margin:8px 0">客人用手機相機掃描就能點餐，也可截圖或印出貼在店裡。</p>
+  <button class="go" id="shareGo" type="button">📤 分享給客人</button>
+  <div class="ops" style="margin-top:10px;justify-content:center"><button class="mini" id="shareCopy" type="button">📋 複製連結</button><button class="mini" id="sharePreview" type="button">👀 預覽客人頁</button></div>
+</div></div>
 <div class="toast" id="toast" role="status"></div>
 
 <script>
@@ -1366,6 +1375,33 @@ $("orphanBtn").addEventListener("click",()=>{
   smSave();renderSlotMgr();publishStock();toast("已開放 "+list.length+" 個時段");
 });
 function setNoticeMode(mode){smFresh();sm.p=true;sm.noticeMode=mode;sm.pt=Date.now();smSave();renderSlotMgr();publishStock(true);toast(mode==="holiday"?"已發布今日公休公告":"已發布忙碌暫停接單公告")}
+/* ===== 分享點餐連結（自動以目前網址為基準，指向同資料夾的 Pos1.html） ===== */
+let qrLoading=null;
+function orderUrl(){const u=new URL("Pos1.html",location.href);u.search="";u.hash="";return u.href}
+function loadQR(){
+  if(window.QRCode)return Promise.resolve();
+  if(qrLoading)return qrLoading;
+  qrLoading=new Promise((ok,no)=>{const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";sc.onload=ok;sc.onerror=()=>{qrLoading=null;no()};document.head.appendChild(sc)});
+  return qrLoading;
+}
+function copyText(t){
+  if(navigator.clipboard&&window.isSecureContext)return navigator.clipboard.writeText(t);
+  return new Promise((ok,no)=>{const i=$("shareUrl");i.focus();i.select();try{document.execCommand("copy")?ok():no()}catch(e){no()}});
+}
+function openShare(){
+  const url=orderUrl(),box=$("shareQr");
+  $("shareUrl").value=url;$("shareWarn").hidden=location.protocol!=="file:";
+  box.textContent="QR code 產生中…";$("shareSheet").classList.add("on");
+  loadQR().then(()=>{box.innerHTML="";new QRCode(box,{text:url,width:200,height:200,correctLevel:QRCode.CorrectLevel.M})}).catch(()=>{box.textContent="QR code 需要網路載入，請連線後再開啟；連結仍可分享"});
+}
+$("shareBtn").addEventListener("click",openShare);
+$("shareX").addEventListener("click",()=>$("shareSheet").classList.remove("on"));
+$("shareSheet").addEventListener("click",e=>{if(e.target===$("shareSheet"))$("shareSheet").classList.remove("on")});
+$("shareGo").addEventListener("click",()=>{const url=$("shareUrl").value;
+  if(navigator.share){navigator.share({title:"台灣第一家鹽酥雞 線上點餐",text:"線上點餐連結",url:url}).catch(()=>{})}
+  else copyText(url).then(()=>toast("已複製點餐連結")).catch(()=>toast("請長按網址手動複製"))});
+$("shareCopy").addEventListener("click",()=>copyText($("shareUrl").value).then(()=>toast("已複製點餐連結")).catch(()=>toast("請長按網址手動複製")));
+$("sharePreview").addEventListener("click",()=>window.open($("shareUrl").value,"_blank"));
 $("holidayNoticeBtn").addEventListener("click",()=>setNoticeMode("holiday"));
 $("busyNoticeBtn").addEventListener("click",()=>setNoticeMode("busy"));
 $("pauseBtn").addEventListener("click",()=>{smFresh();sm.p=false;sm.pt=Date.now();smSave();renderSlotMgr();publishStock(true);toast("已恢復線上接單，客人端公告已關閉")});
