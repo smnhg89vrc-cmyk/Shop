@@ -224,11 +224,61 @@ html{background:#164B43}
 
 .item-spec{font-size:.82em;color:#8b7764;margin-top:2px;font-weight:600}
 </style>
+<style>
+/* ===== 今日有營業公告輪播（hero 內） ===== */
+.open-ticker{display:flex;flex-direction:column;gap:4px;margin:14px 0 0;padding:10px 14px 11px;max-width:100%;border:1.5px solid var(--gold);border-radius:14px;background:rgba(33,26,22,.28);color:#fff4d6;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.open-ticker[hidden]{display:none}
+.open-ticker .ot-tag{font-size:12px;font-weight:900;letter-spacing:.14em;color:var(--gold)}
+.open-ticker .ot-msg{font-size:18px;font-weight:700;line-height:1.5;min-height:3em;transition:opacity .45s ease}
+.open-ticker .ot-msg.out{opacity:0}
+@media (prefers-reduced-motion:reduce){.open-ticker .ot-msg{transition:none}}
+/* ===== 開網頁就跳出的店家公告（今日有營業／今日公休），色調沿用本頁紅・金・米白 ===== */
+.sn{position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;padding:22px;background:rgba(33,26,22,.62);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.sn[hidden]{display:none}
+.sn *{box-sizing:border-box}
+.sn-card{position:relative;width:min(100%,420px);max-height:100%;overflow:auto;border-radius:22px;border:2px solid var(--gold);background:var(--card);color:var(--ink);box-shadow:0 24px 70px rgba(0,0,0,.45);animation:snIn .3s ease-out both}
+.sn-band{position:relative;padding:26px 18px 30px;background:var(--hero);color:#fff;text-align:center}
+.sn-shop{font-size:27px;line-height:1.2;letter-spacing:.06em}
+.sn-stamp{display:inline-block;margin-top:10px;padding:3px 14px 4px;background:var(--gold);color:#211A16;font-size:20px;letter-spacing:.12em;border-radius:4px;transform:rotate(-2deg)}
+.sn-x{position:absolute;top:10px;right:10px;width:40px;height:40px;padding:0;border:1.5px solid rgba(255,255,255,.55);border-radius:50%;background:rgba(0,0,0,.14);color:#fff;font-family:Arial,sans-serif;font-size:24px;line-height:1;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.sn-body{padding:22px 22px 24px;text-align:center}
+.sn-title{margin:0;font-size:34px;line-height:1.25;letter-spacing:.08em;color:var(--accent)}
+.sn-msg{margin:14px 0 0;min-height:3.6em;font-size:20px;font-weight:700;line-height:1.6;transition:opacity .45s ease}
+.sn-msg.out{opacity:0}
+.sn-hours{display:inline-block;margin:12px 0 0;padding:6px 16px;font-weight:700;border:2px solid var(--gold);border-radius:999px}
+.sn-hours[hidden],.sn-sub[hidden],.sn-contact[hidden]{display:none}
+.sn-sub{margin:12px 0 0;color:var(--muted);font-size:14px;line-height:1.8}
+.sn-contact{display:inline-block;margin:12px 0 0;padding:9px 16px;border:1.5px solid var(--gold);border-radius:999px;color:var(--accent);font-size:13px;font-weight:700;text-decoration:none}
+.sn-go{display:block;width:100%;min-height:54px;margin:18px 0 0;padding:0 16px;border:0;border-radius:999px;background:var(--gold);color:#211A16;font:inherit;font-size:19px;font-weight:900;letter-spacing:.08em;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.sn-card[data-mode="holiday"] .sn-title{color:var(--ink)}
+.sn-card[data-mode="holiday"] .sn-msg{font-size:18px;min-height:0}
+.sn-x:focus-visible,.sn-go:focus-visible,.sn-contact:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+@keyframes snIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+@media(max-width:390px){.sn{padding:16px}.sn-title{font-size:30px}.sn-msg{font-size:18px}}
+@media(prefers-reduced-motion:reduce){.sn-card{animation:none}.sn-msg{transition:none}}
+</style>
 </head>
 <body>
 
 <canvas id="fx" aria-hidden="true"></canvas>
 <div id="pop" role="status" aria-live="polite"></div>
+<div class="sn" id="shopNotice" role="alertdialog" aria-modal="true" aria-labelledby="snTitle" hidden>
+  <section class="sn-card" id="snCard" data-mode="open">
+    <div class="sn-band">
+      <button type="button" class="sn-x" id="snClose" aria-label="關閉公告">×</button>
+      <div class="sn-shop serif">台灣第一家鹽酥雞</div>
+      <div class="sn-stamp serif">30年老店</div>
+    </div>
+    <div class="sn-body">
+      <div class="sn-title serif" id="snTitle" role="heading" aria-level="2">今日有營業</div>
+      <p class="sn-msg" id="snMsg" aria-live="polite"></p>
+      <div class="sn-hours" id="snHours">🕕 營業時間 18:00–23:00</div>
+      <p class="sn-sub" id="snSub" hidden>感謝您的支持與體諒，造成不便敬請見諒！<br>期待下次再為您準備熱騰騰的美味。</p>
+      <a class="sn-contact" id="snContact" href="#" target="_blank" rel="noopener noreferrer" hidden>有任何問題，歡迎私訊粉絲專頁 ↗</a>
+      <button type="button" class="sn-go" id="snGo">開始算看看</button>
+    </div>
+  </section>
+</div>
 
 <header class="hero">
   <div class="wrap">
@@ -238,6 +288,10 @@ html{background:#164B43}
     <div class="calc-disclaimer">🔔 謹供計算金額・非線上點餐</div>
     <p class="lead">自己點，自己算。選好份數，馬上知道這一餐要花多少。</p>
     <p class="hours">🕕 營業時間 18:00–23:00</p>
+    <div class="open-ticker" id="openTicker" role="status" aria-live="polite" hidden>
+      <span class="ot-tag" id="otTag">📢 今日營業公告</span>
+      <span class="ot-msg" id="otMsg"></span>
+    </div>
   </div>
 </header>
 
@@ -714,17 +768,114 @@ function applyStock(names) {
   update();
   if (removed.length) showPop({ title: "有品項剛賣完了", text: removed.join("、") + " 已從你的訂單移除" });
 }
+/* ===== 店家公告：POS 設「今日公休」→ 顯示公休公告；沒設公休（含「忙碌中」）→ 20 則「今日有營業」文宣輪播 ===== */
+var OPEN_MSGS = [
+  "今天有營業！{H}，歡迎來現場。",
+  "今日有營業，熱騰騰的鹽酥雞等你來！",
+  "30 年老店，今天照常營業！",
+  "想吃鹽酥雞？今天有開，直接來！",
+  "今天有開！先算好預算，再來現場點。",
+  "台灣第一家鹽酥雞，今日營業中。",
+  "今晚有營業，歡迎光臨！",
+  "今天有營業，魷魚、地瓜、雞皮都等你！",
+  "今日營業 {H}，歡迎來逛逛。",
+  "肚子餓了嗎？今天有營業，快來吧！",
+  "老味道今天照常開張，歡迎光臨！",
+  "今天有開店！豬血糕、甜不辣一起帶走。",
+  "今晚想加菜？我們今天有營業喔！",
+  "約家人朋友一起來，今天有營業！",
+  "下班順路來一份，今天有營業！",
+  "今天有營業，四季豆、玉米也別忘了！",
+  "三十年的好味道，今天也在等你！",
+  "今日營業中，先用計算機抓預算更安心！",
+  "營業中！百頁豆腐、雞心、雞胗任你配。",
+  "今天有營業，現場見！謝謝你的支持！"
+];
+var shopState = "", otTimer = null, otIdx = 0, shopNoticeReady = false;
+function $sn(id) { return document.getElementById(id); }
+function openHours() {
+  var h = document.querySelector(".hrs");
+  return h ? h.textContent.replace(/\s+/g, "") : "18:00–23:00";
+}
+function otText(i) { return OPEN_MSGS[i].replace("{H}", openHours()); }
+function stopRotate() { if (otTimer) { clearInterval(otTimer); otTimer = null; } }
+function startRotate() {
+  stopRotate();
+  var m1 = $sn("otMsg"), m2 = $sn("snMsg");
+  $sn("otTag").textContent = "📢 今日營業公告";
+  otIdx = Math.floor(Math.random() * OPEN_MSGS.length);
+  m1.textContent = m2.textContent = otText(otIdx);
+  m1.classList.remove("out"); m2.classList.remove("out");
+  $sn("openTicker").hidden = false;
+  otTimer = setInterval(function () {
+    if (document.hidden) return;
+    m1.classList.add("out"); m2.classList.add("out");
+    setTimeout(function () {
+      otIdx = (otIdx + 1) % OPEN_MSGS.length;
+      m1.textContent = m2.textContent = otText(otIdx);
+      m1.classList.remove("out"); m2.classList.remove("out");
+    }, 450);
+  }, 5000);
+}
+function closeShopNotice() { $sn("shopNotice").hidden = true; }
+function applyShopNotice(d) {
+  shopNoticeReady = true;
+  var holiday = !!(d && d.paused && d.noticeMode !== "busy");      /* 忙碌中 = 照常營業 */
+  var next = holiday ? "holiday" : "open";
+  if (next === shopState) return;
+  shopState = next;
+  $sn("snCard").setAttribute("data-mode", next);
+  if (holiday) {
+    stopRotate();
+    $sn("snTitle").textContent = "今日公休";
+    $sn("snMsg").textContent = "今天店休，暫不提供現場及線上接單。";
+    $sn("snMsg").classList.remove("out");
+    $sn("snHours").hidden = true; $sn("snSub").hidden = false;
+    $sn("snContact").hidden = !/^https:\/\//i.test(FB_URL);
+    $sn("snGo").textContent = "我知道了";
+    $sn("otTag").textContent = "📢 店家公告";
+    $sn("otMsg").textContent = "今日公休，暫不營業。謝謝體諒！";
+    $sn("openTicker").hidden = false;
+  } else {
+    $sn("snTitle").textContent = "今日有營業";
+    $sn("snHours").textContent = "🕕 營業時間 " + openHours();
+    $sn("snHours").hidden = false; $sn("snSub").hidden = true; $sn("snContact").hidden = true;
+    $sn("snGo").textContent = "開始算看看";
+    startRotate();
+  }
+  $sn("shopNotice").hidden = false;                                /* 一開網頁就跳出公告 */
+  try { $sn("snGo").focus({ preventScroll: true }); } catch (e) {}
+}
+(function () {
+  if (/^https:\/\//i.test(FB_URL)) $sn("snContact").href = FB_URL;
+  $sn("snClose").addEventListener("click", closeShopNotice);
+  $sn("snGo").addEventListener("click", closeShopNotice);
+  $sn("shopNotice").addEventListener("click", function (e) { if (e.target === $sn("shopNotice")) closeShopNotice(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeShopNotice(); });
+  setTimeout(function () { if (!shopNoticeReady) applyShopNotice(null); }, 5000);   /* 連線太慢或失敗：先當作有營業 */
+})();
 function pollStock() {
   if (!STOCK_TOPIC || !window.fetch) return;
   fetch("https://ntfy.sh/" + STOCK_TOPIC + "/json?poll=1&since=12h", { cache: "no-store" })
     .then(function (r) { return r.text(); })
     .then(function (t) {
-      var last = null;
+      var last = null, best = null;
       t.split("\n").forEach(function (l) {
-        try { var m = JSON.parse(l); if (m.event === "message") last = m; } catch (e) {}
+        try {
+          var m = JSON.parse(l);
+          if (m.event === "message") {
+            last = m;
+            try {                                   /* 公告狀態以「最後一次手動操作時間 pt」最新的那則為準 */
+              var bd = JSON.parse(m.message), bp = (bd && typeof bd.pt === "number") ? bd.pt : 0;
+              if (!best || bp >= best.pt) best = { pt: bp, paused: !!(bd && bd.paused), noticeMode: bd && bd.noticeMode };
+            } catch (e2) {}
+          }
+        } catch (e) {}
       });
-      if (!last) return;
+      if (!last) { applyShopNotice(null); return; }
       var d = JSON.parse(last.message);
+      if (best) { d.paused = best.paused; d.noticeMode = best.noticeMode; }
+      try { applyShopNotice(d); } catch (e3) {}
       /* 新版收銀頁送的是 g + m；舊版才使用 prices */
       if (d && Array.isArray(d.m) && Array.isArray(d.g)) {
         applyMenu(d);
@@ -734,7 +885,7 @@ function pollStock() {
       }
       if (d && Array.isArray(d.out)) applyStock(d.out);
     })
-    .catch(function () {});
+    .catch(function () { if (!shopNoticeReady) applyShopNotice(null); });
 }
 /* ===== 價格同步（店家收銀頁改價 → 這裡會自動更新） ===== */
 var PRICE_KEY = "salt_prices_v1";
