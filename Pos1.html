@@ -2178,21 +2178,42 @@ document.addEventListener("visibilitychange", function () { if (!document.hidden
 update();
 </script>
 <style>
-#a2hs{position:fixed;left:0;right:0;top:0;z-index:80;padding-top:env(safe-area-inset-top,0px);background:#211A16;color:#fff;border-bottom:3px solid #F4B223;box-shadow:0 4px 14px rgba(0,0,0,.35);transform:translateY(-120%);transition:transform .35s ease}
-#a2hs.on{transform:none}
-#a2hs .a2-in{max-width:520px;margin:0 auto;padding:10px 12px;display:flex;align-items:center;gap:10px}
-#a2hs .a2-t{flex:1;min-width:0;font-size:15px;line-height:1.45}
-#a2hs .a2-t b{color:#F4B223}
-#a2hs button{font:inherit;cursor:pointer;min-height:44px;border-radius:10px;border:0}
-#a2hs .a2-go{padding:0 14px;background:#F4B223;color:#211A16;font-weight:700;white-space:nowrap}
-#a2hs .a2-x{width:44px;background:transparent;color:#fff;font-size:20px}
+/* 加到主畫面提示：與「公休／忙碌公告」同一套黑金風格 */
+#a2hs{position:fixed;inset:0;z-index:65;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(7,8,9,.56);-webkit-backdrop-filter:blur(18px) saturate(115%);backdrop-filter:blur(18px) saturate(115%);color:#f0ede5;text-align:center;box-sizing:border-box}
+#a2hs.on{display:flex}
+#a2hs *{box-sizing:border-box}
+#a2hs .a2-panel{position:relative;width:min(100%,430px);padding:42px 27px 25px;overflow:hidden;border:1px solid rgba(215,189,131,.48);border-radius:22px;background:radial-gradient(ellipse at 50% 0%,rgba(215,189,131,.10),transparent 52%),linear-gradient(145deg,rgba(31,32,28,.96),rgba(17,18,16,.98));box-shadow:0 24px 70px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.045);animation:pausePanelIn .28s ease-out both}
+#a2hs .a2-panel:before{content:"";position:absolute;inset:7px;border:1px solid rgba(215,189,131,.13);border-radius:16px;pointer-events:none}
+#a2hs .a2-kicker{position:relative;color:#b9a77f;font-family:Arial,sans-serif;font-size:9px;letter-spacing:.22em;font-weight:600}
+#a2hs .a2-mark{width:34px;height:1px;margin:21px auto 17px;background:linear-gradient(90deg,transparent,#d7bd83,transparent)}
+#a2hs .a2-title{position:relative;margin:0;color:#ead8ad;font-size:30px;font-weight:650;letter-spacing:.16em;line-height:1.45;text-shadow:0 2px 18px rgba(215,189,131,.12)}
+#a2hs .a2-rule{width:100%;height:1px;margin:20px auto 19px;background:linear-gradient(90deg,transparent,rgba(215,189,131,.48),transparent)}
+#a2hs .a2-copy{position:relative;margin:0;color:#f0ede5;font-size:16px;font-weight:600;line-height:1.9;letter-spacing:.025em}
+#a2hs .a2-sub{position:relative;margin:8px 0 0;color:#aaa69a;font-size:13px;line-height:1.9}
+#a2hs .a2-steps{position:relative;margin:18px 0 0;padding:0;list-style:none;text-align:left}
+#a2hs .a2-steps li{display:flex;align-items:center;gap:12px;margin:0 0 10px;padding:11px 14px;border:1px solid rgba(215,189,131,.28);border-radius:14px;background:rgba(215,189,131,.06);font-size:15px;font-weight:600;line-height:1.5}
+#a2hs .a2-steps li b{color:#ead8ad}
+#a2hs .a2-steps i{flex:none;width:26px;height:26px;border-radius:50%;background:#d7bd83;color:#1b1a16;font-style:normal;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center}
+#a2hs .a2-go{position:relative;display:block;width:100%;min-height:52px;margin:20px 0 0;padding:0 16px;border:0;border-radius:999px;background:linear-gradient(145deg,#ead8ad,#d7bd83);color:#1b1a16;font:inherit;font-size:17px;font-weight:700;letter-spacing:.06em;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#a2hs .a2-later{position:relative;display:block;width:100%;min-height:44px;margin:6px 0 0;border:0;background:transparent;color:#aaa69a;font:inherit;font-size:13px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+#a2hs .a2-brand{position:relative;margin:16px 0 0;padding-top:16px;border-top:1px solid rgba(215,189,131,.18);color:#d7c49b;font-size:13px;font-weight:650;letter-spacing:.075em}
+#a2hs .a2-brand b{padding:0 4px;color:#8f805f;font-weight:400}
+#a2hs .a2-close{position:absolute;top:13px;right:13px;z-index:2;display:flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:1px solid rgba(215,189,131,.35);border-radius:50%;background:rgba(215,189,131,.07);color:#d7bd83;font-family:Arial,sans-serif;font-size:22px;font-weight:300;line-height:1;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#a2hs .a2-go:focus-visible,#a2hs .a2-later:focus-visible,#a2hs .a2-close:focus-visible{outline:2px solid #F4D58C;outline-offset:3px}
+@media(max-width:390px){#a2hs{padding:17px}#a2hs .a2-panel{padding:39px 21px 22px;border-radius:19px}#a2hs .a2-title{font-size:27px}#a2hs .a2-copy{font-size:15px}}
+@media(prefers-reduced-motion:reduce){#a2hs .a2-panel{animation:none}}
 </style>
 <script>
 /* ===== 加到主畫面（偽 APP）：Android 一鍵安裝、iPhone 顯示步驟、LINE 等內建瀏覽器提示改用瀏覽器開啟 ===== */
 (function () {
   try { if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(function () {}); } catch (e) {}
-  var KEY = "pos1_a2hs_v1", ls = null;
-  try { ls = window.localStorage; if (ls.getItem(KEY)) return; } catch (e) { ls = null; }
+  var KEY = "pos1_a2hs_v2", DONE = "pos1_a2hs_done", SNOOZE = 7 * 864e5, ls = null;
+  try {
+    ls = window.localStorage;
+    if (ls.getItem(DONE)) return;
+    var last = +ls.getItem(KEY) || 0;
+    if (last && Date.now() - last < SNOOZE) return;          /* 按過「下次再說」：7 天內不再顯示 */
+  } catch (e) { ls = null; }
   var standalone = (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
   if (standalone) return;
   var ua = navigator.userAgent || "";
@@ -2200,31 +2221,45 @@ update();
   var isAndroid = /Android/i.test(ua);
   var inApp = /Line\/|FBAN|FBAV|Instagram|MicroMessenger|; wv\)/i.test(ua);
   if (!isIOS && !isAndroid) return;
-  var bar = null, deferred = null;
-  function hide() { if (bar) { bar.classList.remove("on"); } }
-  function done() { try { if (ls) ls.setItem(KEY, String(Date.now())); } catch (e) {} hide(); }
-  function show(html, btn, onBtn) {
-    if (!document.body) return;
-    if (!bar) { bar = document.createElement("div"); bar.id = "a2hs"; bar.setAttribute("role", "status"); document.body.appendChild(bar); }
-    bar.innerHTML = '<div class="a2-in"><div class="a2-t">' + html + '</div><button type="button" class="a2-go">' + btn + '</button><button type="button" class="a2-x" aria-label="關閉">✕</button></div>';
-    bar.querySelector(".a2-go").addEventListener("click", onBtn);
-    bar.querySelector(".a2-x").addEventListener("click", done);
-    setTimeout(function () { bar.classList.add("on"); }, 50);
+  var box = null, deferred = null;
+  function hide() { if (box) box.classList.remove("on"); }
+  function later() { try { if (ls) ls.setItem(KEY, String(Date.now())); } catch (e) {} hide(); }
+  function installed() { try { if (ls) ls.setItem(DONE, "1"); } catch (e) {} hide(); }
+  function show(o) {
+    if (!document.body || (box && box.classList.contains("on"))) return;
+    var steps = "";
+    if (o.steps) { steps = '<ol class="a2-steps">'; for (var i = 0; i < o.steps.length; i++) steps += "<li><i>" + (i + 1) + "</i><span>" + o.steps[i] + "</span></li>"; steps += "</ol>"; }
+    if (!box) { box = document.createElement("div"); box.id = "a2hs"; box.setAttribute("role", "dialog"); box.setAttribute("aria-modal", "true"); box.setAttribute("aria-labelledby", "a2Title"); document.body.appendChild(box); }
+    box.innerHTML =
+      '<section class="a2-panel">' +
+      '<button type="button" class="a2-close" aria-label="關閉">×</button>' +
+      '<div class="a2-kicker">TAIWAN NO.1 SALT &amp; PEPPER CHICKEN</div><div class="a2-mark" aria-hidden="true"></div>' +
+      '<div class="a2-title" id="a2Title" role="heading" aria-level="2">加到手機主畫面</div><div class="a2-rule" aria-hidden="true"></div>' +
+      '<p class="a2-copy">' + o.copy + '</p>' + (o.sub ? '<p class="a2-sub">' + o.sub + '</p>' : "") + steps +
+      '<button type="button" class="a2-go">' + o.btn + '</button>' + (o.later ? '<button type="button" class="a2-later">' + o.later + '</button>' : "") +
+      '<div class="a2-brand">台灣第一家鹽酥雞 <b>・</b> 30年老店</div></section>';
+    box.querySelector(".a2-go").addEventListener("click", o.go);
+    box.querySelector(".a2-close").addEventListener("click", later);
+    var lb = box.querySelector(".a2-later"); if (lb) lb.addEventListener("click", later);
+    box.classList.add("on");
+    try { box.querySelector(".a2-go").focus({ preventScroll: true }); } catch (e) {}
   }
-  window.addEventListener("appinstalled", done);
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && box && box.classList.contains("on")) later(); });
+  window.addEventListener("appinstalled", installed);
   if (inApp) {
-    setTimeout(function () { show("📲 想加到手機主畫面？請先點右上角 <b>「⋯」</b>，選 <b>「用瀏覽器開啟」</b>，再加入主畫面。", "知道了", done); }, 2500);
+    setTimeout(function () { show({ copy: "目前的內建瀏覽器無法加到主畫面，<br>請先換成手機瀏覽器開啟", steps: ["點右上角 <b>「⋯」</b>", "選 <b>「用瀏覽器開啟」</b>", "再依畫面提示 <b>加到主畫面</b>"], btn: "我知道了", go: later }); }, 2500);
   } else if (isIOS) {
-    setTimeout(function () { show("📲 加到主畫面，下次一點就能點餐：點瀏覽器的 <b>分享</b> 圖示（⬆️），再選 <b>「加入主畫面」</b>。", "知道了", done); }, 2500);
+    setTimeout(function () { show({ copy: "下次一點就能點餐，不用再怕找不到！", steps: ["點瀏覽器的 <b>「分享」</b> 圖示 ⬆️", "選 <b>「加入主畫面」</b>", "按右上角 <b>「新增」</b>"], btn: "我知道了", go: later }); }, 2500);
   } else {
     window.addEventListener("beforeinstallprompt", function (e) {
       e.preventDefault(); deferred = e;
       setTimeout(function () {
-        show("📲 <b>加到手機主畫面</b>，下次一點就能點餐，不用再掃碼。", "加到主畫面", function () {
-          if (!deferred) { done(); return; }
-          deferred.prompt();
-          deferred.userChoice.then(function () { deferred = null; done(); }, function () { done(); });
-        });
+        show({ copy: "下次一點就能點餐，不用再怕找不到！", btn: "📲 立即加到主畫面", later: "下次再說",
+          go: function () {
+            if (!deferred) { installed(); return; }
+            deferred.prompt();
+            deferred.userChoice.then(function (r) { deferred = null; if (r && r.outcome === "accepted") installed(); else later(); }, later);
+          } });
       }, 2500);
     });
   }
