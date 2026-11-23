@@ -2251,16 +2251,24 @@ update();
   } else if (isIOS) {
     setTimeout(function () { show({ copy: "下次一點就能點餐，不用再怕找不到！", steps: ["點瀏覽器的 <b>「分享」</b> 圖示 ⬆️", "選 <b>「加入主畫面」</b>", "按右上角 <b>「新增」</b>"], btn: "我知道了", go: later }); }, 2500);
   } else {
+    var oneTap = {
+      copy: "下次一點就能點餐，不用再怕找不到！", btn: "📲 立即加到主畫面", later: "下次再說",
+      go: function () {
+        if (!deferred) { later(); return; }
+        deferred.prompt();
+        deferred.userChoice.then(function (r) { deferred = null; if (r && r.outcome === "accepted") installed(); else later(); }, later);
+      }
+    };
+    var manual = {
+      copy: "下次一點就能點餐，不用再怕找不到！",
+      steps: ["點右上角 <b>選單</b>（⋮ 或 ☰）", "選 <b>「安裝應用程式」</b> 或 <b>「加到主畫面」</b>", "按 <b>「安裝」</b> 或 <b>「新增」</b>"],
+      btn: "我知道了", go: later
+    };
+    var tManual = setTimeout(function () { if (!deferred) show(manual); }, 4500);   /* 瀏覽器沒送出安裝事件時，改顯示手動步驟 */
     window.addEventListener("beforeinstallprompt", function (e) {
-      e.preventDefault(); deferred = e;
-      setTimeout(function () {
-        show({ copy: "下次一點就能點餐，不用再怕找不到！", btn: "📲 立即加到主畫面", later: "下次再說",
-          go: function () {
-            if (!deferred) { installed(); return; }
-            deferred.prompt();
-            deferred.userChoice.then(function (r) { deferred = null; if (r && r.outcome === "accepted") installed(); else later(); }, later);
-          } });
-      }, 2500);
+      e.preventDefault(); deferred = e; clearTimeout(tManual);
+      if (box && box.classList.contains("on")) { hide(); show(oneTap); }            /* 已顯示手動步驟 → 換成一鍵安裝 */
+      else setTimeout(function () { show(oneTap); }, 2500);
     });
   }
 })();
