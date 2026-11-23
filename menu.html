@@ -223,6 +223,13 @@ html{background:#164B43}
 .bar .btn{background:#164B43;color:#EAF5EF;border-color:#164B43}
 
 .item-spec{font-size:.82em;color:#8b7764;margin-top:2px;font-weight:600}
+
+/* 手機主畫面教學：沿用營業公告彈窗尺寸與視覺 */
+.home-install-modal{z-index:71}
+.home-install-steps{margin:14px 0 0;text-align:left;background:rgba(184,145,75,.10);border:1px solid var(--gold);border-radius:14px;padding:12px 16px;font-size:15px;line-height:1.75}
+.home-install-steps ol{margin:0;padding-left:1.35em}
+.home-install-steps li+li{margin-top:5px}
+.home-install-later{display:block;width:100%;min-height:42px;margin:10px 0 0;border:1px solid var(--gold);border-radius:999px;background:transparent;color:var(--muted);font:inherit;font-size:15px;font-weight:700;cursor:pointer}
 </style>
 <style>
 /* ===== 今日有營業公告輪播（hero 內） ===== */
@@ -318,26 +325,21 @@ html{background:#164B43}
 </header>
 
 
-<section class="wrap home-prompt" id="homePrompt" aria-label="加入手機主畫面">
-  <div class="home-prompt-inner">
-    <div class="home-prompt-icon" aria-hidden="true">📲</div>
-    <div class="home-prompt-copy">
-      <div class="home-prompt-title">下次想吃，不用再找網址！</div>
-      <div class="home-prompt-desc">把「台灣第一家鹽酥雞」放到手機主畫面，點一下就能開啟菜單計算機。</div>
+<div class="sn home-install-modal" id="homePromptModal" role="dialog" aria-modal="true" aria-labelledby="homePromptTitle" hidden>
+  <section class="sn-card" data-mode="open">
+    <div class="sn-band">
+      <button type="button" class="sn-x" id="homePromptClose" aria-label="關閉教學">×</button>
+      <div class="sn-shop serif">台灣第一家鹽酥雞</div>
+      <div class="sn-stamp serif">30年老店</div>
     </div>
-  </div>
-  <div class="home-prompt-actions">
-    <button type="button" class="home-help" id="homeHelp">教我加入主畫面</button>
-    <button type="button" class="home-dismiss" id="homeDismiss">稍後再說</button>
-  </div>
-</section>
-<div class="home-guide" id="homeGuide" role="dialog" aria-modal="true" aria-labelledby="homeGuideTitle" hidden>
-  <section class="home-guide-card">
-    <h2 id="homeGuideTitle">把我們放進手機主畫面</h2>
-    <p id="homeGuideIntro">只要設定一次，以後點手機桌面圖示就能快速開啟。</p>
-    <div id="homeGuideSteps"></div>
-    <div class="home-guide-tip">小提醒：這是方便查菜單、估算金額的網頁工具，不是線上點餐，也不會自動送出訂單。</div>
-    <button type="button" class="home-guide-close" id="homeGuideClose">知道了</button>
+    <div class="sn-body">
+      <div class="sn-title serif" id="homePromptTitle">把我們放進手機主畫面</div>
+      <p class="sn-msg" id="homePromptIntro">設定一次，以後點手機桌面圖示，就能快速開啟菜單計算機！</p>
+      <div class="home-install-steps" id="homePromptSteps"></div>
+      <p class="sn-sub">小提醒：這是菜單與金額計算工具，並非線上點餐，不會自動送出訂單。</p>
+      <button type="button" class="sn-go" id="homePromptDone">我已加入，謝謝</button>
+      <button type="button" class="home-install-later" id="homePromptLater">稍後再說</button>
+    </div>
   </section>
 </div>
 
@@ -863,7 +865,12 @@ function startRotate() {
     }, 450);
   }, 5000);
 }
-function closeShopNotice() { $sn("shopNotice").hidden = true; }
+function closeShopNotice() {
+  $sn("shopNotice").hidden = true;
+  if (typeof showHomeInstallPrompt === "function") {
+    window.setTimeout(showHomeInstallPrompt, 260);
+  }
+}
 function applyShopNotice(d) {
   shopNoticeReady = true;
   var holiday = !!(d && d.paused && d.noticeMode !== "busy");      /* 忙碌中 = 照常營業 */
@@ -1009,44 +1016,51 @@ setInterval(pollStock, 45000);
 document.addEventListener("visibilitychange", function () { if (!document.hidden) pollStock(); });
 
 
-/* ===== 手機主畫面加入教學：依裝置顯示步驟，不宣稱已安裝成 App ===== */
+/* ===== 關閉營業公告後，顯示同尺寸的手機主畫面教學 ===== */
+var showHomeInstallPrompt;
 (function setupHomePrompt() {
-  var prompt = document.getElementById("homePrompt");
-  var guide = document.getElementById("homeGuide");
-  var steps = document.getElementById("homeGuideSteps");
-  var intro = document.getElementById("homeGuideIntro");
-  if (!prompt || !guide || !steps) return;
-
+  var modal = document.getElementById("homePromptModal");
+  var steps = document.getElementById("homePromptSteps");
+  var intro = document.getElementById("homePromptIntro");
+  if (!modal || !steps || !intro) return;
   var ua = navigator.userAgent || "";
-  var isIOS = /iPhone|iPad|iPod/i.test(ua) ||
-    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  var isIOS = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   var isAndroid = /Android/i.test(ua);
-
   if (isIOS) {
-    intro.textContent = "iPhone／iPad 請用 Safari 操作，照著下面做就好：";
-    steps.innerHTML = "<ol><li>點開本頁後，使用 <b>Safari</b> 瀏覽器開啟。</li><li>點 Safari 下方的「分享」圖示（方框向上箭頭）。</li><li>往下找到「加入主畫面」。</li><li>確認名稱後，按右上角「加入」。</li></ol>";
+    intro.textContent = "iPhone 請使用 Safari，照著下面 3 步驟設定：";
+    steps.innerHTML = "<ol><li>先確認這個網頁是在 <b>Safari</b> 開啟。</li><li>點「分享」圖示（方框向上箭頭）。</li><li>選擇「加入主畫面」，再按右上角「加入」。</li></ol>";
   } else if (isAndroid) {
-    intro.textContent = "Android 手機建議使用 Chrome 操作：";
-    steps.innerHTML = "<ol><li>使用 <b>Chrome</b> 開啟本頁。</li><li>點右上角「⋮」選單。</li><li>選擇「加到主畫面」或「安裝應用程式」（依手機及瀏覽器版本顯示）。</li><li>確認後，桌面就會出現捷徑圖示。</li></ol>";
+    intro.textContent = "Android 手機建議使用 Chrome，照著下面步驟設定：";
+    steps.innerHTML = "<ol><li>使用 <b>Chrome</b> 開啟這個網頁。</li><li>點右上角「⋮」選單。</li><li>選擇「加到主畫面」或「安裝應用程式」，再依畫面確認。</li></ol>";
   } else {
-    intro.textContent = "請用手機瀏覽器開啟這個頁面，再依照手機系統加入主畫面：";
-    steps.innerHTML = "<ol><li>iPhone／iPad：用 Safari 開啟，點「分享」→「加入主畫面」。</li><li>Android：用 Chrome 開啟，點右上角「⋮」→「加到主畫面」。</li></ol>";
+    intro.textContent = "用手機瀏覽器開啟本頁，就能把我們加到手機桌面：";
+    steps.innerHTML = "<ol><li>iPhone：使用 Safari，點「分享」→「加入主畫面」。</li><li>Android：使用 Chrome，點「⋮」→「加到主畫面」。</li></ol>";
   }
-
-  document.getElementById("homeHelp").addEventListener("click", function () {
-    guide.hidden = false;
+  function get(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  function set(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
+  function standalone() {
+    return (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) ||
+      (window.navigator && window.navigator.standalone === true);
+  }
+  showHomeInstallPrompt = function () {
+    if (standalone() || get("shopHomeAdded") === "1") return;
+    var until = parseInt(get("shopHomeLaterUntil") || "0", 10);
+    if (Date.now() < until) return;
+    modal.hidden = false;
+  };
+  function later() {
+    set("shopHomeLaterUntil", String(Date.now() + 7 * 24 * 60 * 60 * 1000));
+    modal.hidden = true;
+  }
+  document.getElementById("homePromptDone").addEventListener("click", function () {
+    set("shopHomeAdded", "1");
+    modal.hidden = true;
   });
-  document.getElementById("homeGuideClose").addEventListener("click", function () {
-    guide.hidden = true;
-  });
-  guide.addEventListener("click", function (e) {
-    if (e.target === guide) guide.hidden = true;
-  });
-  document.getElementById("homeDismiss").addEventListener("click", function () {
-    prompt.hidden = true;
-  });
+  document.getElementById("homePromptLater").addEventListener("click", later);
+  document.getElementById("homePromptClose").addEventListener("click", later);
+  modal.addEventListener("click", function (e) { if (e.target === modal) later(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !modal.hidden) later(); });
 })();
-
 update();
 </script>
 </body>
