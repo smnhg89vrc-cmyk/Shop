@@ -690,7 +690,7 @@ input[type=date],#cash{
       </div><p class="note" id="noticeModeStatus">選擇公告後，客人端會同步顯示；恢復接單即可關閉公告。</p>
       <div id="slotmgr"></div>
       <p class="note">點「空」的時段＝封鎖（現場客人多、休息時用），再點一次解除。點有 📦 的時段＝開放給其他客人預約（訂單會保留，例如客人不來了）。</p>
-      <p class="note" id="verTag">版本：2026-11-23 分享連結版</p></div></section>
+      <p class="note" id="verTag">版本：2026-11-23 分享連結＋偽APP版</p></div></section>
   <section id="v-ledger" hidden>
     <div class="cards" id="cards"></div>
     <div class="box"><h3>收款方式</h3><div id="pays"></div></div>
@@ -753,7 +753,7 @@ input[type=date],#cash{
   <p class="note" id="shareWarn" hidden style="color:#ff9a8a">⚠️ 目前是用「檔案」方式開啟收銀頁，客人打不開這個連結。請改用 GitHub Pages 的網址開啟收銀頁再分享。</p>
   <input id="shareUrl" readonly aria-label="點餐連結" style="width:100%;min-height:44px;margin:12px 0;padding:0 10px;font-size:14px;background:transparent;color:inherit;border:1px solid #5a503b;border-radius:10px">
   <div id="shareQr" style="display:inline-block;background:#fff;padding:10px;border-radius:12px;min-width:220px;min-height:220px;color:#333;font-size:13px;line-height:1.5"></div>
-  <p class="note" style="margin:8px 0">客人用手機相機掃描就能點餐，也可截圖或印出貼在店裡。</p>
+  <p class="note" style="margin:8px 0">客人用手機相機掃描就能點餐，第一次打開會提示「加到主畫面」，也可截圖或印出貼在店裡。</p>
   <button class="go" id="shareGo" type="button">📤 分享給客人</button>
   <div class="ops" style="margin-top:10px;justify-content:center"><button class="mini" id="shareCopy" type="button">📋 複製連結</button><button class="mini" id="sharePreview" type="button">👀 預覽客人頁</button></div>
 </div></div>
@@ -1398,7 +1398,7 @@ $("shareBtn").addEventListener("click",openShare);
 $("shareX").addEventListener("click",()=>$("shareSheet").classList.remove("on"));
 $("shareSheet").addEventListener("click",e=>{if(e.target===$("shareSheet"))$("shareSheet").classList.remove("on")});
 $("shareGo").addEventListener("click",()=>{const url=$("shareUrl").value;
-  if(navigator.share){navigator.share({title:"台灣第一家鹽酥雞 線上點餐",text:"線上點餐連結",url:url}).catch(()=>{})}
+  if(navigator.share){navigator.share({title:"台灣第一家鹽酥雞 線上點餐",text:"線上點餐連結（打開後可「加到主畫面」，下次一點就能點餐）",url:url}).catch(()=>{})}
   else copyText(url).then(()=>toast("已複製點餐連結")).catch(()=>toast("請長按網址手動複製"))});
 $("shareCopy").addEventListener("click",()=>copyText($("shareUrl").value).then(()=>toast("已複製點餐連結")).catch(()=>toast("請長按網址手動複製")));
 $("sharePreview").addEventListener("click",()=>window.open($("shareUrl").value,"_blank"));

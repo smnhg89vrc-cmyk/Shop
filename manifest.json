@@ -1,0 +1,16 @@
+{
+  "id": "./Pos1.html",
+  "name": "VVIP專屬線上點餐",
+  "short_name": "VVIP點餐",
+  "description": "線上點餐",
+  "lang": "zh-Hant-TW",
+  "start_url": "./Pos1.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFFBF2",
+  "theme_color": "#B3241A",
+  "icons": [
+    { "src": "order-icon-180.png", "sizes": "180x180", "type": "image/png", "purpose": "any" }
+  ]
+}
