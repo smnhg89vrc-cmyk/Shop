@@ -2207,21 +2207,27 @@ update();
 /* ===== 加到主畫面（偽 APP）：Android 一鍵安裝、iPhone 顯示步驟、LINE 等內建瀏覽器提示改用瀏覽器開啟 ===== */
 (function () {
   try { if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(function () {}); } catch (e) {}
+  var VER = "2026-11-23c", DEBUG = /[?&]a2hs=test/.test(location.search);   /* 網址加 ?a2hs=test 可強制顯示並列出診斷資訊 */
   var KEY = "pos1_a2hs_v2", DONE = "pos1_a2hs_done", SNOOZE = 7 * 864e5, ls = null;
   try {
     ls = window.localStorage;
-    if (ls.getItem(DONE)) return;
+    if (!DEBUG && ls.getItem(DONE)) return;
     var last = +ls.getItem(KEY) || 0;
-    if (last && Date.now() - last < SNOOZE) return;          /* 按過「下次再說」：7 天內不再顯示 */
+    if (!DEBUG && last && Date.now() - last < SNOOZE) return;          /* 按過「下次再說」：7 天內不再顯示 */
   } catch (e) { ls = null; }
   var standalone = (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
-  if (standalone) return;
+  if (standalone && !DEBUG) return;
   var ua = navigator.userAgent || "";
   var isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   var isAndroid = /Android/i.test(ua);
   var inApp = /Line\/|FBAN|FBAV|Instagram|MicroMessenger|; wv\)/i.test(ua);
-  if (!isIOS && !isAndroid) return;
+  if (!isIOS && !isAndroid && !DEBUG) return;
   var box = null, deferred = null;
+  function diag() {
+    var sw = (navigator.serviceWorker && navigator.serviceWorker.controller) ? "已啟用" : "未啟用";
+    return "診斷 v" + VER + "｜Android:" + (isAndroid ? "是" : "否") + "｜iPhone:" + (isIOS ? "是" : "否") + "｜內建瀏覽器:" + (inApp ? "是" : "否") +
+      "｜安裝事件:" + (deferred ? "有" : "無") + "｜SW:" + sw + "｜https:" + (location.protocol === "https:" ? "是" : "否") + "｜主畫面模式:" + (standalone ? "是" : "否") + "｜" + ua.slice(0, 110);
+  }
   function hide() { if (box) box.classList.remove("on"); }
   function later() { try { if (ls) ls.setItem(KEY, String(Date.now())); } catch (e) {} hide(); }
   function installed() { try { if (ls) ls.setItem(DONE, "1"); } catch (e) {} hide(); }
@@ -2235,7 +2241,7 @@ update();
       '<button type="button" class="a2-close" aria-label="關閉">×</button>' +
       '<div class="a2-kicker">TAIWAN NO.1 SALT &amp; PEPPER CHICKEN</div><div class="a2-mark" aria-hidden="true"></div>' +
       '<div class="a2-title" id="a2Title" role="heading" aria-level="2">加到手機主畫面</div><div class="a2-rule" aria-hidden="true"></div>' +
-      '<p class="a2-copy">' + o.copy + '</p>' + (o.sub ? '<p class="a2-sub">' + o.sub + '</p>' : "") + steps +
+      '<p class="a2-copy">' + o.copy + '</p>' + (o.sub ? '<p class="a2-sub">' + o.sub + '</p>' : "") + steps + (DEBUG ? '<p class="a2-sub" style="font-size:11px;text-align:left;word-break:break-all">' + diag() + '</p>' : "") +
       '<button type="button" class="a2-go">' + o.btn + '</button>' + (o.later ? '<button type="button" class="a2-later">' + o.later + '</button>' : "") +
       '<div class="a2-brand">台灣第一家鹽酥雞 <b>・</b> 30年老店</div></section>';
     box.querySelector(".a2-go").addEventListener("click", o.go);
