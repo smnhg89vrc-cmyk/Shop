@@ -1120,6 +1120,22 @@ h2{
 }
 @media(prefers-reduced-motion:reduce){.pause-notice .pause-panel{animation:none!important}}
 
+/* 正常營業公告：同系列黑曜石與香檳金文字輪播 */
+.open-promo{position:relative;margin:20px 0 0;padding:19px 16px 13px;border:1px solid rgba(215,189,131,.28);border-radius:16px;background:linear-gradient(145deg,rgba(215,189,131,.075),rgba(255,255,255,.018));text-align:center;overflow:hidden}
+.open-promo[hidden]{display:none!important}
+.open-promo-eyebrow{color:#a9966c;font:600 9px/1.5 Arial,sans-serif;letter-spacing:.19em}
+.open-promo-count{margin-top:9px;color:#8e805f;font:600 10px/1.4 Arial,sans-serif;letter-spacing:.16em;font-variant-numeric:tabular-nums}
+.open-promo-title{min-height:3.1em;display:flex;align-items:center;justify-content:center;margin:8px 0 7px;color:#f0dfb8;font-family:"Noto Serif TC","Songti TC",serif;font-size:19px;font-weight:650;line-height:1.65;letter-spacing:.055em;text-wrap:balance;animation:promoFade .35s ease both}
+.open-promo-sub{color:#aaa18d;font-size:11px;line-height:1.7;letter-spacing:.07em}
+.open-promo-progress{display:flex;gap:3px;justify-content:center;margin:14px auto 9px}
+.open-promo-progress i{display:block;width:8px;height:2px;border-radius:2px;background:rgba(215,189,131,.22);transition:all .25s}
+.open-promo-progress i.on{width:18px;background:#d7bd83}
+.open-promo-controls{display:flex;align-items:center;justify-content:space-between;max-width:190px;margin:0 auto;color:#8e805f;font-size:10px;letter-spacing:.08em}
+.open-promo-controls button{width:28px;height:28px;border:1px solid rgba(215,189,131,.28);border-radius:50%;background:rgba(215,189,131,.06);color:#e4d2a8;font-size:19px;line-height:1;cursor:pointer}
+@keyframes promoFade{from{opacity:.35;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:390px){.open-promo{padding:16px 12px 11px}.open-promo-title{font-size:17px}}
+@media(prefers-reduced-motion:reduce){.open-promo-title{animation:none}}
+
 #menuCats{display:flex;gap:7px;overflow-x:auto;padding:8px 0 12px;position:sticky;top:0;z-index:5;background:var(--bg);scrollbar-width:none}#menuCats button{flex:0 0 auto;min-height:39px;padding:7px 13px;border:1px solid var(--line);border-radius:22px;background:var(--card);color:var(--ink);font-weight:800;font-size:13px}#menuCats button.on{background:var(--accent);border-color:var(--accent);color:white}#menu.menu-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:8px}#menu .menu-tile{min-width:0;border:1px solid var(--line);border-radius:15px;background:var(--card);padding:11px;display:flex;flex-direction:column;gap:9px;box-shadow:0 3px 12px rgba(40,25,10,.05)}#menu .tile-add{width:100%;min-height:62px;border:0;background:transparent;text-align:left;color:var(--ink);padding:0;font:inherit}#menu .tile-name{display:block;font-size:21px;font-weight:900;line-height:1.3;letter-spacing:.3px}#menu .tile-price{display:block;margin-top:3px;color:var(--accent);font-size:16px;font-weight:900;line-height:1.25}#menu .tile-ops{display:flex;align-items:center;justify-content:space-between;gap:8px}#menu .tile-ops button{width:38px;height:36px;border:1px solid var(--line);border-radius:10px;background:var(--tint);color:var(--ink);font-size:21px;font-weight:900}#menu .tile-count{display:inline-flex;align-items:center;justify-content:center;min-width:42px;min-height:36px;padding:0 8px;border-radius:11px;background:var(--tint);color:var(--ink);font-weight:1000;font-size:27px;line-height:1;font-variant-numeric:tabular-nums}#menu .menu-tile.selected{border:2px solid var(--gold);background:var(--tint)}#menu .tile-qty{display:inline-block;margin-top:5px;padding:4px 10px;border-radius:15px;background:var(--gold);color:#211a16;font-size:16px;font-weight:1000;line-height:1.2}</style>
 </head>
 <body>
@@ -1127,13 +1143,25 @@ h2{
 <div aria-live="polite" id="pop" role="status"></div>
 <div aria-live="assertive" class="pause-notice" hidden="" id="pauseNotice" role="alert">
   <section class="pause-panel" aria-labelledby="pauseTitle">
-    <button aria-label="關閉今日公休公告" class="pause-close" id="pauseNoticeClose" type="button">×</button>
+    <button aria-label="關閉公告" class="pause-close" id="pauseNoticeClose" type="button">×</button>
     <div class="pause-kicker">TAIWAN NO.1 SALT &amp; PEPPER CHICKEN</div>
     <div class="pause-mark" aria-hidden="true"></div>
     <h2 id="pauseTitle">今日公休</h2>
     <div class="pause-rule" aria-hidden="true"></div>
     <p class="pause-copy" id="pauseCopy">今天店休，暫不提供現場及線上接單。</p>
     <p class="pause-thanks" id="pauseThanks">感謝您的支持與體諒，造成不便敬請見諒！<br>期待下次再為您準備熱騰騰的美味。</p>
+    <div class="open-promo" id="openPromo" hidden aria-live="polite">
+      <div class="open-promo-eyebrow">A LITTLE NOTE FROM OUR KITCHEN</div>
+      <div class="open-promo-count" id="openPromoCount">01 / 20</div>
+      <div class="open-promo-title" id="openPromoTitle">今晚，為美味留一點時間。</div>
+      <div class="open-promo-sub" id="openPromoSub">台灣第一家鹽酥雞・30年老店</div>
+      <div class="open-promo-progress" id="openPromoProgress" aria-hidden="true"></div>
+      <div class="open-promo-controls">
+        <button type="button" id="openPromoPrev" aria-label="上一則文宣">‹</button>
+        <span>品牌日常・輪播選讀</span>
+        <button type="button" id="openPromoNext" aria-label="下一則文宣">›</button>
+      </div>
+    </div>
     <div class="pause-brand">台灣第一家鹽酥雞 <b>・</b> 30年老店</div>
     <a class="pause-contact" href="https://www.facebook.com/share/18uM4DJSed/?mibextid=wwXIfr" target="_blank" rel="noopener">有任何問題，歡迎私訊粉絲專頁 <span>↗</span></a>
   </section>
@@ -1928,31 +1956,94 @@ function buildTimeOptions() {
   pollSlots();
 }
 var slotMap = {}, blockedSlots = [];
-var pauseNoticeDismissed = false;
-var currentNoticeMode = "holiday";
+var pauseNoticeDismissed = false, openNoticeDismissed = false;
+var currentNoticeMode = "holiday", previousPausedState = null;
+var openPromoIndex = 0, openPromoTimer = null;
+var openPromoSlides = [
+  ["今晚，為美味留一點時間。", "忙碌一天後，值得一份熱騰騰的犒賞。"],
+  ["三十年，專心做好一份鹽酥雞。", "熟悉的味道，來自每一次認真對待。"],
+  ["剛剛好的酥脆，才值得等待。", "把火候顧好，讓每一口都有好滋味。"],
+  ["好味道，不需要太多華麗。", "真材實料，簡單做好每一道。"],
+  ["謝謝每一位熟門熟路的老朋友。", "因為有你們，這份日常才能一直延續。"],
+  ["第一次來，也歡迎成為老朋友。", "把喜歡的味道，分享給身邊的人。"],
+  ["熱熱吃，最對味。", "趁著剛起鍋，享受酥香好滋味。"],
+  ["每一份點心，都值得被好好對待。", "從備料到起鍋，細節不能隨便。"],
+  ["夜晚的幸福，有時候很簡單。", "一袋鹽酥雞，就能讓今晚更有味道。"],
+  ["三十年老店，感謝一路相伴。", "老味道繼續，對品質的堅持不變。"],
+  ["今天想吃點什麼好？", "挑幾樣喜歡的，搭配出自己的美味。"],
+  ["香氣，是今晚最好的招呼。", "歡迎來店，讓熟悉的香味陪伴你。"],
+  ["不趕時間，把美味做好。", "每一份餐點，都用心掌握起鍋時刻。"],
+  ["把平凡日子，吃得有滋有味。", "謝謝你把我們放進生活的小日常。"],
+  ["好吃的事，值得慢慢分享。", "帶一份回家，和重要的人一起吃。"],
+  ["今晚營業中，等你來點喜歡的。", "現場歡迎選購，也可使用線上點餐。"],
+  ["熟悉的招牌，熟悉的好味道。", "台灣第一家鹽酥雞・30年老店。"],
+  ["每一次回訪，都是一份鼓勵。", "謝謝你用行動支持在地小店。"],
+  ["把用心，留在每一口裡。", "不求浮誇，只希望每次都讓你滿意。"],
+  ["今晚的美味，準備好了。", "台灣第一家鹽酥雞，期待與你相見。"]
+];
+function renderOpenPromo() {
+  var title = document.getElementById("openPromoTitle");
+  var sub = document.getElementById("openPromoSub");
+  var count = document.getElementById("openPromoCount");
+  var progress = document.getElementById("openPromoProgress");
+  var item = openPromoSlides[openPromoIndex];
+  if (!title || !item) return;
+  title.textContent = item[0];
+  sub.textContent = item[1];
+  count.textContent = ("0" + (openPromoIndex + 1)).slice(-2) + " / 20";
+  if (progress) progress.innerHTML = openPromoSlides.map(function (_, i) { return '<i' + (i === openPromoIndex ? ' class="on"' : '') + '></i>'; }).join("");
+}
+function moveOpenPromo(step) {
+  openPromoIndex = (openPromoIndex + step + openPromoSlides.length) % openPromoSlides.length;
+  renderOpenPromo();
+  restartOpenPromoTimer();
+}
+function restartOpenPromoTimer() {
+  if (openPromoTimer) clearInterval(openPromoTimer);
+  openPromoTimer = setInterval(function () {
+    var notice = document.getElementById("pauseNotice");
+    if (!paused && notice && !notice.hidden && !openNoticeDismissed) moveOpenPromo(1);
+  }, 5000);
+}
+var promoPrev = document.getElementById("openPromoPrev"), promoNext = document.getElementById("openPromoNext");
+if (promoPrev) promoPrev.addEventListener("click", function () { moveOpenPromo(-1); });
+if (promoNext) promoNext.addEventListener("click", function () { moveOpenPromo(1); });
 function updatePauseNotice() {
   var notice = document.getElementById("pauseNotice");
   var title = document.getElementById("pauseTitle"), copy = document.getElementById("pauseCopy"), thanks = document.getElementById("pauseThanks");
-  if (currentNoticeMode === "busy") {
-    if (title) { title.textContent = "目前忙碌，暫停線上接單"; title.style.fontSize = "23px"; title.style.letterSpacing = ".06em"; }
-    if (copy) copy.textContent = "目前現場訂單較多，為了確保每一份餐點的品質，暫時停止接受線上訂單。";
-    if (thanks) thanks.textContent = "造成不便，敬請見諒！待忙碌情況緩解後，將儘快重新開放。感謝您的體諒與支持！";
+  var promo = document.getElementById("openPromo");
+  if (paused) {
+    if (title) {
+      if (currentNoticeMode === "busy") { title.textContent = "目前忙碌，暫停線上接單"; title.style.fontSize = "23px"; title.style.letterSpacing = ".06em"; }
+      else { title.textContent = "今日公休"; title.style.fontSize = "30px"; title.style.letterSpacing = ".16em"; }
+    }
+    if (copy) copy.textContent = currentNoticeMode === "busy" ? "目前現場訂單較多，為了確保每一份餐點的品質，暫時停止接受線上訂單。" : "今天店休，暫不提供現場及線上接單。";
+    if (thanks) thanks.innerHTML = currentNoticeMode === "busy" ? "造成不便，敬請見諒！待忙碌情況緩解後，將儘快重新開放。感謝您的體諒與支持！" : "感謝您的支持與體諒，造成不便敬請見諒！<br>期待下次再為您準備熱騰騰的美味。";
+    if (promo) promo.hidden = true;
+    if (notice) notice.hidden = pauseNoticeDismissed;
   } else {
-    if (title) { title.textContent = "今日公休"; title.style.fontSize = "30px"; title.style.letterSpacing = ".16em"; }
-    if (copy) copy.textContent = "今天店休，暫不提供現場及線上接單。";
-    if (thanks) thanks.innerHTML = "感謝您的支持與體諒，造成不便敬請見諒！<br>期待下次再為您準備熱騰騰的美味。";
+    if (title) { title.textContent = "今日正常營業"; title.style.fontSize = "28px"; title.style.letterSpacing = ".12em"; }
+    if (copy) copy.textContent = "今晚照常營業，歡迎來店選購，也歡迎使用線上點餐。";
+    if (thanks) thanks.textContent = "三十年用心，為你準備熟悉的好味道。";
+    if (promo) promo.hidden = false;
+    renderOpenPromo();
+    if (notice) notice.hidden = openNoticeDismissed;
+    restartOpenPromoTimer();
   }
-  if (notice) notice.hidden = !paused || pauseNoticeDismissed;
 }
 var pauseCloseButton = document.getElementById("pauseNoticeClose");
 if (pauseCloseButton) pauseCloseButton.addEventListener("click", function () {
-  pauseNoticeDismissed = true;
+  if (paused) pauseNoticeDismissed = true;
+  else openNoticeDismissed = true;
   updatePauseNotice();
 });
 function applyBooked(d) {                       /* 店家手動狀態：封鎖與暫停跨日保留，直到店家手動解除 */
-  paused = !!(d && d.paused);
+  var nextPaused = !!(d && d.paused);
   var nextNoticeMode = d && d.noticeMode === "busy" ? "busy" : "holiday";
-  if (nextNoticeMode !== currentNoticeMode || !paused) pauseNoticeDismissed = false;
+  if (previousPausedState === null || (previousPausedState && !nextPaused)) openNoticeDismissed = false;
+  if (nextPaused && (!previousPausedState || nextNoticeMode !== currentNoticeMode)) pauseNoticeDismissed = false;
+  paused = nextPaused;
+  previousPausedState = nextPaused;
   currentNoticeMode = nextNoticeMode;
   blockedSlots = d && Array.isArray(d.blocked) ? d.blocked.slice() : [];
   updatePauseNotice();
